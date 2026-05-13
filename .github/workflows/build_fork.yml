@@ -3,7 +3,7 @@ name: Build Fork
 on:
   push:
     branches:
-      - v5-develop
+      - v5-custom
     paths-ignore:
       - "src/Sonarr.Api.*/openapi.json"
       - ".github/workflows/build_v5.yml"
