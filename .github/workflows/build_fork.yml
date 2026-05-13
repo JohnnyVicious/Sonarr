@@ -22,6 +22,9 @@ env:
 jobs:
   build:
     runs-on: [self-hosted, sonarr]
+    outputs:
+      version: ${{ steps.vars.outputs.version }}
+      branch: ${{ steps.vars.outputs.branch }}
     steps:
       - name: Check out
         uses: actions/checkout@v4
@@ -48,7 +51,7 @@ jobs:
             -p:SelfContained=true \
             -p:Configuration=Release \
             -p:Platform=Posix \
-            -p:RuntimeIdentifiers=linux-x64 \
+            -p:RuntimeIdentifiers=linux-musl-x64 \
             -p:EnableWindowsTargeting=true \
             -t:PublishAllRids
 
@@ -60,7 +63,7 @@ jobs:
       - name: Package
         run: |
           FRAMEWORK="${{ env.FRAMEWORK }}"
-          RUNTIME="linux-x64"
+          RUNTIME="linux-musl-x64"
           BRANCH="${{ steps.vars.outputs.branch }}"
           VERSION="${{ steps.vars.outputs.version }}"
 
@@ -74,9 +77,9 @@ jobs:
           rm -f "$folder"/ServiceUninstall.* "$folder"/ServiceInstall.*
           rm -f "$folder"/Sonarr.Windows.*
 
-          cp "$folder"/Sonarr.Mono.* "$folder/Sonarr.Update"
-          cp "$folder"/Mono.Posix.NETStandard.* "$folder/Sonarr.Update"
-          cp "$folder"/libMonoPosixHelper.* "$folder/Sonarr.Update"
+          cp "$folder"/Sonarr.Mono.* "$folder/Sonarr.Update" 2>/dev/null || true
+          cp "$folder"/Mono.Posix.NETStandard.* "$folder/Sonarr.Update" 2>/dev/null || true
+          cp "$folder"/libMonoPosixHelper.* "$folder/Sonarr.Update" 2>/dev/null || true
 
           cp -r _output/UI "$folder"
 
@@ -84,18 +87,80 @@ jobs:
           find "$folder" -name "Sonarr" -exec chmod a+x {} \;
           find "$folder" -name "Sonarr.Update" -exec chmod a+x {} \;
 
-          archiveName="Sonarr.$BRANCH.$VERSION.linux-x64"
+          archiveName="Sonarr.$BRANCH.$VERSION.linux-musl-x64"
           tar -zcf "_artifacts/$archiveName.tar.gz" -C "_artifacts/$RUNTIME/$FRAMEWORK" Sonarr
 
-      - name: Upload artifact
+      - name: Upload tarball artifact
         uses: actions/upload-artifact@v4
         with:
-          name: sonarr-linux-x64
+          name: sonarr-linux-musl-x64
           retention-days: 30
           path: _artifacts/*.tar.gz
+
+      - name: Upload docker context
+        uses: actions/upload-artifact@v4
+        with:
+          name: sonarr-docker-context
+          retention-days: 1
+          path: _artifacts/linux-musl-x64/${{ env.FRAMEWORK }}/Sonarr/
 
       - name: Run unit tests
         run: |
           FRAMEWORK="${{ env.FRAMEWORK }}"
-          find "_tests/$FRAMEWORK/linux-x64/publish" -name "Sonarr.*.Test.dll" -print0 | \
+          find "_tests/$FRAMEWORK/linux-musl-x64/publish" -name "Sonarr.*.Test.dll" -print0 | \
             xargs -0 dotnet vstest --TestCaseFilter:"TestCategory!=ManualTest&TestCategory!=WINDOWS&TestCategory!=IntegrationTest&TestCategory!=AutomationTest" || true
+
+  docker:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Check out (for Dockerfile)
+        uses: actions/checkout@v4
+
+      - name: Download build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: sonarr-docker-context
+          path: Sonarr/
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        if: ${{ vars.DOCKERHUB_USERNAME != '' }}
+        with:
+          username: ${{ vars.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Docker metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            ghcr.io/${{ github.repository_owner }}/sonarr
+            ${{ vars.DOCKERHUB_USERNAME != '' && format('{0}/sonarr', vars.DOCKERHUB_USERNAME) || '' }}
+          tags: |
+            type=raw,value=${{ needs.build.outputs.version }}
+            type=raw,value=latest
+            type=sha,prefix=
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
