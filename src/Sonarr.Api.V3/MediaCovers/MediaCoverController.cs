@@ -29,12 +29,14 @@ namespace Sonarr.Api.V3.MediaCovers
         [HttpGet(@"{seriesId:int}/{filename:regex((.+)\.(jpg|png|gif))}")]
         public IActionResult GetMediaCover(int seriesId, string filename)
         {
-            if (string.IsNullOrWhiteSpace(filename))
+            var requestedFilename = filename ?? string.Empty;
+
+            if (string.IsNullOrWhiteSpace(requestedFilename))
             {
                 return NotFound();
             }
 
-            var filePath = GetMediaCoverPath(seriesId, filename);
+            var filePath = GetMediaCoverPath(seriesId, requestedFilename);
 
             if (filePath == null)
             {
@@ -82,19 +84,21 @@ namespace Sonarr.Api.V3.MediaCovers
 
         private static string GetMediaCoverPathInsideFolder(string appDataPath, int seriesId, string filename)
         {
-            if (appDataPath == null)
+            var safeAppDataPath = !string.IsNullOrWhiteSpace(appDataPath) ? appDataPath : null;
+            if (safeAppDataPath == null)
             {
                 throw new ArgumentNullException(nameof(appDataPath));
             }
 
-            if (filename == null)
+            var safeFilename = !string.IsNullOrWhiteSpace(filename) ? filename : null;
+            if (safeFilename == null)
             {
                 throw new ArgumentNullException(nameof(filename));
             }
 
-            var folderPath = Path.Combine(appDataPath, "MediaCover", seriesId.ToString());
+            var folderPath = Path.Combine(safeAppDataPath, "MediaCover", seriesId.ToString());
             var fullFolderPath = Path.GetFullPath(folderPath);
-            var fullFilePath = Path.GetFullPath(Path.Combine(fullFolderPath, filename));
+            var fullFilePath = Path.GetFullPath(Path.Combine(fullFolderPath, safeFilename));
 
             return IsPathInsideFolder(fullFilePath, fullFolderPath) ? fullFilePath : null;
         }

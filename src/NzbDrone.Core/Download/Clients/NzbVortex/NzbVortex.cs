@@ -279,12 +279,7 @@ namespace NzbDrone.Core.Download.Clients.NzbVortex
                 return OsPath.Null;
             }
 
-            if (outputPath.IsEmpty)
-            {
-                return OsPath.Null;
-            }
-
-            var outputFolder = outputPath.FullPath;
+            var outputFolder = outputPath.ToString();
             if (string.IsNullOrWhiteSpace(outputFolder))
             {
                 return OsPath.Null;
