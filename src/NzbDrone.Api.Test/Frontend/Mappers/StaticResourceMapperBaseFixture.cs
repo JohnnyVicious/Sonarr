@@ -1,4 +1,4 @@
-using System.IO; // NOSONAR S3990: This legacy assembly needs an API-wide CLS migration.
+using System.IO;
 using FluentAssertions;
 using Moq;
 using NLog;
