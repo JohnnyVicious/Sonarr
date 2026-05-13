@@ -4,6 +4,7 @@ using System.Linq;
 using System.Xml;
 using System.Xml.Linq;
 using NzbDrone.Common.Extensions;
+using NzbDrone.Common.Xml;
 
 namespace NzbDrone.Core.Download
 {
@@ -20,8 +21,7 @@ namespace NzbDrone.Core.Download
             {
                 var reader = new StreamReader(new MemoryStream(fileContent));
 
-                using (var xmlTextReader = XmlReader.Create(reader,
-                           new XmlReaderSettings { DtdProcessing = DtdProcessing.Ignore, IgnoreComments = true }))
+                using (var xmlTextReader = XmlReader.Create(reader, SafeXmlReaderSettings.Create()))
                 {
                     var xDoc = XDocument.Load(xmlTextReader);
                     var nzb = xDoc.Root;

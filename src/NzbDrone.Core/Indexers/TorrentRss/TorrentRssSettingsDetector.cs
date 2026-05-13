@@ -6,6 +6,7 @@ using System.Xml.Linq;
 using NLog;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Common.Http;
+using NzbDrone.Common.Xml;
 using NzbDrone.Core.Indexers.Exceptions;
 using NzbDrone.Core.Parser.Model;
 
@@ -19,9 +20,6 @@ namespace NzbDrone.Core.Indexers.TorrentRss
     public class TorrentRssSettingsDetector : ITorrentRssSettingsDetector
     {
         private const long ValidSizeThreshold = 2 * 1024 * 1024;
-        private const long MaxXmlCharactersFromEntities = 1024 * 1024;
-        private const long MaxXmlCharactersInDocument = 16 * 1024 * 1024;
-
         protected readonly Logger _logger;
 
         private readonly IHttpClient _httpClient;
@@ -205,17 +203,7 @@ namespace NzbDrone.Core.Indexers.TorrentRss
             var content = XmlCleaner.ReplaceEntities(response.Content);
             content = XmlCleaner.ReplaceUnicode(content);
 
-            var settings = new XmlReaderSettings
-            {
-                DtdProcessing = DtdProcessing.Parse,
-                ValidationType = ValidationType.None,
-                IgnoreComments = true,
-                XmlResolver = null,
-                MaxCharactersFromEntities = MaxXmlCharactersFromEntities,
-                MaxCharactersInDocument = MaxXmlCharactersInDocument
-            };
-
-            using (var xmlTextReader = XmlReader.Create(new StringReader(content), settings))
+            using (var xmlTextReader = XmlReader.Create(new StringReader(content), SafeXmlReaderSettings.Create(DtdProcessing.Parse)))
             {
                 var document = XDocument.Load(xmlTextReader);
 

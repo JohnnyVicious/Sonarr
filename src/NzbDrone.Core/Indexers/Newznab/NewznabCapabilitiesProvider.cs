@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Xml;
 using System.Xml.Linq;
 using NLog;
@@ -7,6 +8,7 @@ using NzbDrone.Common.Cache;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Common.Http;
 using NzbDrone.Common.Serializer;
+using NzbDrone.Common.Xml;
 using NzbDrone.Core.Indexers.Exceptions;
 
 namespace NzbDrone.Core.Indexers.Newznab
@@ -95,7 +97,12 @@ namespace NzbDrone.Core.Indexers.Newznab
         {
             var capabilities = new NewznabCapabilities();
 
-            var xDoc = XDocument.Parse(response.Content);
+            XDocument xDoc;
+
+            using (var xmlTextReader = XmlReader.Create(new StringReader(response.Content), SafeXmlReaderSettings.Create()))
+            {
+                xDoc = XDocument.Load(xmlTextReader);
+            }
 
             if (xDoc == null)
             {

@@ -7,6 +7,7 @@ using System.Xml;
 using System.Xml.Linq;
 using NLog;
 using NzbDrone.Common.Extensions;
+using NzbDrone.Common.Xml;
 using NzbDrone.Core.ImportLists.Exceptions;
 using NzbDrone.Core.Indexers;
 using NzbDrone.Core.Indexers.Exceptions;
@@ -83,7 +84,7 @@ namespace NzbDrone.Core.ImportLists.Rss
                 var content = XmlCleaner.ReplaceEntities(importListResponse.Content);
                 content = XmlCleaner.ReplaceUnicode(content);
 
-                using var xmlTextReader = XmlReader.Create(new StringReader(content), new XmlReaderSettings { DtdProcessing = DtdProcessing.Ignore, IgnoreComments = true });
+                using var xmlTextReader = XmlReader.Create(new StringReader(content), SafeXmlReaderSettings.Create());
 
                 return XDocument.Load(xmlTextReader);
             }
