@@ -1,4 +1,6 @@
-using FluentAssertions;
+#pragma warning disable SA1005
+using FluentAssertions; //NOSONAR S3990: This legacy assembly needs an API-wide CLS migration.
+#pragma warning restore SA1005
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using NUnit.Framework;
