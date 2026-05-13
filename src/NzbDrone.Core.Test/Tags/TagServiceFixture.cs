@@ -21,11 +21,6 @@ namespace NzbDrone.Core.Test.Tags
     [TestFixture]
     public class TagServiceFixture : CoreTest<TagService>
     {
-        [SetUp]
-        public void Setup()
-        {
-        }
-
         [Test]
         public void should_get_tag_by_id()
         {

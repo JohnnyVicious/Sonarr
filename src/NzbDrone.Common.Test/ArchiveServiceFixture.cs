@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using FluentAssertions;
 using ICSharpCode.SharpZipLib.Zip;
@@ -103,14 +104,13 @@ namespace NzbDrone.Common.Test
             {
                 act();
             }
-            catch
+            catch (Exception)
             {
                 // Throwing is acceptable secure behavior
                 return;
             }
 
             // If it didn't throw, verify the file was NOT written outside the destination
-            var destinationRoot = Path.GetFullPath(_destinationFolder);
             var traversalTarget = Path.GetFullPath(Path.Combine(_destinationFolder, "../../evil.txt"));
             File.Exists(traversalTarget).Should().BeFalse(
                 "ZIP entry with relative traversal should not write outside destination directory");
@@ -127,7 +127,7 @@ namespace NzbDrone.Common.Test
             {
                 act();
             }
-            catch
+            catch (Exception)
             {
                 return;
             }
@@ -148,7 +148,7 @@ namespace NzbDrone.Common.Test
             {
                 act();
             }
-            catch
+            catch (Exception)
             {
                 return;
             }
@@ -168,7 +168,7 @@ namespace NzbDrone.Common.Test
             {
                 act();
             }
-            catch
+            catch (Exception)
             {
                 return;
             }
@@ -189,7 +189,7 @@ namespace NzbDrone.Common.Test
             {
                 act();
             }
-            catch
+            catch (Exception)
             {
                 return;
             }
@@ -215,7 +215,7 @@ namespace NzbDrone.Common.Test
             {
                 act();
             }
-            catch
+            catch (Exception)
             {
                 return;
             }

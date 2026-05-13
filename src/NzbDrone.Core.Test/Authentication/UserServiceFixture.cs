@@ -12,11 +12,6 @@ namespace NzbDrone.Core.Test.Authentication
     [TestFixture]
     public class UserServiceFixture : CoreTest<UserService>
     {
-        [SetUp]
-        public void Setup()
-        {
-        }
-
         [Test]
         public void should_add_user_with_hashed_password()
         {

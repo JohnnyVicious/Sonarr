@@ -183,12 +183,12 @@ namespace NzbDrone.Core.Test.OrganizerTests
             result.IsValid.Should().BeFalse();
         }
 
-        private class TestModel
+        private sealed class TestModel
         {
             public string Value { get; set; }
         }
 
-        private class TestStandardValidator : AbstractValidator<TestModel>
+        private sealed class TestStandardValidator : AbstractValidator<TestModel>
         {
             public TestStandardValidator()
             {
@@ -196,7 +196,7 @@ namespace NzbDrone.Core.Test.OrganizerTests
             }
         }
 
-        private class TestDailyValidator : AbstractValidator<TestModel>
+        private sealed class TestDailyValidator : AbstractValidator<TestModel>
         {
             public TestDailyValidator()
             {
@@ -204,7 +204,7 @@ namespace NzbDrone.Core.Test.OrganizerTests
             }
         }
 
-        private class TestAnimeValidator : AbstractValidator<TestModel>
+        private sealed class TestAnimeValidator : AbstractValidator<TestModel>
         {
             public TestAnimeValidator()
             {
@@ -212,7 +212,7 @@ namespace NzbDrone.Core.Test.OrganizerTests
             }
         }
 
-        private class TestSeriesFolderValidator : AbstractValidator<TestModel>
+        private sealed class TestSeriesFolderValidator : AbstractValidator<TestModel>
         {
             public TestSeriesFolderValidator()
             {
@@ -220,7 +220,7 @@ namespace NzbDrone.Core.Test.OrganizerTests
             }
         }
 
-        private class TestSeasonFolderValidator : AbstractValidator<TestModel>
+        private sealed class TestSeasonFolderValidator : AbstractValidator<TestModel>
         {
             public TestSeasonFolderValidator()
             {
@@ -228,7 +228,7 @@ namespace NzbDrone.Core.Test.OrganizerTests
             }
         }
 
-        private class TestColonValidator : AbstractValidator<TestModel>
+        private sealed class TestColonValidator : AbstractValidator<TestModel>
         {
             public TestColonValidator()
             {

@@ -285,7 +285,7 @@ namespace NzbDrone.Core.Test.Backup
 
             Mocker.GetMock<IDiskProvider>()
                 .Setup(s => s.FileGetLastWrite(backupFilePath))
-                .Returns(new DateTime(2024, 1, 1));
+                .Returns(new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc));
 
             var result = Subject.GetBackups();
 
@@ -318,7 +318,7 @@ namespace NzbDrone.Core.Test.Backup
 
             Mocker.GetMock<IDiskProvider>()
                 .Setup(s => s.FileGetLastWrite(It.IsAny<string>()))
-                .Returns(new DateTime(2024, 1, 1));
+                .Returns(new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc));
 
             var result = Subject.GetBackups();
 

@@ -42,7 +42,7 @@ namespace NzbDrone.Core.Test.Profiles.Qualities
                   .Setup(s => s.Insert(_profile))
                   .Returns(_profile);
 
-            var result = Subject.Add(_profile);
+            Subject.Add(_profile);
 
             Mocker.GetMock<IQualityProfileRepository>()
                   .Verify(v => v.Insert(_profile), Times.Once());
