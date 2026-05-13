@@ -1,8 +1,7 @@
-using System;
 using System.Xml;
 
 #if !NET10_0_OR_GREATER
-[assembly: CLSCompliant(false)]
+[assembly: System.CLSCompliant(false)]
 #endif
 
 namespace NzbDrone.Common.Xml

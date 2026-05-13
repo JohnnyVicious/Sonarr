@@ -1,4 +1,3 @@
-using System;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
@@ -9,7 +8,7 @@ using NzbDrone.Test.Common;
 using Sonarr.Api.V3.MediaCovers;
 
 #if !NET10_0_OR_GREATER
-[assembly: CLSCompliant(false)]
+[assembly: System.CLSCompliant(false)]
 #endif
 
 namespace NzbDrone.Api.Test.v3.MediaCovers

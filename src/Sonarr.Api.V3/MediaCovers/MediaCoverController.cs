@@ -9,7 +9,7 @@ using NzbDrone.Common.Extensions;
 using Sonarr.Http;
 
 #if !NET10_0_OR_GREATER
-[assembly: CLSCompliant(false)]
+[assembly: System.CLSCompliant(false)]
 #endif
 
 namespace Sonarr.Api.V3.MediaCovers
