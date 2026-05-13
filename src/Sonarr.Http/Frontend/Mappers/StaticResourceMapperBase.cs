@@ -28,13 +28,24 @@ namespace Sonarr.Http.Frontend.Mappers
             _caseSensitive = RuntimeInfo.IsProduction ? DiskProviderBase.PathStringComparison : StringComparison.OrdinalIgnoreCase;
         }
 
-        public abstract string Map(string resourceUrl);
+        protected abstract string FolderPath { get; }
+        protected abstract string MapPath(string resourceUrl);
 
         public abstract bool CanHandle(string resourceUrl);
+
+        public string Map(string resourceUrl)
+        {
+            return GetMappedPathInsideFolder(MapPath(resourceUrl));
+        }
 
         public Task<IActionResult> GetResponse(HttpContext context, string resourceUrl)
         {
             var filePath = Map(resourceUrl);
+
+            if (filePath == null)
+            {
+                return Task.FromResult<IActionResult>(null);
+            }
 
             if (_diskProvider.FileExists(filePath, _caseSensitive))
             {
@@ -57,6 +68,46 @@ namespace Sonarr.Http.Frontend.Mappers
         protected virtual Stream GetContentStream(HttpContext context, string filePath)
         {
             return File.OpenRead(filePath);
+        }
+
+        protected bool IsPathInsideFolder(string filePath)
+        {
+            return GetMappedPathInsideFolder(filePath) != null;
+        }
+
+        private string GetMappedPathInsideFolder(string filePath)
+        {
+            if (string.IsNullOrWhiteSpace(filePath))
+            {
+                return null;
+            }
+
+            try
+            {
+                var fullFilePath = Path.GetFullPath(filePath);
+                var fullFolderPath = EnsureTrailingDirectorySeparator(Path.GetFullPath(FolderPath));
+
+                return fullFilePath.StartsWith(fullFolderPath, _caseSensitive) ? fullFilePath : null;
+            }
+            catch (Exception ex) when (ex is ArgumentException ||
+                                       ex is ArgumentNullException ||
+                                       ex is NotSupportedException ||
+                                       ex is PathTooLongException ||
+                                       ex is IOException ||
+                                       ex is UnauthorizedAccessException)
+            {
+                return null;
+            }
+        }
+
+        private static string EnsureTrailingDirectorySeparator(string path)
+        {
+            if (path.EndsWith(Path.DirectorySeparatorChar) || path.EndsWith(Path.AltDirectorySeparatorChar))
+            {
+                return path;
+            }
+
+            return path + Path.DirectorySeparatorChar;
         }
     }
 }
