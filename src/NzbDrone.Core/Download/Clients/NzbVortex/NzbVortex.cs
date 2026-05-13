@@ -256,7 +256,103 @@ namespace NzbDrone.Core.Download.Clients.NzbVortex
                 _logger.Debug(message);
             }
 
-            return new OsPath(Path.Combine(outputPath.FullPath, filesResponse.First().FileName));
+            var fileName = filesResponse.First().FileName;
+            var filePath = GetSafeOutputFilePath(outputPath, fileName);
+
+            if (filePath == OsPath.Null)
+            {
+                var message = $"NzbVortex returned file path outside the download folder: {fileName}";
+
+                queueItem.Status = DownloadItemStatus.Warning;
+                queueItem.Message = message;
+
+                _logger.Debug(message);
+            }
+
+            return filePath;
+        }
+
+        private OsPath GetSafeOutputFilePath(OsPath outputPath, string fileName)
+        {
+            if (string.IsNullOrWhiteSpace(fileName))
+            {
+                return OsPath.Null;
+            }
+
+            // nosemgrep: codacy.csharp.security.null-dereference -- OsPath is a non-nullable value type.
+            var outputFolder = outputPath.ToString();
+            if (string.IsNullOrWhiteSpace(outputFolder))
+            {
+                return OsPath.Null;
+            }
+
+            try
+            {
+                return GetOutputFilePathInsideFolder(outputFolder, fileName);
+            }
+            catch (Exception ex) when (IsPathResolutionException(ex))
+            {
+                return OsPath.Null;
+            }
+        }
+
+        private static OsPath GetOutputFilePathInsideFolder(string outputFolder, string fileName)
+        {
+            if (outputFolder == null)
+            {
+                throw new ArgumentNullException(nameof(outputFolder));
+            }
+
+            if (fileName == null)
+            {
+                throw new ArgumentNullException(nameof(fileName));
+            }
+
+            var fullOutputPath = Path.GetFullPath(outputFolder);
+            var fullFilePath = Path.GetFullPath(Path.Combine(fullOutputPath, fileName));
+
+            return IsPathInsideFolder(fullFilePath, fullOutputPath) ? new OsPath(fullFilePath) : OsPath.Null;
+        }
+
+        private static bool IsPathInsideFolder(string fullFilePath, string folderPath)
+        {
+            if (fullFilePath == null)
+            {
+                throw new ArgumentNullException(nameof(fullFilePath));
+            }
+
+            if (folderPath == null)
+            {
+                throw new ArgumentNullException(nameof(folderPath));
+            }
+
+            var folderPathWithSeparator = EnsureTrailingDirectorySeparator(folderPath);
+            return fullFilePath.StartsWith(folderPathWithSeparator, DiskProviderBase.PathStringComparison);
+        }
+
+        private static bool IsPathResolutionException(Exception ex)
+        {
+            return ex is ArgumentException ||
+                   ex is ArgumentNullException ||
+                   ex is NotSupportedException ||
+                   ex is PathTooLongException ||
+                   ex is IOException ||
+                   ex is UnauthorizedAccessException;
+        }
+
+        private static string EnsureTrailingDirectorySeparator(string path)
+        {
+            if (path == null)
+            {
+                throw new ArgumentNullException(nameof(path));
+            }
+
+            if (path.EndsWith(Path.DirectorySeparatorChar) || path.EndsWith(Path.AltDirectorySeparatorChar))
+            {
+                return path;
+            }
+
+            return path + Path.DirectorySeparatorChar;
         }
     }
 }

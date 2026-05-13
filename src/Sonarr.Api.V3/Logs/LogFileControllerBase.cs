@@ -57,6 +57,11 @@ namespace Sonarr.Api.V3.Logs
         {
             LogManager.Flush();
 
+            if (filename != Path.GetFileName(filename))
+            {
+                return NotFound();
+            }
+
             var filePath = GetLogFilePath(filename);
 
             if (!_diskProvider.FileExists(filePath))
