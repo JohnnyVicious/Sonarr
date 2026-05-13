@@ -29,6 +29,16 @@ namespace NzbDrone.Common
 
         public void Extract(string compressedFile, string destination)
         {
+            if (compressedFile == null)
+            {
+                throw new ArgumentNullException(nameof(compressedFile));
+            }
+
+            if (destination == null)
+            {
+                throw new ArgumentNullException(nameof(destination));
+            }
+
             _logger.Debug("Extracting archive [{0}] to [{1}]", compressedFile, destination);
 
             if (compressedFile.EndsWith(".zip", StringComparison.InvariantCultureIgnoreCase))
@@ -61,6 +71,16 @@ namespace NzbDrone.Common
 
         private void ExtractZip(string compressedFile, string destination)
         {
+            if (compressedFile == null)
+            {
+                throw new ArgumentNullException(nameof(compressedFile));
+            }
+
+            if (destination == null)
+            {
+                throw new ArgumentNullException(nameof(destination));
+            }
+
             Directory.CreateDirectory(destination);
 
             using (var fileStream = File.OpenRead(compressedFile))
@@ -76,6 +96,11 @@ namespace NzbDrone.Common
 
                 foreach (ZipEntry zipEntry in zipFile)
                 {
+                    if (zipEntry == null)
+                    {
+                        continue;
+                    }
+
                     var entryFileName = zipEntry.Name;
                     var fullZipToPath = GetSafeExtractionPath(destination, entryFileName);
 
@@ -98,7 +123,7 @@ namespace NzbDrone.Common
 
                     // Manipulate the output filename here as desired.
                     var directoryName = Path.GetDirectoryName(fullZipToPath);
-                    if (directoryName.Length > 0)
+                    if (!string.IsNullOrEmpty(directoryName))
                     {
                         Directory.CreateDirectory(directoryName);
                     }
@@ -116,6 +141,16 @@ namespace NzbDrone.Common
 
         private void ExtractTgz(string compressedFile, string destination)
         {
+            if (compressedFile == null)
+            {
+                throw new ArgumentNullException(nameof(compressedFile));
+            }
+
+            if (destination == null)
+            {
+                throw new ArgumentNullException(nameof(destination));
+            }
+
             Directory.CreateDirectory(destination);
 
             using (Stream inStream = File.OpenRead(compressedFile))
@@ -139,7 +174,7 @@ namespace NzbDrone.Common
                     }
 
                     var directoryName = Path.GetDirectoryName(fullPath);
-                    if (directoryName.Length > 0)
+                    if (!string.IsNullOrEmpty(directoryName))
                     {
                         Directory.CreateDirectory(directoryName);
                     }
@@ -154,41 +189,77 @@ namespace NzbDrone.Common
 
         private static string GetSafeExtractionPath(string destination, string entryName)
         {
+            if (destination == null)
+            {
+                throw new ArgumentNullException(nameof(destination));
+            }
+
+            if (entryName == null)
+            {
+                throw new IOException("Archive entry has an invalid file name.");
+            }
+
             if (string.IsNullOrWhiteSpace(entryName))
             {
                 throw new IOException("Archive entry has an invalid file name.");
             }
 
-            var normalizedEntryName = entryName.Replace('\\', '/');
-
-            if (Path.IsPathRooted(entryName) ||
-                normalizedEntryName.StartsWith("/", StringComparison.Ordinal) ||
-                normalizedEntryName.Contains(':'))
-            {
-                throw new IOException($"Archive entry '{entryName}' targets a path outside the extraction folder.");
-            }
-
-            var pathSegments = normalizedEntryName.Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
-            if (!pathSegments.Any() || pathSegments.Any(s => s == "." || s == ".."))
-            {
-                throw new IOException($"Archive entry '{entryName}' targets a path outside the extraction folder.");
-            }
-
+            var pathSegments = GetRelativePathSegments(entryName);
             var destinationPath = Path.GetFullPath(destination);
-            var destinationWithSeparator = EnsureTrailingDirectorySeparator(destinationPath);
             var combinedPath = Path.Combine(new[] { destinationPath }.Concat(pathSegments).ToArray());
             var fullPath = Path.GetFullPath(combinedPath);
 
-            if (!fullPath.StartsWith(destinationWithSeparator, DiskProviderBase.PathStringComparison))
+            if (!IsPathInsideFolder(fullPath, destinationPath))
             {
-                throw new IOException($"Archive entry '{entryName}' targets a path outside the extraction folder.");
+                ThrowUnsafeArchiveEntry(entryName);
             }
 
             return fullPath;
         }
 
+        private static string[] GetRelativePathSegments(string entryName)
+        {
+            var normalizedEntryName = entryName.Replace('\\', '/');
+
+            if (IsRootedArchiveEntry(entryName, normalizedEntryName))
+            {
+                ThrowUnsafeArchiveEntry(entryName);
+            }
+
+            var pathSegments = normalizedEntryName.Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
+            if (pathSegments.Length == 0 || pathSegments.Any(s => s == "." || s == ".."))
+            {
+                ThrowUnsafeArchiveEntry(entryName);
+            }
+
+            return pathSegments;
+        }
+
+        private static bool IsRootedArchiveEntry(string entryName, string normalizedEntryName)
+        {
+            return Path.IsPathRooted(entryName) ||
+                   normalizedEntryName.StartsWith("/", StringComparison.Ordinal) ||
+                   normalizedEntryName.Contains(':');
+        }
+
+        private static bool IsPathInsideFolder(string fullPath, string folderPath)
+        {
+            var folderWithSeparator = EnsureTrailingDirectorySeparator(folderPath);
+            return fullPath.StartsWith(folderWithSeparator, DiskProviderBase.PathStringComparison);
+        }
+
+        private static void ThrowUnsafeArchiveEntry(string entryName)
+        {
+            throw new IOException($"Archive entry '{entryName}' targets a path outside the extraction folder.");
+        }
+
         private static string EnsureTrailingDirectorySeparator(string path)
         {
+            if (path == null)
+            {
+                throw new ArgumentNullException(nameof(path));
+            }
+
             if (path.EndsWith(Path.DirectorySeparatorChar) || path.EndsWith(Path.AltDirectorySeparatorChar))
             {
                 return path;
@@ -199,6 +270,11 @@ namespace NzbDrone.Common
 
         private static bool IsZipSymlink(ZipEntry zipEntry)
         {
+            if (zipEntry == null)
+            {
+                throw new ArgumentNullException(nameof(zipEntry));
+            }
+
             const int unixHostSystem = 3;
             const int unixFileTypeMask = 0xF000;
             const int unixSymlinkFileType = 0xA000;
@@ -215,6 +291,11 @@ namespace NzbDrone.Common
 
         private static bool IsRegularTarEntry(TarEntry tarEntry)
         {
+            if (tarEntry == null || tarEntry.TarHeader == null)
+            {
+                return false;
+            }
+
             var typeFlag = tarEntry.TarHeader.TypeFlag;
 
             return typeFlag == TarHeader.LF_OLDNORM ||
