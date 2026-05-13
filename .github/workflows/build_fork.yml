@@ -148,8 +148,8 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           images: |
-            ghcr.io/${{ github.repository_owner }}/sonarr
-            ${{ vars.DOCKERHUB_USERNAME != '' && format('{0}/sonarr', vars.DOCKERHUB_USERNAME) || '' }}
+            ghcr.io/${{ github.repository_owner }}/sonarr-xt
+            ${{ vars.DOCKERHUB_USERNAME != '' && format('{0}/sonarr-xt', vars.DOCKERHUB_USERNAME) || '' }}
           tags: |
             type=raw,value=${{ needs.build.outputs.version }}
             type=raw,value=latest
