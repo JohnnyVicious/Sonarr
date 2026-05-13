@@ -1,9 +1,9 @@
 ﻿using System.IO;
+using System.IO.Compression;
 using System.Text;
 using FluentAssertions;
 using ICSharpCode.SharpZipLib.GZip;
 using ICSharpCode.SharpZipLib.Tar;
-using ICSharpCode.SharpZipLib.Zip;
 using NUnit.Framework;
 using NzbDrone.Common;
 using NzbDrone.Common.EnvironmentInfo;
@@ -85,19 +85,17 @@ namespace NzbDrone.Core.Test.ProviderTests.DiskProviderTests
         private string CreateZipArchive(string entryName, string contents)
         {
             var path = GetTempFilePath() + ".zip";
-            var bytes = Encoding.UTF8.GetBytes(contents);
 
             using (var fileStream = File.Create(path))
-            using (var zipStream = new ZipOutputStream(fileStream))
+            using (var zipArchive = new ZipArchive(fileStream, ZipArchiveMode.Create))
             {
-                var zipEntry = new ZipEntry(entryName)
-                {
-                    Size = bytes.Length
-                };
+                var zipEntry = zipArchive.CreateEntry(entryName);
 
-                zipStream.PutNextEntry(zipEntry);
-                zipStream.Write(bytes, 0, bytes.Length);
-                zipStream.CloseEntry();
+                using (var entryStream = zipEntry.Open())
+                using (var writer = new StreamWriter(entryStream, Encoding.UTF8))
+                {
+                    writer.Write(contents);
+                }
             }
 
             return path;
