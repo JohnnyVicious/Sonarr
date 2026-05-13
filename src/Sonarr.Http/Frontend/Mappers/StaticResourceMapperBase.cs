@@ -45,6 +45,11 @@ namespace Sonarr.Http.Frontend.Mappers
 
         public Task<IActionResult> GetResponse(HttpContext context, string resourcePath)
         {
+            if (resourcePath == null)
+            {
+                return Task.FromResult<IActionResult>(null);
+            }
+
             var filePath = Map(resourcePath);
 
             if (filePath == null)
@@ -77,6 +82,11 @@ namespace Sonarr.Http.Frontend.Mappers
 
         protected bool IsPathInsideFolder(string filePath)
         {
+            if (filePath == null)
+            {
+                return false;
+            }
+
             return GetMappedPathInsideFolder(filePath) != null;
         }
 

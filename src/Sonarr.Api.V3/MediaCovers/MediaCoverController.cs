@@ -82,6 +82,16 @@ namespace Sonarr.Api.V3.MediaCovers
 
         private static string GetMediaCoverPathInsideFolder(string appDataPath, int seriesId, string filename)
         {
+            if (appDataPath == null)
+            {
+                throw new ArgumentNullException(nameof(appDataPath));
+            }
+
+            if (filename == null)
+            {
+                throw new ArgumentNullException(nameof(filename));
+            }
+
             var folderPath = Path.Combine(appDataPath, "MediaCover", seriesId.ToString());
             var fullFolderPath = Path.GetFullPath(folderPath);
             var fullFilePath = Path.GetFullPath(Path.Combine(fullFolderPath, filename));
@@ -91,6 +101,16 @@ namespace Sonarr.Api.V3.MediaCovers
 
         private static bool IsPathInsideFolder(string fullFilePath, string folderPath)
         {
+            if (fullFilePath == null)
+            {
+                throw new ArgumentNullException(nameof(fullFilePath));
+            }
+
+            if (folderPath == null)
+            {
+                throw new ArgumentNullException(nameof(folderPath));
+            }
+
             var folderPathWithSeparator = EnsureTrailingDirectorySeparator(folderPath);
             return fullFilePath.StartsWith(folderPathWithSeparator, DiskProviderBase.PathStringComparison);
         }

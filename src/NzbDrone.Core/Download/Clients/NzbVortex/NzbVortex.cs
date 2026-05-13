@@ -274,12 +274,12 @@ namespace NzbDrone.Core.Download.Clients.NzbVortex
 
         private OsPath GetSafeOutputFilePath(OsPath outputPath, string fileName)
         {
-            if (fileName == null)
+            if (string.IsNullOrWhiteSpace(fileName))
             {
                 return OsPath.Null;
             }
 
-            if (string.IsNullOrWhiteSpace(fileName) || outputPath.IsEmpty)
+            if (outputPath.IsEmpty)
             {
                 return OsPath.Null;
             }
@@ -302,6 +302,16 @@ namespace NzbDrone.Core.Download.Clients.NzbVortex
 
         private static OsPath GetOutputFilePathInsideFolder(string outputFolder, string fileName)
         {
+            if (outputFolder == null)
+            {
+                throw new ArgumentNullException(nameof(outputFolder));
+            }
+
+            if (fileName == null)
+            {
+                throw new ArgumentNullException(nameof(fileName));
+            }
+
             var fullOutputPath = Path.GetFullPath(outputFolder);
             var fullFilePath = Path.GetFullPath(Path.Combine(fullOutputPath, fileName));
 
@@ -310,6 +320,16 @@ namespace NzbDrone.Core.Download.Clients.NzbVortex
 
         private static bool IsPathInsideFolder(string fullFilePath, string folderPath)
         {
+            if (fullFilePath == null)
+            {
+                throw new ArgumentNullException(nameof(fullFilePath));
+            }
+
+            if (folderPath == null)
+            {
+                throw new ArgumentNullException(nameof(folderPath));
+            }
+
             var folderPathWithSeparator = EnsureTrailingDirectorySeparator(folderPath);
             return fullFilePath.StartsWith(folderPathWithSeparator, DiskProviderBase.PathStringComparison);
         }

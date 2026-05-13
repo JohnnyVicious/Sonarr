@@ -219,6 +219,11 @@ namespace NzbDrone.Common
 
         private static string[] GetRelativePathSegments(string entryName)
         {
+            if (entryName == null)
+            {
+                throw new ArgumentNullException(nameof(entryName));
+            }
+
             var normalizedEntryName = entryName.Replace('\\', '/');
 
             if (IsRootedArchiveEntry(entryName, normalizedEntryName))
@@ -237,6 +242,16 @@ namespace NzbDrone.Common
 
         private static bool IsRootedArchiveEntry(string entryName, string normalizedEntryName)
         {
+            if (entryName == null)
+            {
+                throw new ArgumentNullException(nameof(entryName));
+            }
+
+            if (normalizedEntryName == null)
+            {
+                throw new ArgumentNullException(nameof(normalizedEntryName));
+            }
+
             return Path.IsPathRooted(entryName) ||
                    normalizedEntryName.StartsWith("/", StringComparison.Ordinal) ||
                    normalizedEntryName.Contains(':');
@@ -244,6 +259,16 @@ namespace NzbDrone.Common
 
         private static bool IsPathInsideFolder(string fullPath, string folderPath)
         {
+            if (fullPath == null)
+            {
+                throw new ArgumentNullException(nameof(fullPath));
+            }
+
+            if (folderPath == null)
+            {
+                throw new ArgumentNullException(nameof(folderPath));
+            }
+
             var folderWithSeparator = EnsureTrailingDirectorySeparator(folderPath);
             return fullPath.StartsWith(folderWithSeparator, DiskProviderBase.PathStringComparison);
         }
@@ -291,12 +316,18 @@ namespace NzbDrone.Common
 
         private static bool IsRegularTarEntry(TarEntry tarEntry)
         {
-            if (tarEntry == null || tarEntry.TarHeader == null)
+            if (tarEntry == null)
             {
                 return false;
             }
 
-            var typeFlag = tarEntry.TarHeader.TypeFlag;
+            var tarHeader = tarEntry.TarHeader;
+            if (tarHeader == null)
+            {
+                return false;
+            }
+
+            var typeFlag = tarHeader.TypeFlag;
 
             return typeFlag == TarHeader.LF_OLDNORM ||
                    typeFlag == TarHeader.LF_NORMAL;
