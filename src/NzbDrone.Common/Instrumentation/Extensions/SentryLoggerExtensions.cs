@@ -1,11 +1,9 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using NLog;
 
 namespace NzbDrone.Common.Instrumentation.Extensions
 {
-    [CLSCompliant(false)]
     public static class SentryLoggerExtensions
     {
         public static readonly Logger SentryLogger = LogManager.GetLogger("Sentry");

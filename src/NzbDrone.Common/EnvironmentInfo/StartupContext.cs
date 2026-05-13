@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 
 namespace NzbDrone.Common.EnvironmentInfo
@@ -15,7 +14,6 @@ namespace NzbDrone.Common.EnvironmentInfo
         string PreservedArguments { get; }
     }
 
-    [CLSCompliant(false)]
     public class StartupContext : IStartupContext
     {
         public const string APPDATA = "data";

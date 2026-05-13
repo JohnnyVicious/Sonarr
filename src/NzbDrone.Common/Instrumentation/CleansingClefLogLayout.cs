@@ -1,4 +1,3 @@
-using System;
 using System.Text;
 using NLog;
 using NLog.Layouts.ClefJsonLayout;
@@ -6,7 +5,6 @@ using NzbDrone.Common.EnvironmentInfo;
 
 namespace NzbDrone.Common.Instrumentation;
 
-[CLSCompliant(false)]
 public class CleansingClefLogLayout : CompactJsonLayout
 {
     protected override void RenderFormattedMessage(LogEventInfo logEvent, StringBuilder target)
