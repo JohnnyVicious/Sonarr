@@ -2,6 +2,7 @@ using System;
 
 namespace NzbDrone.Common.TPL
 {
+    [CLSCompliant(false)]
     public class Debouncer
     {
         protected readonly Action _action;
