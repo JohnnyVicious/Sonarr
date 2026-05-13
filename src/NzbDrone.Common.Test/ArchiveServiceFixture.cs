@@ -1,9 +1,7 @@
-using System;
 using System.IO;
 using FluentAssertions;
 using ICSharpCode.SharpZipLib.Zip;
 using NUnit.Framework;
-using NzbDrone.Common;
 using NzbDrone.Test.Common;
 
 namespace NzbDrone.Common.Test
