@@ -3,7 +3,10 @@ name: PR Test Gate
 on:
   pull_request:
     branches:
+      - develop
+      - main
       - v5-custom
+      - v5-develop
     paths-ignore:
       - "src/NzbDrone.Core/Localization/Core/**"
       - "src/Sonarr.Api.*/openapi.json"
