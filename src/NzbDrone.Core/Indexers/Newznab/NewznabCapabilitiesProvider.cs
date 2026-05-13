@@ -95,11 +95,22 @@ namespace NzbDrone.Core.Indexers.Newznab
 
         private NewznabCapabilities ParseCapabilities(HttpResponse response)
         {
+            if (response == null)
+            {
+                throw new ArgumentNullException(nameof(response));
+            }
+
+            var content = response.Content;
+            if (content == null)
+            {
+                throw new XmlException("Invalid XML").WithData(response);
+            }
+
             var capabilities = new NewznabCapabilities();
 
             XDocument xDoc;
 
-            using (var xmlTextReader = XmlReader.Create(new StringReader(response.Content), SafeXmlReaderSettings.Create()))
+            using (var xmlTextReader = XmlReader.Create(new StringReader(content), SafeXmlReaderSettings.Create()))
             {
                 xDoc = XDocument.Load(xmlTextReader);
             }
