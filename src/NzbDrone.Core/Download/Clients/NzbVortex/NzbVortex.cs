@@ -256,7 +256,56 @@ namespace NzbDrone.Core.Download.Clients.NzbVortex
                 _logger.Debug(message);
             }
 
-            return new OsPath(Path.Combine(outputPath.FullPath, filesResponse.First().FileName));
+            var fileName = filesResponse.First().FileName;
+            var filePath = GetSafeOutputFilePath(outputPath, fileName);
+
+            if (filePath == OsPath.Null)
+            {
+                var message = $"NzbVortex returned file path outside the download folder: {fileName}";
+
+                queueItem.Status = DownloadItemStatus.Warning;
+                queueItem.Message = message;
+
+                _logger.Debug(message);
+            }
+
+            return filePath;
+        }
+
+        private OsPath GetSafeOutputFilePath(OsPath outputPath, string fileName)
+        {
+            if (fileName.IsNullOrWhiteSpace() || outputPath.IsEmpty)
+            {
+                return OsPath.Null;
+            }
+
+            try
+            {
+                var fullOutputPath = Path.GetFullPath(outputPath.FullPath);
+                var outputPathWithSeparator = EnsureTrailingDirectorySeparator(fullOutputPath);
+                var fullFilePath = Path.GetFullPath(Path.Combine(fullOutputPath, fileName));
+
+                return fullFilePath.StartsWith(outputPathWithSeparator, DiskProviderBase.PathStringComparison) ? new OsPath(fullFilePath) : OsPath.Null;
+            }
+            catch (Exception ex) when (ex is ArgumentException ||
+                                       ex is ArgumentNullException ||
+                                       ex is NotSupportedException ||
+                                       ex is PathTooLongException ||
+                                       ex is IOException ||
+                                       ex is UnauthorizedAccessException)
+            {
+                return OsPath.Null;
+            }
+        }
+
+        private static string EnsureTrailingDirectorySeparator(string path)
+        {
+            if (path.EndsWith(Path.DirectorySeparatorChar) || path.EndsWith(Path.AltDirectorySeparatorChar))
+            {
+                return path;
+            }
+
+            return path + Path.DirectorySeparatorChar;
         }
     }
 }
