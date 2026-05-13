@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.IO.Compression;
 using System.Text;
 using FluentAssertions;
@@ -46,6 +47,11 @@ namespace NzbDrone.Core.Test.ProviderTests.DiskProviderTests
         [TestCase(@"folder\..\escape.txt")]
         public void should_reject_zip_entries_outside_destination(string entryName)
         {
+            if (entryName == null)
+            {
+                throw new ArgumentNullException(nameof(entryName));
+            }
+
             var destination = Path.Combine(TempFolder, "restore");
             var archive = CreateZipArchive(entryName, "blocked");
 
@@ -73,6 +79,11 @@ namespace NzbDrone.Core.Test.ProviderTests.DiskProviderTests
         [TestCase(@"folder\..\escape.txt")]
         public void should_reject_tgz_entries_outside_destination(string entryName)
         {
+            if (entryName == null)
+            {
+                throw new ArgumentNullException(nameof(entryName));
+            }
+
             var destination = Path.Combine(TempFolder, "restore");
             var archive = CreateTgzArchive(entryName, "blocked");
 
@@ -84,6 +95,16 @@ namespace NzbDrone.Core.Test.ProviderTests.DiskProviderTests
 
         private string CreateZipArchive(string entryName, string contents)
         {
+            if (entryName == null)
+            {
+                throw new ArgumentNullException(nameof(entryName));
+            }
+
+            if (contents == null)
+            {
+                throw new ArgumentNullException(nameof(contents));
+            }
+
             var path = GetTempFilePath() + ".zip";
 
             using (var fileStream = File.Create(path))
@@ -103,6 +124,16 @@ namespace NzbDrone.Core.Test.ProviderTests.DiskProviderTests
 
         private string CreateTgzArchive(string entryName, string contents)
         {
+            if (entryName == null)
+            {
+                throw new ArgumentNullException(nameof(entryName));
+            }
+
+            if (contents == null)
+            {
+                throw new ArgumentNullException(nameof(contents));
+            }
+
             var path = GetTempFilePath() + ".tar.gz";
             var bytes = Encoding.UTF8.GetBytes(contents);
 
