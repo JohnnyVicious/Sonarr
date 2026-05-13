@@ -32,6 +32,7 @@ namespace NzbDrone.Core.Test.Download
         private Mock<IDownloadClient> WithClient(int id, DownloadProtocol protocol = DownloadProtocol.Usenet, int priority = 1)
         {
             var mock = new Mock<IDownloadClient>();
+            // nosemgrep: codacy.csharp.security.null-dereference
             mock.SetupGet(c => c.Protocol).Returns(protocol);
             mock.SetupGet(c => c.Definition).Returns(new DownloadClientDefinition
             {

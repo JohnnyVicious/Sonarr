@@ -29,6 +29,7 @@ namespace NzbDrone.Common.Test
                 var entry = new ZipEntry(entryName);
                 zipOutput.PutNextEntry(entry);
 
+                // nosemgrep: codacy.csharp.security.null-dereference
                 var bytes = System.Text.Encoding.UTF8.GetBytes(content);
                 zipOutput.Write(bytes, 0, bytes.Length);
                 zipOutput.CloseEntry();
@@ -104,7 +105,7 @@ namespace NzbDrone.Common.Test
             {
                 act();
             }
-            catch (Exception)
+            catch (Exception) // NOSONAR
             {
                 // Throwing is acceptable secure behavior
                 return;
@@ -132,14 +133,14 @@ namespace NzbDrone.Common.Test
                 return;
             }
 
-            File.Exists("/tmp/evil.txt").Should().BeFalse(
+            File.Exists("/tmp/evil.txt").Should().BeFalse( // NOSONAR
                 "ZIP entry with deep traversal should not write outside destination directory");
         }
 
         [Test]
         public void should_not_write_outside_destination_with_absolute_path()
         {
-            var absolutePath = "/tmp/sonarr_test_evil_absolute.txt";
+            var absolutePath = "/tmp/sonarr_test_evil_absolute.txt"; // NOSONAR
             var zipPath = CreateZipWithEntry(absolutePath, "malicious");
 
             var act = () => Subject.Extract(zipPath, _destinationFolder);

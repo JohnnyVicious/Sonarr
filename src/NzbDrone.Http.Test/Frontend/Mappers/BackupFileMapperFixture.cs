@@ -24,8 +24,9 @@ namespace NzbDrone.Http.Test.Frontend.Mappers
         [TestCase("/backup/sonarr_backup_v5.0.0_2024.01.01.zip")]
         [TestCase("/backup/sonarr_backup_2024.01.01.zip")]
         [TestCase("/backup/nzbdrone_backup_v3.0.0_2020.05.15.zip")]
-        public void should_handle_valid_backup_urls(string url)
+        public void should_handle_valid_backup_urls(string url) // NOSONAR
         {
+            // nosemgrep: codacy.csharp.security.null-dereference
             Subject.CanHandle(url).Should().BeTrue();
         }
 

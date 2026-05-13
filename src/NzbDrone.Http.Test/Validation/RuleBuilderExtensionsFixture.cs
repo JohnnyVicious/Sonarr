@@ -12,7 +12,7 @@ namespace NzbDrone.Http.Test.Validation
         public class TestResource
         {
             public int Id { get; set; }
-            public string Url { get; set; }
+            public string Url { get; set; } // NOSONAR
             public string Name { get; set; }
             public int RssSyncInterval { get; set; }
         }

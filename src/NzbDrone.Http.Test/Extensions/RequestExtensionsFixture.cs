@@ -95,9 +95,9 @@ namespace NzbDrone.Http.Test.Extensions
         public void get_remote_ip_should_return_ip_from_context()
         {
             var context = new DefaultHttpContext();
-            context.Connection.RemoteIpAddress = IPAddress.Parse("192.168.1.100");
+            context.Connection.RemoteIpAddress = IPAddress.Parse("192.168.1.100"); // NOSONAR
 
-            context.GetRemoteIP().Should().Be("192.168.1.100");
+            context.GetRemoteIP().Should().Be("192.168.1.100"); // NOSONAR
         }
 
         [Test]
@@ -110,9 +110,9 @@ namespace NzbDrone.Http.Test.Extensions
         public void get_remote_ip_should_map_ipv6_to_ipv4()
         {
             var context = new DefaultHttpContext();
-            context.Connection.RemoteIpAddress = IPAddress.Parse("192.168.1.1").MapToIPv6();
+            context.Connection.RemoteIpAddress = IPAddress.Parse("192.168.1.1").MapToIPv6(); // NOSONAR
 
-            context.GetRemoteIP().Should().Be("192.168.1.1");
+            context.GetRemoteIP().Should().Be("192.168.1.1"); // NOSONAR
         }
 
         [Test]

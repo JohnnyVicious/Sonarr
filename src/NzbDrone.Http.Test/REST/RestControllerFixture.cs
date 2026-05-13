@@ -17,11 +17,13 @@ namespace NzbDrone.Http.Test.REST
         {
             public new void ValidateId(int id)
             {
+                // nosemgrep: codacy.csharp.security.null-dereference
                 base.ValidateId(id);
             }
 
-            public new void ValidateResource(TestResource resource, bool validateId = false, bool skipValidate = false, bool skipSharedValidate = false)
+            public new void ValidateResource(TestResource resource, bool validateId = false, bool skipValidate = false, bool skipSharedValidate = false) // NOSONAR
             {
+                // nosemgrep: codacy.csharp.security.null-dereference
                 base.ValidateResource(resource, validateId, skipValidate, skipSharedValidate);
             }
         }

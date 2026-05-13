@@ -27,8 +27,9 @@ namespace NzbDrone.Http.Test.Frontend.Mappers
 
         [TestCase("/content/styles.css")]
         [TestCase("/content/images/logo.png")]
-        public void should_handle_content_urls(string url)
+        public void should_handle_content_urls(string url) // NOSONAR
         {
+            // nosemgrep: codacy.csharp.security.null-dereference
             Subject.CanHandle(url).Should().BeTrue();
         }
 

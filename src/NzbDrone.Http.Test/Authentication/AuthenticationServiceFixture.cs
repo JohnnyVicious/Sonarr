@@ -20,6 +20,7 @@ namespace NzbDrone.Http.Test.Authentication
         private AuthenticationService CreateSubject(AuthenticationType authMethod)
         {
             _configFileProvider = new Mock<IConfigFileProvider>();
+            // nosemgrep: codacy.csharp.security.null-dereference
             _configFileProvider.SetupGet(c => c.AuthenticationMethod).Returns(authMethod);
 
             _userService = new Mock<IUserService>();

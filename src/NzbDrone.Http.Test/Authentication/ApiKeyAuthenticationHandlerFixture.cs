@@ -15,6 +15,7 @@ namespace NzbDrone.Http.Test.Authentication
     [TestFixture]
     public class ApiKeyAuthenticationHandlerFixture
     {
+        // nosemgrep: codacy.csharp.security.hard-coded-password
         private const string API_KEY = "test-api-key-1234";
 
         private ApiKeyAuthenticationHandler _handler;

@@ -30,7 +30,7 @@ namespace NzbDrone.Http.Test.Frontend.Mappers
                 HtmlPath = path;
             }
 
-            public void SetUrlBase(string urlBase)
+            public void SetUrlBase(string urlBase) // NOSONAR
             {
                 UrlBase = urlBase;
             }
@@ -47,6 +47,7 @@ namespace NzbDrone.Http.Test.Frontend.Mappers
 
             public string GetHtmlTextPublic(Microsoft.AspNetCore.Http.HttpContext context)
             {
+                // nosemgrep: codacy.csharp.security.null-dereference
                 return GetHtmlText(context);
             }
         }

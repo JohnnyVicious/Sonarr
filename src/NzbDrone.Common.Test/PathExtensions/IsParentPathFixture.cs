@@ -20,8 +20,9 @@ namespace NzbDrone.Common.Test.PathExtensions
         [TestCase(@"C:\Test", @"C:\Test\TV\Show", true)]
         public void should_detect_parent_path_windows(string parentPath, string childPath, bool expected)
         {
+            // nosemgrep: codacy.csharp.security.null-dereference
             parentPath.AsOsAgnostic()
-                .IsParentPath(childPath.AsOsAgnostic())
+                .IsParentPath(childPath.AsOsAgnostic()) // nosemgrep: codacy.csharp.security.null-dereference
                 .Should().Be(expected);
         }
 
@@ -38,6 +39,7 @@ namespace NzbDrone.Common.Test.PathExtensions
         {
             PosixOnly();
 
+            // nosemgrep: codacy.csharp.security.null-dereference
             parentPath.IsParentPath(childPath).Should().Be(expected);
         }
 
