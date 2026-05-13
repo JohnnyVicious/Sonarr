@@ -1,8 +1,6 @@
 using System.IO;
 using FluentAssertions;
-using Moq;
 using NUnit.Framework;
-using NzbDrone.Common.Disk;
 using NzbDrone.Core.Backup;
 using NzbDrone.Test.Common;
 using Sonarr.Http.Frontend.Mappers;

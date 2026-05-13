@@ -1,7 +1,6 @@
 using System.IO;
 using FluentAssertions;
 using NUnit.Framework;
-using NzbDrone.Common.Disk;
 using NzbDrone.Common.EnvironmentInfo;
 using NzbDrone.Core.Configuration;
 using NzbDrone.Test.Common;

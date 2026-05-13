@@ -1,7 +1,6 @@
 using System.IO;
 using FluentAssertions;
 using NUnit.Framework;
-using NzbDrone.Common.Disk;
 using NzbDrone.Common.EnvironmentInfo;
 using NzbDrone.Test.Common;
 using Sonarr.Http.Frontend.Mappers;
