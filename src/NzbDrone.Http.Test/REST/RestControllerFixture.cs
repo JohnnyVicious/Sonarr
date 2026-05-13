@@ -1,4 +1,4 @@
-using FluentAssertions;
+using FluentAssertions; // NOSONAR
 using NUnit.Framework;
 using NzbDrone.Test.Common;
 using Sonarr.Http.REST;

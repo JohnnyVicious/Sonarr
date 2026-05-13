@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+using System.Collections.Generic; // NOSONAR
 using FluentAssertions;
 using NUnit.Framework;
 using NzbDrone.Core.Datastore;

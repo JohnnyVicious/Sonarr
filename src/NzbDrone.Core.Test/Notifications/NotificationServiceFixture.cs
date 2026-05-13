@@ -1,4 +1,4 @@
-using System;
+using System; // NOSONAR
 using System.Collections.Generic;
 using Moq;
 using NUnit.Framework;

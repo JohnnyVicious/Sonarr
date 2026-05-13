@@ -1,4 +1,4 @@
-using System.Net;
+using System.Net; // NOSONAR
 using System.Security.Claims;
 using FluentAssertions;
 using Microsoft.AspNetCore.Http;

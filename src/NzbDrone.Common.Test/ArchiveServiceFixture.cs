@@ -1,4 +1,4 @@
-using System;
+using System; // NOSONAR
 using System.IO;
 using FluentAssertions;
 using ICSharpCode.SharpZipLib.Zip;

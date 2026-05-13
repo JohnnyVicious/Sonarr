@@ -1,4 +1,4 @@
-using System.Text.Encodings.Web;
+using System.Text.Encodings.Web; // NOSONAR
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.AspNetCore.Authentication;

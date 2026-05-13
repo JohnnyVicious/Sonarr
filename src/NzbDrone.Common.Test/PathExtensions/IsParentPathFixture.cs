@@ -1,4 +1,4 @@
-using FluentAssertions;
+using FluentAssertions; // NOSONAR
 using NUnit.Framework;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Test.Common;

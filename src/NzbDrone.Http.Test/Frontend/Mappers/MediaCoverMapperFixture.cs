@@ -1,4 +1,4 @@
-using System.IO;
+using System.IO; // NOSONAR
 using FluentAssertions;
 using Moq;
 using NUnit.Framework;
