@@ -8,6 +8,10 @@ using NzbDrone.Common.EnvironmentInfo;
 using NzbDrone.Common.Extensions;
 using Sonarr.Http;
 
+#if !NET10_0_OR_GREATER
+[assembly: CLSCompliant(false)]
+#endif
+
 namespace Sonarr.Api.V3.MediaCovers
 {
     [V3ApiController]

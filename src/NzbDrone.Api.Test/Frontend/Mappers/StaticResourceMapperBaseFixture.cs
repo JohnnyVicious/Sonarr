@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using FluentAssertions;
 using Moq;
@@ -8,6 +9,10 @@ using NzbDrone.Common.EnvironmentInfo;
 using NzbDrone.Core.Backup;
 using NzbDrone.Test.Common;
 using Sonarr.Http.Frontend.Mappers;
+
+#if !NET10_0_OR_GREATER
+[assembly: CLSCompliant(false)]
+#endif
 
 namespace NzbDrone.Api.Test.Frontend.Mappers
 {
