@@ -1,6 +1,4 @@
-#pragma warning disable SA1005
-using System.Xml; //NOSONAR S3990: This legacy assembly needs an API-wide CLS migration.
-#pragma warning restore SA1005
+using System.Xml;
 
 namespace NzbDrone.Common.Xml
 {
