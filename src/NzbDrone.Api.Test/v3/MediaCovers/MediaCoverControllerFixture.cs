@@ -1,4 +1,4 @@
-using FluentAssertions; //NOSONAR S3990: This legacy assembly needs an API-wide CLS migration.
+using FluentAssertions; // NOSONAR S3990: This legacy assembly needs an API-wide CLS migration.
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using NUnit.Framework;

@@ -1,4 +1,4 @@
-using System; //NOSONAR S3990: This legacy assembly needs an API-wide CLS migration.
+using System; // NOSONAR S3990: This legacy assembly needs an API-wide CLS migration.
 using System.IO;
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Mvc;
