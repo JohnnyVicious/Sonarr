@@ -1,3 +1,4 @@
+using System.IO;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
@@ -55,6 +56,11 @@ public abstract class LogFileControllerBase : Controller
     public Results<PhysicalFileHttpResult, NotFound> GetLogFileResponse(string filename)
     {
         LogManager.Flush();
+
+        if (filename != Path.GetFileName(filename))
+        {
+            return TypedResults.NotFound();
+        }
 
         var filePath = GetLogFilePath(filename);
 

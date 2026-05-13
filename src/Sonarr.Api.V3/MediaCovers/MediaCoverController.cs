@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Mvc;
@@ -28,7 +29,12 @@ namespace Sonarr.Api.V3.MediaCovers
         [HttpGet(@"{seriesId:int}/{filename:regex((.+)\.(jpg|png|gif))}")]
         public IActionResult GetMediaCover(int seriesId, string filename)
         {
-            var filePath = Path.Combine(_appFolderInfo.GetAppDataPath(), "MediaCover", seriesId.ToString(), filename);
+            var filePath = GetMediaCoverPath(seriesId, filename);
+
+            if (filePath == null)
+            {
+                return NotFound();
+            }
 
             if (!_diskProvider.FileExists(filePath) || _diskProvider.GetFileSize(filePath) == 0)
             {
@@ -44,6 +50,37 @@ namespace Sonarr.Api.V3.MediaCovers
             }
 
             return PhysicalFile(filePath, GetContentType(filePath));
+        }
+
+        private string GetMediaCoverPath(int seriesId, string filename)
+        {
+            try
+            {
+                var folderPath = Path.Combine(_appFolderInfo.GetAppDataPath(), "MediaCover", seriesId.ToString());
+                var fullFolderPath = EnsureTrailingDirectorySeparator(Path.GetFullPath(folderPath));
+                var fullFilePath = Path.GetFullPath(Path.Combine(folderPath, filename));
+
+                return fullFilePath.StartsWith(fullFolderPath, DiskProviderBase.PathStringComparison) ? fullFilePath : null;
+            }
+            catch (Exception ex) when (ex is ArgumentException ||
+                                       ex is ArgumentNullException ||
+                                       ex is NotSupportedException ||
+                                       ex is PathTooLongException ||
+                                       ex is IOException ||
+                                       ex is UnauthorizedAccessException)
+            {
+                return null;
+            }
+        }
+
+        private static string EnsureTrailingDirectorySeparator(string path)
+        {
+            if (path.EndsWith(Path.DirectorySeparatorChar) || path.EndsWith(Path.AltDirectorySeparatorChar))
+            {
+                return path;
+            }
+
+            return path + Path.DirectorySeparatorChar;
         }
 
         private string GetContentType(string filePath)
