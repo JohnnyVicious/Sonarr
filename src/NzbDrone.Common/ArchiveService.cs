@@ -7,8 +7,8 @@ using ICSharpCode.SharpZipLib.Core;
 using ICSharpCode.SharpZipLib.GZip;
 using ICSharpCode.SharpZipLib.Tar;
 using ICSharpCode.SharpZipLib.Zip;
-using NzbDrone.Common.Disk;
 using NLog;
+using NzbDrone.Common.Disk;
 
 namespace NzbDrone.Common
 {
@@ -163,7 +163,7 @@ namespace NzbDrone.Common
 
             if (Path.IsPathRooted(entryName) ||
                 normalizedEntryName.StartsWith("/", StringComparison.Ordinal) ||
-                normalizedEntryName.Contains(":", StringComparison.Ordinal))
+                normalizedEntryName.Contains(':'))
             {
                 throw new IOException($"Archive entry '{entryName}' targets a path outside the extraction folder.");
             }
