@@ -274,32 +274,63 @@ namespace NzbDrone.Core.Download.Clients.NzbVortex
 
         private OsPath GetSafeOutputFilePath(OsPath outputPath, string fileName)
         {
-            if (fileName.IsNullOrWhiteSpace() || outputPath.IsEmpty)
+            if (fileName == null)
+            {
+                return OsPath.Null;
+            }
+
+            if (string.IsNullOrWhiteSpace(fileName) || outputPath.IsEmpty)
+            {
+                return OsPath.Null;
+            }
+
+            var outputFolder = outputPath.FullPath;
+            if (string.IsNullOrWhiteSpace(outputFolder))
             {
                 return OsPath.Null;
             }
 
             try
             {
-                var fullOutputPath = Path.GetFullPath(outputPath.FullPath);
-                var outputPathWithSeparator = EnsureTrailingDirectorySeparator(fullOutputPath);
-                var fullFilePath = Path.GetFullPath(Path.Combine(fullOutputPath, fileName));
-
-                return fullFilePath.StartsWith(outputPathWithSeparator, DiskProviderBase.PathStringComparison) ? new OsPath(fullFilePath) : OsPath.Null;
+                return GetOutputFilePathInsideFolder(outputFolder, fileName);
             }
-            catch (Exception ex) when (ex is ArgumentException ||
-                                       ex is ArgumentNullException ||
-                                       ex is NotSupportedException ||
-                                       ex is PathTooLongException ||
-                                       ex is IOException ||
-                                       ex is UnauthorizedAccessException)
+            catch (Exception ex) when (IsPathResolutionException(ex))
             {
                 return OsPath.Null;
             }
         }
 
+        private static OsPath GetOutputFilePathInsideFolder(string outputFolder, string fileName)
+        {
+            var fullOutputPath = Path.GetFullPath(outputFolder);
+            var fullFilePath = Path.GetFullPath(Path.Combine(fullOutputPath, fileName));
+
+            return IsPathInsideFolder(fullFilePath, fullOutputPath) ? new OsPath(fullFilePath) : OsPath.Null;
+        }
+
+        private static bool IsPathInsideFolder(string fullFilePath, string folderPath)
+        {
+            var folderPathWithSeparator = EnsureTrailingDirectorySeparator(folderPath);
+            return fullFilePath.StartsWith(folderPathWithSeparator, DiskProviderBase.PathStringComparison);
+        }
+
+        private static bool IsPathResolutionException(Exception ex)
+        {
+            return ex is ArgumentException ||
+                   ex is ArgumentNullException ||
+                   ex is NotSupportedException ||
+                   ex is PathTooLongException ||
+                   ex is IOException ||
+                   ex is UnauthorizedAccessException;
+        }
+
         private static string EnsureTrailingDirectorySeparator(string path)
         {
+            if (path == null)
+            {
+                throw new ArgumentNullException(nameof(path));
+            }
+
             if (path.EndsWith(Path.DirectorySeparatorChar) || path.EndsWith(Path.AltDirectorySeparatorChar))
             {
                 return path;
