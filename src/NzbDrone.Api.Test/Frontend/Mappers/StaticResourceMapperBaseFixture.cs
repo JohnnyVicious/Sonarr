@@ -75,7 +75,7 @@ namespace NzbDrone.Api.Test.Frontend.Mappers
                 .Verify(v => v.FileExists(It.IsAny<string>()), Times.Never());
         }
 
-        private class TestResourceMapper : StaticResourceMapperBase
+        private sealed class TestResourceMapper : StaticResourceMapperBase
         {
             private readonly string _folderPath;
             private readonly string _mappedPath;
@@ -88,11 +88,14 @@ namespace NzbDrone.Api.Test.Frontend.Mappers
             }
 
             protected override string FolderPath => _folderPath;
-            protected override string MapPath(string resourceUrl) => _mappedPath;
-
-            public override bool CanHandle(string resourceUrl)
+            protected override string MapPath(string resourcePath)
             {
-                return true;
+                return resourcePath == null ? null : _mappedPath;
+            }
+
+            public override bool CanHandle(string resourcePath)
+            {
+                return resourcePath != null;
             }
         }
     }
