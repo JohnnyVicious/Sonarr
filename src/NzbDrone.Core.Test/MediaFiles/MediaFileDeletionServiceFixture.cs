@@ -17,7 +17,7 @@ using NzbDrone.Test.Common;
 namespace NzbDrone.Core.Test.MediaFiles
 {
     [TestFixture]
-    public class MediaFileDeletionServiceFixture : CoreTest<MediaFileDeletionService>
+    public class MediaFileDeletionServiceFixture : CoreTest<NzbDrone.Core.MediaFiles.MediaFileDeletionService>
     {
         private Series _series;
         private EpisodeFile _episodeFile;
