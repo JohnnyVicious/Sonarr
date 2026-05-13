@@ -279,6 +279,7 @@ namespace NzbDrone.Core.Download.Clients.NzbVortex
                 return OsPath.Null;
             }
 
+            // nosemgrep: codacy.csharp.security.null-dereference -- OsPath is a non-nullable value type.
             var outputFolder = outputPath.ToString();
             if (string.IsNullOrWhiteSpace(outputFolder))
             {

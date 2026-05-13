@@ -36,6 +36,7 @@ namespace Sonarr.Api.V3.MediaCovers
                 return NotFound();
             }
 
+            // nosemgrep: codacy.csharp.security.null-dereference -- requestedFilename is normalized and checked above.
             var filePath = GetMediaCoverPath(seriesId, requestedFilename);
 
             if (filePath == null)
@@ -84,21 +85,20 @@ namespace Sonarr.Api.V3.MediaCovers
 
         private static string GetMediaCoverPathInsideFolder(string appDataPath, int seriesId, string filename)
         {
-            var safeAppDataPath = !string.IsNullOrWhiteSpace(appDataPath) ? appDataPath : null;
-            if (safeAppDataPath == null)
+            if (string.IsNullOrWhiteSpace(appDataPath))
             {
                 throw new ArgumentNullException(nameof(appDataPath));
             }
 
-            var safeFilename = !string.IsNullOrWhiteSpace(filename) ? filename : null;
-            if (safeFilename == null)
+            if (string.IsNullOrWhiteSpace(filename))
             {
                 throw new ArgumentNullException(nameof(filename));
             }
 
-            var folderPath = Path.Combine(safeAppDataPath, "MediaCover", seriesId.ToString());
+            // nosemgrep: codacy.csharp.security.null-dereference -- appDataPath and filename are checked before combining.
+            var folderPath = Path.Combine(appDataPath, "MediaCover", seriesId.ToString());
             var fullFolderPath = Path.GetFullPath(folderPath);
-            var fullFilePath = Path.GetFullPath(Path.Combine(fullFolderPath, safeFilename));
+            var fullFilePath = Path.GetFullPath(Path.Combine(fullFolderPath, filename));
 
             return IsPathInsideFolder(fullFilePath, fullFolderPath) ? fullFilePath : null;
         }
