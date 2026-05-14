@@ -1,4 +1,4 @@
-using System; // NOSONAR
+using System;
 using System.IO;
 using FluentAssertions;
 using Moq;

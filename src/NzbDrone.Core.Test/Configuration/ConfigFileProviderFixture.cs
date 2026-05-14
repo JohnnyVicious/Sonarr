@@ -1,4 +1,4 @@
-using System.Collections.Generic; // NOSONAR
+using System.Collections.Generic;
 using FluentAssertions;
 using Microsoft.Extensions.Options;
 using Moq;

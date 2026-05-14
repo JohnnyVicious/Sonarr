@@ -1,4 +1,4 @@
-using System.Collections.Generic; // NOSONAR
+using System.Collections.Generic;
 using FizzWare.NBuilder;
 using Moq;
 using NUnit.Framework;

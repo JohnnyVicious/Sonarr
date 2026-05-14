@@ -1,4 +1,4 @@
-using System.Net; // NOSONAR
+using System.Net;
 using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using NUnit.Framework;

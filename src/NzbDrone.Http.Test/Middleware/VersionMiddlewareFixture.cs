@@ -1,4 +1,4 @@
-using System.Threading.Tasks; // NOSONAR
+using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using NUnit.Framework;
