@@ -14,7 +14,7 @@ namespace NzbDrone.Http.Test.Middleware
         private RequestDelegate CreateNext()
         {
             _nextCalled = false;
-            return (ctx) =>
+            return ctx =>
             {
                 _nextCalled = true;
                 return Task.CompletedTask;
@@ -121,6 +121,7 @@ namespace NzbDrone.Http.Test.Middleware
 
             _nextCalled.Should().BeFalse();
             context.Response.StatusCode.Should().Be(307);
+            context.Response.Headers["Location"].ToString().Should().StartWith("/sonarr/");
         }
     }
 }
