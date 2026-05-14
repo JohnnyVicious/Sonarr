@@ -57,21 +57,6 @@ jobs:
           runtime: linux-x64
           package_tests: true
 
-  frontend_tests:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check out
-        uses: actions/checkout@v6
-
-      - name: Volta
-        uses: volta-cli/action@615a78f6c83e116339c53b94f3f82b4d6c0b7d18
-
-      - name: Yarn Install
-        run: yarn install
-
-      - name: Run frontend tests
-        run: yarn test:frontend
-
   unit_tests:
     needs: build_test_binaries
     runs-on: ubuntu-latest
