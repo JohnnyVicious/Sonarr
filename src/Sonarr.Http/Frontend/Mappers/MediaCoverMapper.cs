@@ -22,17 +22,24 @@ namespace Sonarr.Http.Frontend.Mappers
             _diskProvider = diskProvider;
         }
 
-        public override string Map(string resourceUrl)
+        protected override string FolderPath => Path.Combine(_appFolderInfo.GetAppDataPath(), "MediaCover");
+
+        protected override string MapPath(string resourceUrl)
         {
             var path = resourceUrl.Replace('/', Path.DirectorySeparatorChar);
             path = path.Trim(Path.DirectorySeparatorChar);
 
             var resourcePath = Path.Combine(_appFolderInfo.GetAppDataPath(), path);
 
+            if (!IsPathInsideFolder(resourcePath))
+            {
+                return resourcePath;
+            }
+
             if (!_diskProvider.FileExists(resourcePath) || _diskProvider.GetFileSize(resourcePath) == 0)
             {
                 var baseResourcePath = RegexResizedImage.Replace(resourcePath, ".jpg$1");
-                if (baseResourcePath != resourcePath)
+                if (baseResourcePath != resourcePath && IsPathInsideFolder(baseResourcePath))
                 {
                     return baseResourcePath;
                 }
