@@ -28,6 +28,13 @@ namespace Sonarr.Http.Frontend.Mappers
         protected string HtmlPath;
         protected string UrlBase;
 
+        protected override string FolderPath => Path.GetDirectoryName(HtmlPath);
+
+        protected override string MapPath(string resourceUrl)
+        {
+            return HtmlPath;
+        }
+
         protected override Stream GetContentStream(HttpContext context, string filePath)
         {
             var text = GetHtmlText(context);
