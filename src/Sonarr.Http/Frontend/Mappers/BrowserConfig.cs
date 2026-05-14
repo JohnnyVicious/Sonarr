@@ -14,11 +14,6 @@ namespace Sonarr.Http.Frontend.Mappers
             FilePath = Path.Combine(appFolderInfo.StartUpFolder, configFileProvider.UiFolder, "Content", "browserconfig.xml");
         }
 
-        public override string Map(string resourceUrl)
-        {
-            return FilePath;
-        }
-
         public override bool CanHandle(string resourceUrl)
         {
             return resourceUrl.StartsWith("/Content/browserconfig");

@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
@@ -14,6 +15,8 @@ namespace Sonarr.Http.Frontend
     [ApiController]
     public class StaticResourceController : Controller
     {
+        private static readonly Regex InvalidPathRegex = new Regex(@"(?:^|[\\/])\.\.(?:[\\/]|$)|%2f|%5c", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
         private readonly IEnumerable<IMapHttpRequestsToDisk> _requestMappers;
         private readonly Logger _logger;
 
@@ -49,6 +52,11 @@ namespace Sonarr.Http.Frontend
         private async Task<IActionResult> MapResource(string path)
         {
             path = "/" + (path ?? "");
+
+            if (InvalidPathRegex.IsMatch(path))
+            {
+                return NotFound();
+            }
 
             var mapper = _requestMappers.SingleOrDefault(m => m.CanHandle(path));
 

@@ -165,3 +165,7 @@ src/.idea/
 
 # Ignore Jetbrains IntelliJ Workspace Directories
 .idea/
+
+
+#Ignore insiders AI rules
+.github/instructions/codacy.instructions.md

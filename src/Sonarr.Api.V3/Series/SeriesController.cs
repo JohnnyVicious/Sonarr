@@ -25,6 +25,10 @@ using Sonarr.Http.Extensions;
 using Sonarr.Http.REST;
 using Sonarr.Http.REST.Attributes;
 
+#if !NET10_0_OR_GREATER
+[assembly: System.CLSCompliant(false)]
+#endif
+
 namespace Sonarr.Api.V3.Series
 {
     [V3ApiController]
@@ -115,7 +119,7 @@ namespace Sonarr.Api.V3.Series
 
             if (tvdbId.HasValue)
             {
-                seriesResources.AddIfNotNull(_seriesService.FindByTvdbId(tvdbId.Value).ToResource(includeSeasonImages));
+                seriesResources.AddIfNotNull(_seriesService.FindByTvdbId(tvdbId.Value)?.ToResource(includeSeasonImages)); // nosemgrep: codacy.csharp.security.null-dereference -- FindByTvdbId can miss; null-conditional mapping preserves an empty result.
             }
             else
             {

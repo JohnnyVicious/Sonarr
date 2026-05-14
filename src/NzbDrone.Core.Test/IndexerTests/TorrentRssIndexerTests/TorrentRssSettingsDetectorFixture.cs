@@ -24,6 +24,11 @@ namespace NzbDrone.Core.Test.IndexerTests.TorrentRssIndexerTests
         {
             var recentFeed = ReadAllText(@"Files/Indexers/" + rssXmlFile);
 
+            GivenRecentFeedResponseContent(recentFeed);
+        }
+
+        private void GivenRecentFeedResponseContent(string recentFeed)
+        {
             Mocker.GetMock<IHttpClient>()
                 .Setup(o => o.Execute(It.IsAny<HttpRequest>()))
                 .Returns<HttpRequest>(r => new HttpResponse(r, new HttpHeader(), recentFeed));
@@ -33,6 +38,27 @@ namespace NzbDrone.Core.Test.IndexerTests.TorrentRssIndexerTests
         public void should_detect_rss_settings_for_ezrss()
         {
             GivenRecentFeedResponse("TorrentRss/Ezrss.xml");
+
+            var settings = Subject.Detect(_indexerSettings);
+
+            settings.Should().BeEquivalentTo(new TorrentRssIndexerParserSettings
+                {
+                    UseEZTVFormat = true,
+                    UseEnclosureUrl = false,
+                    UseEnclosureLength = false,
+                    ParseSizeInDescription = false,
+                    ParseSeedersInDescription = false,
+                    SizeElementName = null
+                });
+        }
+
+        [Test]
+        public void should_detect_ezrss_settings_from_dtd_without_resolving_external_dtd()
+        {
+            var recentFeed = ReadAllText(@"Files/Indexers/TorrentRss/Ezrss.xml")
+                .Replace("<rss version=\"2.0\">", "<!DOCTYPE rss SYSTEM \"http://xmlns.ezrss.it/0.1/dtd/\">\n<rss version=\"2.0\">");
+
+            GivenRecentFeedResponseContent(recentFeed);
 
             var settings = Subject.Detect(_indexerSettings);
 
