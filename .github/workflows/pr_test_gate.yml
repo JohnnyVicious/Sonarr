@@ -67,7 +67,7 @@ jobs:
         uses: volta-cli/action@615a78f6c83e116339c53b94f3f82b4d6c0b7d18
 
       - name: Yarn Install
-        run: yarn install
+        run: yarn install --frozen-lockfile
 
       - name: Run frontend tests
         run: yarn test:frontend

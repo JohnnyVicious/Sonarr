@@ -3,10 +3,9 @@ export interface ScalarQueryParams {
 }
 
 const PARAMETER_LIMIT = 1000;
-const UNSAFE_KEYS = new Set(['__proto__', 'constructor']);
 
 function isUnsafeKey(key: string) {
-  return key !== '' && (UNSAFE_KEYS.has(key) || key in Object.prototype);
+  return key in Object.prototype;
 }
 
 function limitSearch(search: string) {
