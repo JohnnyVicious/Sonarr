@@ -12,7 +12,7 @@ using NzbDrone.Core.Tv;
 namespace NzbDrone.Core.Test.NotificationTests.Xbmc
 {
     [TestFixture]
-    public class OnDownloadFixture : CoreTest<Notifications.Xbmc.Xbmc>
+    public class OnDownloadFixture : CoreTest<NzbDrone.Core.Notifications.Xbmc.Xbmc>
     {
         private DownloadMessage _downloadMessage;
 
