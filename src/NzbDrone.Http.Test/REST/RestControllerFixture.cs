@@ -20,9 +20,9 @@ namespace NzbDrone.Http.Test.REST
                 base.ValidateId(id);
             }
 
-            public new void ValidateResource(TestResource resource)
+            public void CallValidateResource(TestResource resource)
             {
-                base.ValidateResource(resource, false, false, false);
+                base.ValidateResource(resource);
             }
         }
 
@@ -67,7 +67,7 @@ namespace NzbDrone.Http.Test.REST
         [Test]
         public void validate_resource_should_throw_for_null_resource()
         {
-            _controller.Invoking(c => c.ValidateResource(null))
+            _controller.Invoking(c => c.CallValidateResource(null))
                 .Should().Throw<BadRequestException>()
                 .WithMessage("*can't be empty*");
         }
@@ -77,7 +77,7 @@ namespace NzbDrone.Http.Test.REST
         {
             var resource = new TestResource { Id = 1, Name = "Test" };
 
-            _controller.Invoking(c => c.ValidateResource(resource))
+            _controller.Invoking(c => c.CallValidateResource(resource))
                 .Should().NotThrow();
         }
 

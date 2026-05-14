@@ -35,12 +35,12 @@ namespace NzbDrone.Http.Test.Frontend.Mappers
                 UrlBase = basePath;
             }
 
-            public override string Map(string resourceUrl)
+            public new string Map(string resourceUrl)
             {
                 return HtmlPath;
             }
 
-            public override bool CanHandle(string resourceUrl)
+            public new bool CanHandle(string resourceUrl)
             {
                 return true;
             }
