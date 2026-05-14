@@ -1,4 +1,5 @@
 import _ from 'lodash';
+import parseQueryParams from './parseQueryParams';
 
 // See: https://developer.mozilla.org/en-US/docs/Web/API/HTMLHyperlinkElementUtils
 const anchor = document.createElement('a');
@@ -25,10 +26,10 @@ export default function parseUrl(url: string) {
   properties.isAbsolute = /^[\w:]*\/\//.test(url);
 
   if (properties.search) {
-    // Current callers use pathname/search for URL cleansing; params are kept
-    // as a flat best-effort map, not as a qs-compatible nested/array parser.
-    properties.params = Object.fromEntries(
-      new URLSearchParams(properties.search as string)
+    // Remove the leading ? before parsing. parseQueryParams preserves the
+    // duplicate-key and bracketed nesting semantics that qs.parse provided.
+    properties.params = parseQueryParams(
+      (properties.search as string).substring(1)
     );
   } else {
     properties.params = {};
