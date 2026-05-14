@@ -84,7 +84,5 @@ namespace NzbDrone.Http.Test.Frontend.Mappers
 
             result.Should().Be(Path.Combine(BACKUP_FOLDER, "nzbdrone_backup_v3.0.0_2020.05.15.zip"));
         }
-
-
     }
 }
