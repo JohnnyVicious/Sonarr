@@ -50,10 +50,10 @@ namespace NzbDrone.Core.Test.MediaFiles
                         .With(e => e.EpisodeNumber = 1)
                         .Build()
                 },
-                Path = Path.Combine(_series.Path, "Season 1", "episode.mkv".AsOsAgnostic())
+                Path = Path.Combine(_series.Path, @"Season 1\episode.mkv".AsOsAgnostic())
             };
 
-            var destinationPath = Path.Combine(_series.Path, "Season 1", "Series - S01E01 - Episode Title.mkv".AsOsAgnostic());
+            var destinationPath = Path.Combine(_series.Path, @"Season 1\Series - S01E01 - Episode Title.mkv".AsOsAgnostic());
 
             Mocker.GetMock<IBuildFileNames>()
                   .Setup(s => s.BuildFilePath(It.IsAny<List<Episode>>(), It.IsAny<Series>(), It.IsAny<EpisodeFile>(), It.IsAny<string>(), It.IsAny<NamingConfig>(), It.IsAny<List<NzbDrone.Core.CustomFormats.CustomFormat>>()))

@@ -169,8 +169,6 @@ namespace NzbDrone.Core.Test.IndexerTests
             Mocker.GetMock<IServiceProvider>()
                   .Setup(s => s.GetService(mockIndexer.Object.GetType()))
                   .Returns(mockIndexer.Object);
-            Mocker.GetMock<IIndexerStatusService>()
-                  .Setup(s => s.RecordSuccess(5));
 
             var result = Subject.Test(definition);
 

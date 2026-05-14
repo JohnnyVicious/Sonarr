@@ -20,6 +20,7 @@ namespace NzbDrone.Core.Test.CustomFormats
     public class CustomFormatCalculationServiceFixture : CoreTest<CustomFormatCalculationService>
     {
         private Series _series;
+        private CustomFormatInput _lastInput;
 
         [SetUp]
         public void Setup()
@@ -31,6 +32,24 @@ namespace NzbDrone.Core.Test.CustomFormats
             Mocker.GetMock<ICustomFormatService>()
                   .Setup(s => s.All())
                   .Returns(new List<CustomFormat>());
+        }
+
+        private void GivenMatchingCustomFormat()
+        {
+            var mockSpec = new Mock<ICustomFormatSpecification>();
+            mockSpec.Setup(s => s.IsSatisfiedBy(It.IsAny<CustomFormatInput>()))
+                    .Callback<CustomFormatInput>(input => _lastInput = input)
+                    .Returns(true);
+
+            var customFormat = new CustomFormat("TestFormat")
+            {
+                Id = 1,
+                Specifications = new List<ICustomFormatSpecification> { mockSpec.Object }
+            };
+
+            Mocker.GetMock<ICustomFormatService>()
+                  .Setup(s => s.All())
+                  .Returns(new List<CustomFormat> { customFormat });
         }
 
         [Test]
@@ -111,6 +130,8 @@ namespace NzbDrone.Core.Test.CustomFormats
         [Test]
         public void should_parse_custom_format_for_episode_file_with_scene_name()
         {
+            GivenMatchingCustomFormat();
+
             var episodeFile = Builder<EpisodeFile>.CreateNew()
                 .With(e => e.SceneName = "Test.Series.S01E01.720p.HDTV")
                 .With(e => e.Quality = new QualityModel(Quality.HDTV720p))
@@ -120,12 +141,16 @@ namespace NzbDrone.Core.Test.CustomFormats
 
             var result = Subject.ParseCustomFormat(episodeFile, _series);
 
-            result.Should().BeEmpty();
+            result.Should().HaveCount(1);
+            _lastInput.EpisodeInfo.ReleaseTitle.Should().Be("Test.Series.S01E01.720p.HDTV");
+            _lastInput.Filename.Should().Be("episode.mkv");
         }
 
         [Test]
         public void should_parse_custom_format_for_episode_file_with_original_file_path()
         {
+            GivenMatchingCustomFormat();
+
             var episodeFile = Builder<EpisodeFile>.CreateNew()
                 .With(e => e.SceneName = null)
                 .With(e => e.OriginalFilePath = "Original/Path/episode.mkv")
@@ -136,12 +161,16 @@ namespace NzbDrone.Core.Test.CustomFormats
 
             var result = Subject.ParseCustomFormat(episodeFile, _series);
 
-            result.Should().BeEmpty();
+            result.Should().HaveCount(1);
+            _lastInput.EpisodeInfo.ReleaseTitle.Should().Be("episode.mkv");
+            _lastInput.Filename.Should().Be("episode.mkv");
         }
 
         [Test]
         public void should_parse_custom_format_for_episode_file_with_relative_path()
         {
+            GivenMatchingCustomFormat();
+
             var episodeFile = Builder<EpisodeFile>.CreateNew()
                 .With(e => e.SceneName = null)
                 .With(e => e.OriginalFilePath = null)
@@ -152,12 +181,16 @@ namespace NzbDrone.Core.Test.CustomFormats
 
             var result = Subject.ParseCustomFormat(episodeFile, _series);
 
-            result.Should().BeEmpty();
+            result.Should().HaveCount(1);
+            _lastInput.EpisodeInfo.ReleaseTitle.Should().Be("episode.mkv");
+            _lastInput.Filename.Should().Be("episode.mkv");
         }
 
         [Test]
         public void should_parse_custom_format_for_blocklist()
         {
+            GivenMatchingCustomFormat();
+
             var blocklist = Builder<Blocklist>.CreateNew()
                 .With(b => b.SourceTitle = "Test.Series.S01E01.720p.HDTV")
                 .With(b => b.Quality = new QualityModel(Quality.HDTV720p))
@@ -167,12 +200,16 @@ namespace NzbDrone.Core.Test.CustomFormats
 
             var result = Subject.ParseCustomFormat(blocklist, _series);
 
-            result.Should().BeEmpty();
+            result.Should().HaveCount(1);
+            _lastInput.EpisodeInfo.ReleaseTitle.Should().Be("Test.Series.S01E01.720p.HDTV");
+            _lastInput.Series.Should().Be(_series);
         }
 
         [Test]
         public void should_parse_custom_format_for_history()
         {
+            GivenMatchingCustomFormat();
+
             var history = Builder<EpisodeHistory>.CreateNew()
                 .With(h => h.SourceTitle = "Test.Series.S01E01.720p.HDTV")
                 .With(h => h.Quality = new QualityModel(Quality.HDTV720p))
@@ -187,7 +224,10 @@ namespace NzbDrone.Core.Test.CustomFormats
 
             var result = Subject.ParseCustomFormat(history, _series);
 
-            result.Should().BeEmpty();
+            result.Should().HaveCount(1);
+            _lastInput.EpisodeInfo.ReleaseTitle.Should().Be("Test.Series.S01E01.720p.HDTV");
+            _lastInput.Size.Should().Be(1000000);
+            _lastInput.ReleaseType.Should().Be(ReleaseType.SingleEpisode);
         }
 
         [Test]
@@ -223,6 +263,8 @@ namespace NzbDrone.Core.Test.CustomFormats
         [Test]
         public void should_parse_custom_format_for_local_episode_with_scene_name()
         {
+            GivenMatchingCustomFormat();
+
             var localEpisode = new LocalEpisode
             {
                 Series = _series,
@@ -235,7 +277,11 @@ namespace NzbDrone.Core.Test.CustomFormats
 
             var result = Subject.ParseCustomFormat(localEpisode, "episode.mkv");
 
-            result.Should().BeEmpty();
+            result.Should().HaveCount(1);
+            _lastInput.EpisodeInfo.ReleaseTitle.Should().Be("Test.Series.S01E01.720p.HDTV");
+            _lastInput.EpisodeInfo.ReleaseGroup.Should().Be("TestGroup");
+            _lastInput.Filename.Should().Be("episode.mkv");
+            _lastInput.Size.Should().Be(1000000);
         }
     }
 }

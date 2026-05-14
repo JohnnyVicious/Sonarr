@@ -45,7 +45,7 @@ namespace NzbDrone.Core.Test.TvTests
         [Test]
         public void should_get_episodes_by_ids()
         {
-            var ids = _episodes.Select(e => e.Id);
+            var ids = _episodes.Select(e => e.Id).ToList();
 
             Mocker.GetMock<IEpisodeRepository>()
                   .Setup(s => s.Get(ids))
@@ -181,8 +181,7 @@ namespace NzbDrone.Core.Test.TvTests
             var series = Builder<Series>.CreateListOfSize(1)
                 .All()
                 .With(s => s.Id = 1)
-                .Build()
-                .ToList();
+                .BuildList();
 
             Mocker.GetMock<IEpisodeRepository>()
                   .Setup(s => s.GetEpisodesBySeriesIds(It.IsAny<List<int>>()))

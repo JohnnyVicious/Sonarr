@@ -71,11 +71,16 @@ namespace NzbDrone.Core.Test.Jobs
         [Test]
         public void get_pending_should_not_return_tasks_with_zero_interval()
         {
+            Mocker.GetMock<IConfigService>()
+                  .Setup(s => s.RssSyncInterval)
+                  .Returns(0);
+
             var existingTasks = new List<ScheduledTask>
             {
                 new ScheduledTask
                 {
-                    TypeName = typeof(RefreshMonitoredDownloadsCommand).FullName,
+                    Id = 1,
+                    TypeName = typeof(RssSyncCommand).FullName,
                     Interval = 0,
                     LastExecution = DateTime.UtcNow.AddMinutes(-5)
                 }
@@ -87,10 +92,9 @@ namespace NzbDrone.Core.Test.Jobs
 
             GivenInitializedTasks();
 
-            // The default tasks will overwrite interval, but the zero-interval RSS won't appear
-            // because its interval is properly set during init. Test the filtering logic.
             var pending = Subject.GetPending();
-            pending.Where(p => p.Interval == 0).Should().BeEmpty();
+
+            pending.Should().NotContain(p => p.TypeName == typeof(RssSyncCommand).FullName);
         }
 
         [Test]

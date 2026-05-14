@@ -19,9 +19,7 @@ namespace NzbDrone.Core.Test.RootFolders
         [SetUp]
         public void Setup()
         {
-            Mocker.GetMock<ICacheManager>()
-                  .Setup(s => s.GetCache<string>(It.IsAny<Type>()))
-                  .Returns(new Cached<string>());
+            Mocker.SetConstant<ICacheManager>(new CacheManager());
 
             Mocker.GetMock<IRootFolderRepository>()
                   .Setup(s => s.All())

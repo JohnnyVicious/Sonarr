@@ -111,11 +111,11 @@ namespace NzbDrone.Core.Test.Download
         {
             Mocker.GetMock<IDownloadedEpisodesImportService>()
                   .Setup(s => s.ProcessPath(It.IsAny<string>(), It.IsAny<ImportMode>(), It.IsAny<Series>(), It.IsAny<DownloadClientItem>()))
+                  .Callback<string, ImportMode, Series, DownloadClientItem>((_, _, _, _) => _trackedDownload.State.Should().Be(TrackedDownloadState.Importing))
                   .Returns(new List<ImportResult>());
 
             Subject.Import(_trackedDownload);
 
-            // After import with no results it goes back to ImportPending and warns
             _trackedDownload.Status.Should().Be(TrackedDownloadStatus.Warning);
         }
 

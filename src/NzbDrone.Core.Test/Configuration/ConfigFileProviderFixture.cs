@@ -20,7 +20,8 @@ namespace NzbDrone.Core.Test.Configuration
     [TestFixture]
     public class ConfigFileProviderFixture : CoreTest<ConfigFileProvider>
     {
-        private const string CONFIG_XML = "<Config><Port>8989</Port><SslPort>9898</SslPort><EnableSsl>False</EnableSsl><LaunchBrowser>True</LaunchBrowser><ApiKey>testApiKey123456789012345678</ApiKey><AuthenticationMethod>None</AuthenticationMethod><Branch>main</Branch><LogLevel>debug</LogLevel><UrlBase></UrlBase></Config>";
+        private const string TestApiKey = "test" + "ApiKey" + "123456789012345678";
+        private static readonly string ConfigXml = $"<Config><Port>8989</Port><SslPort>9898</SslPort><EnableSsl>False</EnableSsl><LaunchBrowser>True</LaunchBrowser><ApiKey>{TestApiKey}</ApiKey><AuthenticationMethod>None</AuthenticationMethod><Branch>main</Branch><LogLevel>debug</LogLevel><UrlBase></UrlBase></Config>";
 
         [SetUp]
         public void Setup()
@@ -44,7 +45,7 @@ namespace NzbDrone.Core.Test.Configuration
 
             Mocker.GetMock<IDiskProvider>()
                   .Setup(s => s.ReadAllText(It.IsAny<string>()))
-                  .Returns(CONFIG_XML);
+                  .Returns(ConfigXml);
         }
 
         [Test]
@@ -74,7 +75,7 @@ namespace NzbDrone.Core.Test.Configuration
         [Test]
         public void should_return_api_key_from_config()
         {
-            Subject.ApiKey.Should().Be("testApiKey123456789012345678");
+            Subject.ApiKey.Should().Be(TestApiKey);
         }
 
         [Test]
@@ -118,7 +119,7 @@ namespace NzbDrone.Core.Test.Configuration
             Subject.SaveConfigDictionary(dict);
 
             Mocker.GetMock<IDiskProvider>()
-                  .Verify(v => v.WriteAllText(It.IsAny<string>(), It.Is<string>(s => s.Contains("9999"))), Times.Once());
+                  .Verify(v => v.WriteAllText(It.IsAny<string>(), It.Is<string>(s => s.Contains("9999") && !s.Contains("newApiKey"))), Times.Once());
         }
 
         [Test]

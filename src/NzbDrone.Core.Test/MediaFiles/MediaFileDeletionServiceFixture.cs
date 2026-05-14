@@ -4,6 +4,7 @@ using Moq;
 using NUnit.Framework;
 using NzbDrone.Common.Disk;
 using NzbDrone.Core.Configuration;
+using NzbDrone.Core.Datastore;
 using NzbDrone.Core.Exceptions;
 using NzbDrone.Core.MediaFiles;
 using NzbDrone.Core.MediaFiles.Events;
@@ -16,7 +17,7 @@ using NzbDrone.Test.Common;
 namespace NzbDrone.Core.Test.MediaFiles
 {
     [TestFixture]
-    public class MediaFileDeletionServiceFixture : CoreTest<NzbDrone.Core.MediaFiles.MediaFileDeletionService>
+    public class MediaFileDeletionServiceFixture : CoreTest<MediaFileDeletionService>
     {
         private Series _series;
         private EpisodeFile _episodeFile;
@@ -150,7 +151,7 @@ namespace NzbDrone.Core.Test.MediaFiles
         {
             var episodeFile = Builder<EpisodeFile>.CreateNew()
                 .With(e => e.Path = @"C:\Test\TV\Series\Season 1\episode.mkv".AsOsAgnostic())
-                .With(e => e.Series = new NzbDrone.Core.Datastore.LazyLoaded<Series>(_series))
+                .With(e => e.Series = new LazyLoaded<Series>(_series))
                 .Build();
 
             Mocker.GetMock<IConfigService>()
@@ -172,7 +173,7 @@ namespace NzbDrone.Core.Test.MediaFiles
         {
             var episodeFile = Builder<EpisodeFile>.CreateNew()
                 .With(e => e.Path = @"C:\Test\TV\Series\Season 1\episode.mkv".AsOsAgnostic())
-                .With(e => e.Series = new NzbDrone.Core.Datastore.LazyLoaded<Series>(_series))
+                .With(e => e.Series = new LazyLoaded<Series>(_series))
                 .Build();
 
             Mocker.GetMock<IConfigService>()
@@ -190,7 +191,7 @@ namespace NzbDrone.Core.Test.MediaFiles
         {
             var episodeFile = Builder<EpisodeFile>.CreateNew()
                 .With(e => e.Path = @"C:\Test\TV\Series\Season 1\episode.mkv".AsOsAgnostic())
-                .With(e => e.Series = new NzbDrone.Core.Datastore.LazyLoaded<Series>(_series))
+                .With(e => e.Series = new LazyLoaded<Series>(_series))
                 .Build();
 
             Mocker.GetMock<IConfigService>()
