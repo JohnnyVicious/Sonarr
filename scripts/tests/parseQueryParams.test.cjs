@@ -86,6 +86,20 @@ test('parses nested array keys', () => {
   });
 });
 
+test('promotes scalar values before appending array-style duplicates', () => {
+  assert.deepEqual(parseQueryParams('tag=alpha&tag[]=beta'), {
+    tag: ['alpha', 'beta']
+  });
+});
+
+test('treats indexes above the qs array limit as object keys', () => {
+  assert.deepEqual(parseQueryParams('tags[999999999]=alpha'), {
+    tags: {
+      999999999: 'alpha'
+    }
+  });
+});
+
 test('decodes URL encoded keys and plus signs', () => {
   assert.deepEqual(parseQueryParams('series%20title=Breaking+Bad'), {
     'series title': 'Breaking Bad'

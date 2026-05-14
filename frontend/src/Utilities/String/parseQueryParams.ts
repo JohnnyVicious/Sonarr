@@ -1,11 +1,13 @@
-import _ from 'lodash';
-
 export interface QueryParams {
   [key: string]: QueryParamValue;
 }
 
 export type QueryParamValue = string | QueryParamValue[] | QueryParams;
 
+type QueryContainer = QueryParamValue[] | QueryParams;
+
+const ARRAY_LIMIT = 20;
+const ARRAY_INDEX_PATTERN = /^\d+$/;
 const KEY_SEGMENT_PATTERN = /([^[\]]+)|\[([^\]]*)\]/g;
 const UNSAFE_KEYS = new Set(['__proto__', 'constructor']);
 
@@ -15,8 +17,20 @@ function isQueryParams(
   return typeof value === 'object' && value != null && !Array.isArray(value);
 }
 
+function isContainer(
+  value: QueryParamValue | undefined
+): value is QueryContainer {
+  return Array.isArray(value) || isQueryParams(value);
+}
+
 function isUnsafeKey(key: string) {
   return key !== '' && UNSAFE_KEYS.has(key);
+}
+
+function isArrayIndex(key: string) {
+  const index = Number(key);
+
+  return ARRAY_INDEX_PATTERN.test(key) && index <= ARRAY_LIMIT;
 }
 
 function parseKey(key: string) {
@@ -31,18 +45,34 @@ function parseKey(key: string) {
   return segments;
 }
 
-function getAppendIndex(result: QueryParams, path: string[]) {
-  const existingValue = _.get(result, path);
-
-  return Array.isArray(existingValue) ? existingValue.length.toString() : '0';
+function createContainer(nextKey: string): QueryContainer {
+  return nextKey === '' || isArrayIndex(nextKey) ? [] : {};
 }
 
-function normalizePath(result: QueryParams, segments: string[]) {
-  return segments.reduce<string[]>((path, segment) => {
-    path.push(segment === '' ? getAppendIndex(result, path) : segment);
+function getValue(container: QueryContainer, key: string) {
+  if (Array.isArray(container)) {
+    return key === '' ? undefined : container[Number(key)];
+  }
 
-    return path;
-  }, []);
+  return container[key];
+}
+
+function setValue(
+  container: QueryContainer,
+  key: string,
+  value: QueryParamValue
+) {
+  if (Array.isArray(container)) {
+    if (key === '') {
+      container.push(value);
+    } else if (isArrayIndex(key)) {
+      container[Number(key)] = value;
+    }
+
+    return;
+  }
+
+  container[key] = value;
 }
 
 function mergeValue(
@@ -58,6 +88,47 @@ function mergeValue(
     : [existingValue, value];
 }
 
+function setLeaf(container: QueryContainer, key: string, value: string) {
+  const existingValue = getValue(container, key);
+
+  setValue(container, key, mergeValue(existingValue, value));
+}
+
+function assignParam(result: QueryParams, segments: string[], value: string) {
+  let container: QueryContainer = result;
+
+  for (let i = 0; i < segments.length; i++) {
+    const key = segments[i];
+    const nextKey = segments[i + 1];
+
+    if (i === segments.length - 1) {
+      setLeaf(container, key, value);
+
+      return;
+    }
+
+    const existingValue = getValue(container, key);
+
+    if (
+      nextKey === '' &&
+      existingValue != null &&
+      !isContainer(existingValue)
+    ) {
+      setValue(container, key, mergeValue(existingValue, value));
+
+      return;
+    }
+
+    if (isContainer(existingValue)) {
+      container = existingValue;
+    } else {
+      const nextContainer = createContainer(nextKey);
+      setValue(container, key, nextContainer);
+      container = nextContainer;
+    }
+  }
+}
+
 function compactQueryParam(value: QueryParamValue): QueryParamValue {
   if (Array.isArray(value)) {
     return value
@@ -66,9 +137,13 @@ function compactQueryParam(value: QueryParamValue): QueryParamValue {
   }
 
   if (isQueryParams(value)) {
-    return _.mapValues(value, (nestedValue) =>
-      compactQueryParam(nestedValue)
-    ) as QueryParams;
+    const result: QueryParams = {};
+
+    Object.entries(value).forEach(([key, nestedValue]) => {
+      result[key] = compactQueryParam(nestedValue);
+    });
+
+    return result;
   }
 
   return value;
@@ -87,10 +162,7 @@ export default function parseQueryParams(queryString: string) {
       return;
     }
 
-    const path = normalizePath(result, segments);
-    const existingValue = _.get(result, path) as QueryParamValue | undefined;
-
-    _.set(result, path, mergeValue(existingValue, value));
+    assignParam(result, segments, value);
   });
 
   return compactQueryParam(result) as QueryParams;
