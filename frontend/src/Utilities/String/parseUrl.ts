@@ -24,13 +24,5 @@ export default function parseUrl(url: string) {
 
   properties.isAbsolute = /^[\w:]*\/\//.test(url);
 
-  if (properties.search) {
-    properties.params = Object.fromEntries(
-      new URLSearchParams(properties.search as string)
-    );
-  } else {
-    properties.params = {};
-  }
-
   return properties;
 }
