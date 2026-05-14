@@ -56,6 +56,11 @@ public abstract class LogFileControllerBase : Controller
     {
         LogManager.Flush();
 
+        if (filename != Path.GetFileName(filename))
+        {
+            return TypedResults.NotFound();
+        }
+
         var filePath = GetLogFilePath(filename);
 
         if (!_diskProvider.FileExists(filePath))

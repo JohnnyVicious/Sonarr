@@ -133,37 +133,42 @@ namespace NzbDrone.Core.Backup
                 var restoredFile = false;
                 var temporaryPath = Path.Combine(_appFolderInfo.TempFolder, "sonarr_backup_restore");
 
-                _archiveService.Extract(backupFileName, temporaryPath);
-
-                foreach (var file in _diskProvider.GetFiles(temporaryPath, false))
+                try
                 {
-                    var fileName = Path.GetFileName(file);
+                    _archiveService.Extract(backupFileName, temporaryPath);
 
-                    if (fileName.Equals("Config.xml", StringComparison.InvariantCultureIgnoreCase))
+                    foreach (var file in _diskProvider.GetFiles(temporaryPath, false))
                     {
-                        _diskProvider.MoveFile(file, _appFolderInfo.GetConfigPath(), true);
-                        restoredFile = true;
+                        var fileName = Path.GetFileName(file);
+
+                        if (fileName.Equals("Config.xml", StringComparison.InvariantCultureIgnoreCase))
+                        {
+                            _diskProvider.MoveFile(file, _appFolderInfo.GetConfigPath(), true);
+                            restoredFile = true;
+                        }
+
+                        if (fileName.Equals("nzbdrone.db", StringComparison.InvariantCultureIgnoreCase))
+                        {
+                            _diskProvider.MoveFile(file, _appFolderInfo.GetDatabaseRestore(), true);
+                            restoredFile = true;
+                        }
+
+                        if (fileName.Equals("sonarr.db", StringComparison.InvariantCultureIgnoreCase))
+                        {
+                            _diskProvider.MoveFile(file, _appFolderInfo.GetDatabaseRestore(), true);
+                            restoredFile = true;
+                        }
                     }
 
-                    if (fileName.Equals("nzbdrone.db", StringComparison.InvariantCultureIgnoreCase))
+                    if (!restoredFile)
                     {
-                        _diskProvider.MoveFile(file, _appFolderInfo.GetDatabaseRestore(), true);
-                        restoredFile = true;
-                    }
-
-                    if (fileName.Equals("sonarr.db", StringComparison.InvariantCultureIgnoreCase))
-                    {
-                        _diskProvider.MoveFile(file, _appFolderInfo.GetDatabaseRestore(), true);
-                        restoredFile = true;
+                        throw new RestoreBackupFailedException(HttpStatusCode.NotFound, "Unable to restore database file from backup");
                     }
                 }
-
-                if (!restoredFile)
+                finally
                 {
-                    throw new RestoreBackupFailedException(HttpStatusCode.NotFound, "Unable to restore database file from backup");
+                    _diskProvider.DeleteFolder(temporaryPath, true);
                 }
-
-                _diskProvider.DeleteFolder(temporaryPath, true);
 
                 return;
             }

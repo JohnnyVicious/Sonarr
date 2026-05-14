@@ -12,6 +12,10 @@ using NzbDrone.Common.Instrumentation.Extensions;
 using NzbDrone.Common.Processes;
 using NzbDrone.Update.UpdateEngine;
 
+#if !NET10_0_OR_GREATER
+[assembly: System.CLSCompliant(false)]
+#endif
+
 namespace NzbDrone.Update
 {
     public class UpdateApp
@@ -111,10 +115,22 @@ namespace NzbDrone.Update
 
         private string GetInstallationDirectory(UpdateStartupContext startupContext)
         {
+            if (startupContext == null)
+            {
+                throw new ArgumentNullException(nameof(startupContext));
+            }
+
             if (startupContext.ExecutingApplication.IsNullOrWhiteSpace())
             {
-                Logger.Debug("Using process ID to find installation directory: {0}", startupContext.ProcessId);
-                var exeFileInfo = new FileInfo(_processProvider.GetProcessById(startupContext.ProcessId).StartPath);
+                var processId = startupContext.ProcessId;
+                Logger.Debug("Using process ID to find installation directory: {0}", processId);
+                var process = _processProvider.GetProcessById(processId);
+                if (process == null)
+                {
+                    throw new InvalidOperationException($"Could not find process with ID {processId}. The process may have already exited.");
+                }
+
+                var exeFileInfo = new FileInfo(process.StartPath);
                 Logger.Debug("Executable location: {0}", exeFileInfo.FullName);
 
                 return exeFileInfo.DirectoryName;

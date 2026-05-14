@@ -268,6 +268,26 @@ namespace NzbDrone.Core.Test.Download.DownloadClientTests.NzbVortexTests
         }
 
         [Test]
+        public void should_warn_if_completed_download_file_is_outside_download_folder()
+        {
+            Mocker.GetMock<IRemotePathMappingService>()
+                  .Setup(v => v.RemapRemoteToLocal("127.0.0.1", It.IsAny<OsPath>()))
+                  .Returns(new OsPath(@"O:\mymount\".AsOsAgnostic()));
+
+            Mocker.GetMock<INzbVortexProxy>()
+                  .Setup(s => s.GetFiles(It.IsAny<int>(), It.IsAny<NzbVortexSettings>()))
+                  .Returns(new List<NzbVortexFile> { new NzbVortexFile { FileName = "../outside.mkv" } });
+
+            _completed.State = NzbVortexStateType.Done;
+            GivenQueue(_completed);
+
+            var result = Subject.GetItems().Single();
+
+            result.OutputPath.IsEmpty.Should().BeTrue();
+            result.Status.Should().Be(DownloadItemStatus.Warning);
+        }
+
+        [Test]
         public void should_be_warning_if_more_than_one_file_is_not_in_a_job_folder()
         {
             Mocker.GetMock<IRemotePathMappingService>()
