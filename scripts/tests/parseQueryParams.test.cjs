@@ -12,6 +12,9 @@ const sourceFile = path.resolve(
 const outputDirectory = fs.mkdtempSync(
   path.join(os.tmpdir(), 'sonarr-frontend-tests-')
 );
+const nodeModulesPath = path.resolve(__dirname, '../../node_modules');
+
+fs.symlinkSync(nodeModulesPath, path.join(outputDirectory, 'node_modules'), 'dir');
 
 childProcess.execFileSync(
   process.execPath,
@@ -22,6 +25,7 @@ childProcess.execFileSync(
     'commonjs',
     '--target',
     'ES2020',
+    '--esModuleInterop',
     '--outDir',
     outputDirectory,
     '--skipLibCheck'
