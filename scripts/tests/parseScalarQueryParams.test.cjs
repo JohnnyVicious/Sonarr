@@ -1,7 +1,6 @@
 const assert = require('node:assert/strict');
 const childProcess = require('node:child_process');
 const fs = require('node:fs');
-const os = require('node:os');
 const path = require('node:path');
 const test = require('node:test');
 
@@ -10,11 +9,12 @@ const sourceFile = path.resolve(
   '../../frontend/src/Utilities/String/parseScalarQueryParams.ts'
 );
 const outputDirectory = fs.mkdtempSync(
-  path.join(os.tmpdir(), 'sonarr-frontend-tests-')
+  path.join(__dirname, '.compiled-')
 );
-const nodeModulesPath = path.resolve(__dirname, '../../node_modules');
 
-fs.symlinkSync(nodeModulesPath, path.join(outputDirectory, 'node_modules'), 'dir');
+process.on('exit', () => {
+  fs.rmSync(outputDirectory, { force: true, recursive: true });
+});
 
 childProcess.execFileSync(
   process.execPath,
@@ -34,10 +34,6 @@ childProcess.execFileSync(
     stdio: 'inherit'
   }
 );
-
-process.on('exit', () => {
-  fs.rmSync(outputDirectory, { force: true, recursive: true });
-});
 
 const parseScalarQueryParams = require(path.join(
   outputDirectory,
