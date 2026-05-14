@@ -1,0 +1,6 @@
+---
+exclude_paths:
+  - "src/NzbDrone.Common.Test/**"
+  - "src/NzbDrone.Core.Test/**"
+  - "src/NzbDrone.Http.Test/**"
+  - "src/NzbDrone.Api.Test/**"
