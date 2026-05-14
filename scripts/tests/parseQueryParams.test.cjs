@@ -170,6 +170,21 @@ test('keeps nesting past the qs depth limit as a literal key', () => {
   });
 });
 
+test('keeps malformed bracket keys compatible with qs parsing', () => {
+  assert.deepEqual(parseQueryParams('a[b=value&a]b[c]=other'), {
+    'a[b': 'value',
+    'a]b': {
+      c: 'other'
+    }
+  });
+
+  assert.deepEqual(parseQueryParams('a[b][c=value&a[b]c[d]=other'), {
+    a: {
+      b: ['value', { d: 'other' }]
+    }
+  });
+});
+
 test('decodes URL encoded keys and plus signs', () => {
   assert.deepEqual(parseQueryParams('series%20title=Breaking+Bad'), {
     'series title': 'Breaking Bad'

@@ -10,8 +10,8 @@ type QueryArrayObject = QueryParamValue[] & QueryParams;
 const ARRAY_LIMIT = 20;
 const ARRAY_INDEX_PATTERN = /^\d+$/;
 const ARRAY_OBJECT_PROPERTY_MARKER = '__queryParamProperty__:';
+const BRACKET_SEGMENT_PATTERN = /\[[^[\]]*]/g;
 const DEPTH_LIMIT = 5;
-const KEY_SEGMENT_PATTERN = /([^[\]]+)|\[([^\]]*)\]/g;
 const PARAMETER_LIMIT = 1000;
 const UNSAFE_KEYS = new Set(['__proto__', 'constructor']);
 
@@ -49,25 +49,40 @@ function getArrayObjectResultKey(key: string) {
   return key.substring(ARRAY_OBJECT_PROPERTY_MARKER.length);
 }
 
-function parseKey(key: string) {
-  const segments: string[] = [];
-  let match = KEY_SEGMENT_PATTERN.exec(key);
+function getBracketSegment(segment: string) {
+  return segment.substring(1, segment.length - 1);
+}
 
-  while (match) {
-    segments.push(match[1] ?? match[2] ?? '');
-    match = KEY_SEGMENT_PATTERN.exec(key);
+function parseKey(key: string) {
+  if (key === '') {
+    return [];
   }
 
-  if (segments.length <= DEPTH_LIMIT + 1) {
+  const segments: string[] = [];
+  BRACKET_SEGMENT_PATTERN.lastIndex = 0;
+
+  let match = BRACKET_SEGMENT_PATTERN.exec(key);
+
+  if (!match) {
+    return [key];
+  }
+
+  const parentKey = key.substring(0, match.index);
+
+  if (parentKey !== '') {
+    segments.push(parentKey);
+  }
+
+  while (match && segments.length < DEPTH_LIMIT + 1) {
+    segments.push(getBracketSegment(match[0]));
+    match = BRACKET_SEGMENT_PATTERN.exec(key);
+  }
+
+  if (!match) {
     return segments;
   }
 
-  return segments.slice(0, DEPTH_LIMIT + 1).concat(
-    segments
-      .slice(DEPTH_LIMIT + 1)
-      .map((segment) => `[${segment}]`)
-      .join('')
-  );
+  return segments.concat(key.substring(match.index));
 }
 
 function createContainer(nextKey: string): QueryContainer {
