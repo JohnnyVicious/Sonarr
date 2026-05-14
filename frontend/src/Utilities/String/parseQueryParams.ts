@@ -9,6 +9,7 @@ type QueryArrayObject = QueryParamValue[] & QueryParams;
 
 const ARRAY_LIMIT = 20;
 const ARRAY_INDEX_PATTERN = /^\d+$/;
+const ARRAY_OBJECT_KEY_PREFIX = '__queryParamKey__:';
 const DEPTH_LIMIT = 5;
 const KEY_SEGMENT_PATTERN = /([^[\]]+)|\[([^\]]*)\]/g;
 const PARAMETER_LIMIT = 1000;
@@ -33,7 +34,19 @@ function isUnsafeKey(key: string) {
 function isArrayIndex(key: string) {
   const index = Number(key);
 
-  return ARRAY_INDEX_PATTERN.test(key) && index <= ARRAY_LIMIT;
+  return (
+    ARRAY_INDEX_PATTERN.test(key) &&
+    index.toString() === key &&
+    index <= ARRAY_LIMIT
+  );
+}
+
+function getArrayObjectStorageKey(key: string) {
+  return `${ARRAY_OBJECT_KEY_PREFIX}${key}`;
+}
+
+function getArrayObjectResultKey(key: string) {
+  return key.substring(ARRAY_OBJECT_KEY_PREFIX.length);
 }
 
 function parseKey(key: string) {
@@ -69,7 +82,7 @@ function getValue(container: QueryContainer, key: string) {
 
     return isArrayIndex(key)
       ? container[Number(key)]
-      : (container as QueryArrayObject)[key];
+      : (container as QueryArrayObject)[getArrayObjectStorageKey(key)];
   }
 
   return container[key];
@@ -86,7 +99,7 @@ function setValue(
     } else if (isArrayIndex(key)) {
       container[Number(key)] = value;
     } else {
-      (container as QueryArrayObject)[key] = value;
+      (container as QueryArrayObject)[getArrayObjectStorageKey(key)] = value;
     }
 
     return;
@@ -109,7 +122,9 @@ function mergeValue(
 }
 
 function getArrayObjectKeys(value: QueryParamValue[]) {
-  return Object.keys(value).filter((key) => !isArrayIndex(key));
+  return Object.keys(value).filter((key) =>
+    key.startsWith(ARRAY_OBJECT_KEY_PREFIX)
+  );
 }
 
 function setLeaf(container: QueryContainer, key: string, value: string) {
@@ -161,23 +176,28 @@ function assignParam(result: QueryParams, segments: string[], value: string) {
 
 function compactQueryParam(value: QueryParamValue): QueryParamValue {
   if (Array.isArray(value)) {
-    const compactedItems = value
-      .filter((item) => item != null)
-      .map((item) => compactQueryParam(item));
     const objectKeys = getArrayObjectKeys(value);
 
     if (objectKeys.length === 0) {
-      return compactedItems;
+      return value
+        .filter((item) => item != null)
+        .map((item) => compactQueryParam(item));
     }
 
     const result: QueryParams = {};
 
-    compactedItems.forEach((item, index) => {
-      result[index.toString()] = item;
+    value.forEach((item, index) => {
+      if (item == null) {
+        return;
+      }
+
+      result[index.toString()] = compactQueryParam(item);
     });
 
     objectKeys.forEach((key) => {
-      result[key] = compactQueryParam((value as QueryArrayObject)[key]);
+      result[getArrayObjectResultKey(key)] = compactQueryParam(
+        (value as QueryArrayObject)[key]
+      );
     });
 
     return result;

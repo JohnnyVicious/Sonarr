@@ -93,18 +93,30 @@ test('promotes scalar values before appending array-style duplicates', () => {
 });
 
 test('treats indexes above the qs array limit as object keys', () => {
-  assert.deepEqual(parseQueryParams('tags[21]=alpha&tags[999999999]=beta'), {
+  assert.deepEqual(
+    parseQueryParams('tags[0]=alpha&tags[21]=beta&tags[999999999]=gamma'),
+    {
+      tags: {
+        0: 'alpha',
+        21: 'beta',
+        999999999: 'gamma'
+      }
+    }
+  );
+});
+
+test('treats non-canonical numeric keys as object keys', () => {
+  assert.deepEqual(parseQueryParams('tags[01]=alpha'), {
     tags: {
-      21: 'alpha',
-      999999999: 'beta'
+      '01': 'alpha'
     }
   });
 });
 
 test('preserves mixed array and object notation', () => {
-  assert.deepEqual(parseQueryParams('tag[0]=alpha&tag[name]=beta'), {
+  assert.deepEqual(parseQueryParams('tag[15]=alpha&tag[name]=beta'), {
     tag: {
-      0: 'alpha',
+      15: 'alpha',
       name: 'beta'
     }
   });
