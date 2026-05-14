@@ -35,14 +35,19 @@ namespace NzbDrone.Core.Test.TvTests
             {
                 // Season 1, episode 1, has file, aired
                 new Episode { Id = 1, SeriesId = 1, SeasonNumber = 1, EpisodeNumber = 1, EpisodeFileId = 1, Monitored = true, AirDateUtc = DateTime.UtcNow.AddDays(-90) },
+
                 // Season 1, episode 2, no file, aired
                 new Episode { Id = 2, SeriesId = 1, SeasonNumber = 1, EpisodeNumber = 2, EpisodeFileId = 0, Monitored = true, AirDateUtc = DateTime.UtcNow.AddDays(-80) },
+
                 // Season 2, episode 1, has file, aired
                 new Episode { Id = 3, SeriesId = 1, SeasonNumber = 2, EpisodeNumber = 1, EpisodeFileId = 2, Monitored = true, AirDateUtc = DateTime.UtcNow.AddDays(-30) },
+
                 // Season 2, episode 2, no file, not aired
                 new Episode { Id = 4, SeriesId = 1, SeasonNumber = 2, EpisodeNumber = 2, EpisodeFileId = 0, Monitored = true, AirDateUtc = DateTime.UtcNow.AddDays(30) },
+
                 // Season 3, episode 1, no file, future
                 new Episode { Id = 5, SeriesId = 1, SeasonNumber = 3, EpisodeNumber = 1, EpisodeFileId = 0, Monitored = true, AirDateUtc = DateTime.UtcNow.AddDays(60) },
+
                 // Season 3, episode 2, no file, no air date (TBA)
                 new Episode { Id = 6, SeriesId = 1, SeasonNumber = 3, EpisodeNumber = 2, EpisodeFileId = 0, Monitored = true, AirDateUtc = null },
             };

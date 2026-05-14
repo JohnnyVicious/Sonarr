@@ -100,7 +100,7 @@ namespace NzbDrone.Core.Test.Download
         public void should_warn_when_output_path_is_empty_on_import()
         {
             _trackedDownload.ImportItem = Builder<DownloadClientItem>.CreateNew()
-                .With(h => h.OutputPath = new OsPath())
+                .With(h => h.OutputPath = default)
                 .Build();
 
             Subject.Import(_trackedDownload);

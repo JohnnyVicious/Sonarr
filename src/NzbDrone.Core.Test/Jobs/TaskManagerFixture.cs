@@ -199,6 +199,7 @@ namespace NzbDrone.Core.Test.Jobs
             var backupTask = tasks.FirstOrDefault(t => t.TypeName.Contains("BackupCommand"));
 
             backupTask.Should().NotBeNull();
+
             // 1 day * 60 min * 24 hrs = 1440
             backupTask.Interval.Should().Be(1 * 60 * 24);
         }
@@ -216,6 +217,7 @@ namespace NzbDrone.Core.Test.Jobs
             var backupTask = tasks.FirstOrDefault(t => t.TypeName.Contains("BackupCommand"));
 
             backupTask.Should().NotBeNull();
+
             // 7 days * 60 min * 24 hrs = 10080
             backupTask.Interval.Should().Be(7 * 60 * 24);
         }
