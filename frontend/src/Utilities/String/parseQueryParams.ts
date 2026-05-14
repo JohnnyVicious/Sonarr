@@ -9,7 +9,7 @@ type QueryArrayObject = QueryParamValue[] & QueryParams;
 
 const ARRAY_LIMIT = 20;
 const ARRAY_INDEX_PATTERN = /^\d+$/;
-const ARRAY_OBJECT_KEY_PREFIX = '__queryParamKey__:';
+const ARRAY_OBJECT_PROPERTY_MARKER = '__queryParamProperty__:';
 const DEPTH_LIMIT = 5;
 const KEY_SEGMENT_PATTERN = /([^[\]]+)|\[([^\]]*)\]/g;
 const PARAMETER_LIMIT = 1000;
@@ -42,11 +42,11 @@ function isArrayIndex(key: string) {
 }
 
 function getArrayObjectStorageKey(key: string) {
-  return `${ARRAY_OBJECT_KEY_PREFIX}${key}`;
+  return `${ARRAY_OBJECT_PROPERTY_MARKER}${key}`;
 }
 
 function getArrayObjectResultKey(key: string) {
-  return key.substring(ARRAY_OBJECT_KEY_PREFIX.length);
+  return key.substring(ARRAY_OBJECT_PROPERTY_MARKER.length);
 }
 
 function parseKey(key: string) {
@@ -123,7 +123,7 @@ function mergeValue(
 
 function getArrayObjectKeys(value: QueryParamValue[]) {
   return Object.keys(value).filter((key) =>
-    key.startsWith(ARRAY_OBJECT_KEY_PREFIX)
+    key.startsWith(ARRAY_OBJECT_PROPERTY_MARKER)
   );
 }
 
@@ -133,45 +133,73 @@ function setLeaf(container: QueryContainer, key: string, value: string) {
   setValue(container, key, mergeValue(existingValue, value));
 }
 
-function assignParam(result: QueryParams, segments: string[], value: string) {
-  let container: QueryContainer = result;
+function shouldMergeScalarArrayValue(
+  nextKey: string,
+  existingValue: QueryParamValue | undefined
+) {
+  return (
+    (nextKey === '' || isArrayIndex(nextKey)) &&
+    existingValue != null &&
+    !isContainer(existingValue)
+  );
+}
 
-  for (let i = 0; i < segments.length; i++) {
-    const key = segments[i];
-    const nextKey = segments[i + 1];
+function setNestedContainer(
+  container: QueryContainer,
+  key: string,
+  nextKey: string
+) {
+  const existingValue = getValue(container, key);
 
-    if (i === segments.length - 1) {
-      setLeaf(container, key, value);
-
-      return;
-    }
-
-    const existingValue = getValue(container, key);
-
-    if (
-      (nextKey === '' || isArrayIndex(nextKey)) &&
-      existingValue != null &&
-      !isContainer(existingValue)
-    ) {
-      setValue(container, key, mergeValue(existingValue, value));
-
-      return;
-    }
-
-    if (isContainer(existingValue)) {
-      container = existingValue;
-    } else if (existingValue == null) {
-      const nextContainer = createContainer(nextKey);
-
-      setValue(container, key, nextContainer);
-      container = nextContainer;
-    } else {
-      const nextContainer = createContainer(nextKey);
-
-      setValue(container, key, mergeValue(existingValue, nextContainer));
-      container = nextContainer;
-    }
+  if (isContainer(existingValue)) {
+    return existingValue;
   }
+
+  const nextContainer = createContainer(nextKey);
+  const nextValue =
+    existingValue == null
+      ? nextContainer
+      : mergeValue(existingValue, nextContainer);
+
+  setValue(container, key, nextValue);
+
+  return nextContainer;
+}
+
+function assignNonLeaf(
+  container: QueryContainer,
+  key: string,
+  nextKey: string,
+  value: string
+) {
+  const existingValue = getValue(container, key);
+
+  if (shouldMergeScalarArrayValue(nextKey, existingValue)) {
+    setValue(container, key, mergeValue(existingValue, value));
+
+    return undefined;
+  }
+
+  return setNestedContainer(container, key, nextKey);
+}
+
+function assignParam(result: QueryParams, segments: string[], value: string) {
+  let container: QueryContainer | undefined = result;
+
+  segments.forEach((key, index) => {
+    if (!container) {
+      return;
+    }
+
+    if (index === segments.length - 1) {
+      setLeaf(container, key, value);
+      container = undefined;
+
+      return;
+    }
+
+    container = assignNonLeaf(container, key, segments[index + 1], value);
+  });
 }
 
 function compactQueryParam(value: QueryParamValue): QueryParamValue {
