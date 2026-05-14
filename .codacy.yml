@@ -1,6 +1,13 @@
 ---
 exclude_paths:
+  # Test projects
   - "src/NzbDrone.Common.Test/**"
   - "src/NzbDrone.Core.Test/**"
   - "src/NzbDrone.Http.Test/**"
   - "src/NzbDrone.Api.Test/**"
+  # Upstream frontend (has its own ESLint/prettier CI)
+  - "frontend/**"
+  # Upstream CI/build scripts
+  - "docker/tests/**"
+  - "scripts/**"
+  - "distribution/**"
