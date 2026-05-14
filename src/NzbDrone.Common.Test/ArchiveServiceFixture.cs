@@ -72,13 +72,9 @@ namespace NzbDrone.Common.Test
         {
             var zipPath = CreateZipWithEntry(entryName, "malicious");
 
-            try
-            {
-                Subject.Extract(zipPath, _destinationFolder);
-            }
-            catch (IOException)
-            {
-            }
+            var exception = Assert.Throws<IOException>(() => Subject.Extract(zipPath, _destinationFolder));
+
+            exception.Message.Should().Contain("outside");
 
             File.Exists(outsideTarget).Should().BeFalse(
                 "unsafe ZIP entry {0} must not write outside destination directory", entryName);
@@ -141,8 +137,17 @@ namespace NzbDrone.Common.Test
         public void should_not_write_outside_destination_with_absolute_path()
         {
             var absolutePath = Path.Combine(GetTempFilePath(), "absolute", "evil.txt");
+            var zipPath = CreateZipWithEntry(absolutePath, "malicious");
+            var destinationRoot = Path.GetFullPath(_destinationFolder) + Path.DirectorySeparatorChar;
 
-            ExtractUnsafeZipAndAssertOutsideTargetIsUntouched(absolutePath, absolutePath);
+            Subject.Extract(zipPath, _destinationFolder);
+
+            File.Exists(absolutePath).Should().BeFalse(
+                "absolute ZIP entry must not write outside destination directory");
+
+            var extractedFiles = Directory.GetFiles(_destinationFolder, "*", SearchOption.AllDirectories);
+            extractedFiles.Should().NotBeEmpty();
+            extractedFiles.Should().OnlyContain(file => Path.GetFullPath(file).StartsWith(destinationRoot));
         }
 
         [Test]
