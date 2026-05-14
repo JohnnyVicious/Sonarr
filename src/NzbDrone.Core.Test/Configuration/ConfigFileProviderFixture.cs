@@ -21,7 +21,7 @@ namespace NzbDrone.Core.Test.Configuration
     public class ConfigFileProviderFixture : CoreTest<ConfigFileProvider>
     {
         private const string TestApiKey = "test" + "ApiKey" + "123456789012345678";
-        private static readonly string ConfigXml = $"<Config><Port>8989</Port><SslPort>9898</SslPort><EnableSsl>False</EnableSsl><LaunchBrowser>True</LaunchBrowser><ApiKey>{TestApiKey}</ApiKey><AuthenticationMethod>None</AuthenticationMethod><Branch>main</Branch><LogLevel>debug</LogLevel><UrlBase></UrlBase></Config>";
+        private const string ConfigXml = "<Config><Port>8989</Port><SslPort>9898</SslPort><EnableSsl>False</EnableSsl><LaunchBrowser>True</LaunchBrowser><ApiKey>" + TestApiKey + "</ApiKey><AuthenticationMethod>None</AuthenticationMethod><Branch>main</Branch><LogLevel>debug</LogLevel><UrlBase></UrlBase></Config>";
 
         [SetUp]
         public void Setup()
