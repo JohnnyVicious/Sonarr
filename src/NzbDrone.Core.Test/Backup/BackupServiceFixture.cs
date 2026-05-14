@@ -136,6 +136,9 @@ namespace NzbDrone.Core.Test.Backup
                 .Returns(new[] { unknownFile });
 
             Assert.Throws<RestoreBackupFailedException>(() => Subject.Restore(backupFile));
+
+            Mocker.GetMock<IDiskProvider>()
+                .Verify(s => s.DeleteFolder(temporaryPath, true), Times.Once());
         }
 
         [Test]
@@ -239,10 +242,6 @@ namespace NzbDrone.Core.Test.Backup
         [Test]
         public void get_backup_folder_should_combine_with_appdata_when_relative()
         {
-            Mocker.GetMock<IConfigService>()
-                .SetupGet(s => s.BackupFolder)
-                .Returns("Backups");
-
             var result = Subject.GetBackupFolder();
 
             result.Should().Be(Path.Combine(_appDataFolder, "Backups"));
@@ -251,10 +250,6 @@ namespace NzbDrone.Core.Test.Backup
         [Test]
         public void get_backup_folder_with_type_should_append_type_subfolder()
         {
-            Mocker.GetMock<IConfigService>()
-                .SetupGet(s => s.BackupFolder)
-                .Returns("Backups");
-
             var result = Subject.GetBackupFolder(BackupType.Manual);
 
             result.Should().Be(Path.Combine(_appDataFolder, "Backups", "manual"));

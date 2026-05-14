@@ -1,4 +1,3 @@
-using System;
 using System.IO;
 using FluentAssertions;
 using ICSharpCode.SharpZipLib.Zip;
@@ -20,7 +19,7 @@ namespace NzbDrone.Common.Test
 
         private string CreateZipWithEntry(string entryName, string content = "test content")
         {
-            var zipPath = Path.Combine(GetTempFilePath() + ".zip");
+            var zipPath = GetTempFilePath() + ".zip";
             Directory.CreateDirectory(Path.GetDirectoryName(zipPath));
 
             using (var fs = File.Create(zipPath))
@@ -39,7 +38,7 @@ namespace NzbDrone.Common.Test
 
         private string CreateValidBackupZip()
         {
-            var zipPath = Path.Combine(GetTempFilePath() + ".zip");
+            var zipPath = GetTempFilePath() + ".zip";
             Directory.CreateDirectory(Path.GetDirectoryName(zipPath));
 
             using (var fs = File.Create(zipPath))
@@ -56,6 +55,29 @@ namespace NzbDrone.Common.Test
             }
 
             return zipPath;
+        }
+
+        private string GetRelativeEntryNameForOutsidePath(string outsidePath)
+        {
+            return NormalizeEntryName(Path.GetRelativePath(_destinationFolder, outsidePath));
+        }
+
+        private static string NormalizeEntryName(string path)
+        {
+            return path.Replace(Path.DirectorySeparatorChar, '/')
+                       .Replace(Path.AltDirectorySeparatorChar, '/');
+        }
+
+        private void ExtractUnsafeZipAndAssertOutsideTargetIsUntouched(string entryName, string outsideTarget)
+        {
+            var zipPath = CreateZipWithEntry(entryName, "malicious");
+
+            var exception = Assert.Throws<IOException>(() => Subject.Extract(zipPath, _destinationFolder));
+
+            exception.Message.Should().Contain("outside");
+
+            File.Exists(outsideTarget).Should().BeFalse(
+                "unsafe ZIP entry {0} must not write outside destination directory", entryName);
         }
 
         [Test]
@@ -94,124 +116,72 @@ namespace NzbDrone.Common.Test
         [Test]
         public void should_not_write_outside_destination_with_relative_traversal()
         {
-            var zipPath = CreateZipWithEntry("../../evil.txt", "malicious");
-            var traversalTarget = Path.GetFullPath(Path.Combine(_destinationFolder, "../../evil.txt"));
+            var traversalTarget = Path.Combine(GetTempFilePath(), "evil.txt");
+            var entryName = GetRelativeEntryNameForOutsidePath(traversalTarget);
 
-            try
-            {
-                Subject.Extract(zipPath, _destinationFolder);
-            }
-            catch (IOException)
-            {
-            }
-
-            File.Exists(traversalTarget).Should().BeFalse(
-                "ZIP entry with relative traversal should not write outside destination directory");
+            ExtractUnsafeZipAndAssertOutsideTargetIsUntouched(entryName, traversalTarget);
         }
 
         [Test]
         public void should_not_write_outside_destination_with_deep_traversal()
         {
-            var zipPath = CreateZipWithEntry("../../../../../../../tmp/evil.txt", "malicious");
-            var evilPath = Path.Combine(Path.GetTempPath(), "evil.txt");
+            _destinationFolder = Path.Combine(GetTempFilePath(), "safe", "nested", "destination");
 
-            try
-            {
-                Subject.Extract(zipPath, _destinationFolder);
-            }
-            catch (IOException)
-            {
-            }
+            var traversalTarget = Path.Combine(GetTempFilePath(), "outside", "evil.txt");
+            var entryName = GetRelativeEntryNameForOutsidePath(traversalTarget);
 
-            File.Exists(evilPath).Should().BeFalse(
-                "ZIP entry with deep traversal should not write outside destination directory");
+            ExtractUnsafeZipAndAssertOutsideTargetIsUntouched(entryName, traversalTarget);
         }
 
         [Test]
         public void should_not_write_outside_destination_with_absolute_path()
         {
-            var absolutePath = Path.Combine(Path.GetTempPath(), "sonarr_test_evil_absolute.txt");
+            var absolutePath = Path.Combine(GetTempFilePath(), "absolute", "evil.txt");
             var zipPath = CreateZipWithEntry(absolutePath, "malicious");
+            var destinationRoot = Path.GetFullPath(_destinationFolder) + Path.DirectorySeparatorChar;
 
-            try
-            {
-                Subject.Extract(zipPath, _destinationFolder);
-            }
-            catch (IOException)
-            {
-            }
+            Subject.Extract(zipPath, _destinationFolder);
 
             File.Exists(absolutePath).Should().BeFalse(
-                "ZIP entry with absolute path should not write outside destination directory");
+                "absolute ZIP entry must not write outside destination directory");
+
+            var extractedFiles = Directory.GetFiles(_destinationFolder, "*", SearchOption.AllDirectories);
+            extractedFiles.Should().NotBeEmpty();
+            extractedFiles.Should().OnlyContain(file => Path.GetFullPath(file).StartsWith(destinationRoot));
         }
 
         [Test]
         public void should_not_write_outside_destination_with_mixed_separators()
         {
-            var zipPath = CreateZipWithEntry("..\\..\\evil.txt", "malicious");
-            var traversalTarget = Path.GetFullPath(Path.Combine(_destinationFolder, "..\\..\\evil.txt"));
+            var traversalTarget = Path.Combine(GetTempFilePath(), "mixed", "evil.txt");
+            var entryName = GetRelativeEntryNameForOutsidePath(traversalTarget)
+                .Replace('/', '\\');
 
-            try
-            {
-                Subject.Extract(zipPath, _destinationFolder);
-            }
-            catch (IOException)
-            {
-            }
-
-            File.Exists(traversalTarget).Should().BeFalse(
-                "ZIP entry with backslash traversal should not write outside destination directory");
+            ExtractUnsafeZipAndAssertOutsideTargetIsUntouched(entryName, traversalTarget);
         }
 
         [Test]
-        public void should_handle_zip_entry_with_leading_slash()
+        public void should_sanitize_zip_entry_with_leading_slash()
         {
             var zipPath = CreateZipWithEntry("/subdir/test.txt", "hello");
-            var destinationRoot = Path.GetFullPath(_destinationFolder) + Path.DirectorySeparatorChar;
+            var expectedExtractedFile = Path.Combine(_destinationFolder, "subdir", "test.txt");
+            var rootLevelTarget = Path.Combine(Path.GetPathRoot(_destinationFolder), "subdir", "test.txt");
 
-            try
-            {
-                Subject.Extract(zipPath, _destinationFolder);
-            }
-            catch (IOException)
-            {
-            }
+            Subject.Extract(zipPath, _destinationFolder);
 
-            var extractedFiles = Directory.Exists(_destinationFolder)
-                ? Directory.GetFiles(_destinationFolder, "*", SearchOption.AllDirectories)
-                : Array.Empty<string>();
-
-            foreach (var file in extractedFiles)
-            {
-                Path.GetFullPath(file).StartsWith(destinationRoot).Should().BeTrue(
-                    "extracted file {0} must remain within the destination directory", file);
-            }
+            File.Exists(expectedExtractedFile).Should().BeTrue();
+            File.ReadAllText(expectedExtractedFile).Should().Be("hello");
+            File.Exists(rootLevelTarget).Should().BeFalse(
+                "leading slash ZIP entry must not write to the filesystem root");
+            Directory.GetFiles(_destinationFolder, "*", SearchOption.AllDirectories).Should().HaveCount(1);
         }
 
         [Test]
         public void should_not_extract_traversal_disguised_in_nested_path()
         {
-            var zipPath = CreateZipWithEntry("valid/../../escape.txt", "malicious");
+            var escapePath = Path.GetFullPath(Path.Combine(_destinationFolder, "valid", "..", "..", "escape.txt"));
 
-            var act = () => Subject.Extract(zipPath, _destinationFolder);
-
-            try
-            {
-                act();
-            }
-            catch (IOException)
-            {
-                return;
-            }
-
-            var escapePath = Path.GetFullPath(Path.Combine(_destinationFolder, "valid/../../escape.txt"));
-            var destinationRoot = Path.GetFullPath(_destinationFolder) + Path.DirectorySeparatorChar;
-
-            if (File.Exists(escapePath))
-            {
-                escapePath.StartsWith(destinationRoot).Should().BeTrue(
-                    "nested traversal entry should not escape destination directory");
-            }
+            ExtractUnsafeZipAndAssertOutsideTargetIsUntouched("valid/../../escape.txt", escapePath);
         }
 
         [Test]
@@ -225,7 +195,7 @@ namespace NzbDrone.Common.Test
             File.WriteAllText(file1, "content1");
             File.WriteAllText(file2, "content2");
 
-            var zipPath = Path.Combine(GetTempFilePath() + ".zip");
+            var zipPath = GetTempFilePath() + ".zip";
             Directory.CreateDirectory(Path.GetDirectoryName(zipPath));
 
             Subject.CreateZip(zipPath, new[] { file1, file2 });
