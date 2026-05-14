@@ -10,8 +10,8 @@ namespace NzbDrone.Http.Test.Frontend.Mappers
     [TestFixture]
     public class BackupFileMapperFixture : TestBase<BackupFileMapper>
     {
-        private static readonly char S = Path.DirectorySeparatorChar;
         private const string BACKUP_FOLDER = "/backups";
+        private static readonly char S = Path.DirectorySeparatorChar;
 
         [SetUp]
         public void Setup()

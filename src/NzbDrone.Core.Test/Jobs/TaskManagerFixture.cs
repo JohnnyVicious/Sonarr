@@ -9,7 +9,6 @@ using NzbDrone.Core.Configuration;
 using NzbDrone.Core.Download;
 using NzbDrone.Core.Jobs;
 using NzbDrone.Core.Lifecycle;
-using NzbDrone.Core.Messaging.Commands;
 using NzbDrone.Core.Test.Framework;
 
 namespace NzbDrone.Core.Test.Jobs

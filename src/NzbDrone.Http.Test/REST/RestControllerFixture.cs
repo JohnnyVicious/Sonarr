@@ -22,7 +22,7 @@ namespace NzbDrone.Http.Test.REST
 
             public void CallValidateResource(TestResource resource)
             {
-                base.ValidateResource(resource);
+                ValidateResource(resource);
             }
         }
 
