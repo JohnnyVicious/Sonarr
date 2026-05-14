@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import qs from 'qs';
+
 
 // See: https://developer.mozilla.org/en-US/docs/Web/API/HTMLHyperlinkElementUtils
 const anchor = document.createElement('a');
@@ -26,8 +26,9 @@ export default function parseUrl(url: string) {
   properties.isAbsolute = /^[\w:]*\/\//.test(url);
 
   if (properties.search) {
-    // Remove leading ? from querystring before parsing.
-    properties.params = qs.parse((properties.search as string).substring(1));
+    properties.params = Object.fromEntries(
+      new URLSearchParams(properties.search as string)
+    );
   } else {
     properties.params = {};
   }
