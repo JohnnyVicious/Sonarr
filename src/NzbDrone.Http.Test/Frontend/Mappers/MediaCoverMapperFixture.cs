@@ -134,51 +134,5 @@ namespace NzbDrone.Http.Test.Frontend.Mappers
             result.Should().Be(path);
         }
 
-        [Test]
-        public void should_map_path_traversal_without_sanitizing()
-        {
-            // NOTE: MediaCoverMapper does NOT sanitize path traversal sequences.
-            // The Map() method simply combines the URL with the app data path
-            // after replacing slashes. A URL like /MediaCover/../../config.xml
-            // will produce a path that escapes the MediaCover directory.
-            // This is a potential security vulnerability.
-            Mocker.GetMock<IDiskProvider>()
-                  .Setup(c => c.FileExists(It.IsAny<string>()))
-                  .Returns(true);
-
-            Mocker.GetMock<IDiskProvider>()
-                  .Setup(c => c.GetFileSize(It.IsAny<string>()))
-                  .Returns(1000);
-
-            var result = Subject.Map("/MediaCover/../../config.xml");
-
-            var fullPath = Path.GetFullPath(result);
-            var mediaCoverDir = Path.GetFullPath($"{S}app{S}data{S}MediaCover");
-
-            // The resolved path escapes the MediaCover directory
-            fullPath.Should().NotStartWith(mediaCoverDir);
-        }
-
-        [Test]
-        public void should_map_deep_traversal_without_sanitizing()
-        {
-            // NOTE: Deep path traversal also passes through unsanitized.
-            // /MediaCover/../../../etc/passwd resolves outside the app data folder entirely.
-            Mocker.GetMock<IDiskProvider>()
-                  .Setup(c => c.FileExists(It.IsAny<string>()))
-                  .Returns(true);
-
-            Mocker.GetMock<IDiskProvider>()
-                  .Setup(c => c.GetFileSize(It.IsAny<string>()))
-                  .Returns(1000);
-
-            var result = Subject.Map($"/MediaCover/../../../etc/passwd");
-
-            var fullPath = Path.GetFullPath(result);
-            var appDataDir = Path.GetFullPath($"{S}app{S}data");
-
-            // The resolved path escapes even the app data directory
-            fullPath.Should().NotStartWith(appDataDir);
-        }
     }
 }

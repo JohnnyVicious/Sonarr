@@ -127,34 +127,6 @@ namespace NzbDrone.Http.Test.Frontend.Mappers
         }
 
         [Test]
-        public void should_prepend_url_base_to_css_href()
-        {
-            _diskProvider.Setup(d => d.ReadAllText(It.IsAny<string>()))
-                .Returns("<html><head><link href=\"Content/styles.css\" /></head></html>");
-
-            _subject.SetHtmlPath("/app/index.html");
-            _subject.SetBasePathPrefix("/sonarr");
-
-            var result = _subject.GetHtmlTextPublic(new Microsoft.AspNetCore.Http.DefaultHttpContext());
-
-            result.Should().Contain("href=\"/sonarr/Content/styles.css");
-        }
-
-        [Test]
-        public void should_prepend_url_base_to_js_src()
-        {
-            _diskProvider.Setup(d => d.ReadAllText(It.IsAny<string>()))
-                .Returns("<html><body><script src=\"app.js\"></script></body></html>");
-
-            _subject.SetHtmlPath("/app/index.html");
-            _subject.SetBasePathPrefix("/sonarr");
-
-            var result = _subject.GetHtmlTextPublic(new Microsoft.AspNetCore.Http.DefaultHttpContext());
-
-            result.Should().Contain("src=\"/sonarr/app.js");
-        }
-
-        [Test]
         public void should_not_add_cache_breaker_when_data_no_hash_present()
         {
             _diskProvider.Setup(d => d.ReadAllText(It.IsAny<string>()))

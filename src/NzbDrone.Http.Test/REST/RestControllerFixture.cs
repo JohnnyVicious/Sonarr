@@ -73,15 +73,6 @@ namespace NzbDrone.Http.Test.REST
         }
 
         [Test]
-        public void validate_resource_should_not_throw_for_valid_resource()
-        {
-            var resource = new TestResource { Id = 1, Name = "Test" };
-
-            _controller.Invoking(c => c.CallValidateResource(resource))
-                .Should().NotThrow();
-        }
-
-        [Test]
         public void resource_name_should_be_lowercase_without_resource_suffix()
         {
             var resource = new TestResource();

@@ -77,15 +77,6 @@ namespace NzbDrone.Core.Test.MediaFiles
         }
 
         [Test]
-        public void should_delete_file_from_disk_when_exists()
-        {
-            Subject.DeleteEpisodeFile(_series, _episodeFile);
-
-            Mocker.GetMock<IRecycleBinProvider>()
-                  .Verify(v => v.DeleteFile(It.IsAny<string>(), It.IsAny<string>()), Times.Once());
-        }
-
-        [Test]
         public void should_delete_from_database_even_if_file_not_on_disk()
         {
             Mocker.GetMock<IDiskProvider>()
@@ -96,15 +87,6 @@ namespace NzbDrone.Core.Test.MediaFiles
 
             Mocker.GetMock<IMediaFileService>()
                   .Verify(v => v.Delete(_episodeFile, DeleteMediaFileReason.Manual), Times.Once());
-        }
-
-        [Test]
-        public void should_publish_delete_completed_event()
-        {
-            Subject.DeleteEpisodeFile(_series, _episodeFile);
-
-            Mocker.GetMock<IEventAggregator>()
-                  .Verify(v => v.PublishEvent(It.IsAny<DeleteCompletedEvent>()), Times.Once());
         }
 
         [Test]

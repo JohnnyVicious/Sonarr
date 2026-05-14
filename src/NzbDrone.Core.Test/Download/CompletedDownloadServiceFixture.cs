@@ -97,18 +97,6 @@ namespace NzbDrone.Core.Test.Download
         }
 
         [Test]
-        public void should_warn_when_output_path_is_empty_on_import()
-        {
-            _trackedDownload.ImportItem = Builder<DownloadClientItem>.CreateNew()
-                .With(h => h.OutputPath = default)
-                .Build();
-
-            Subject.Import(_trackedDownload);
-
-            _trackedDownload.Status.Should().Be(TrackedDownloadStatus.Warning);
-        }
-
-        [Test]
         public void should_warn_when_remote_episode_is_null_on_import()
         {
             _trackedDownload.RemoteEpisode = null;

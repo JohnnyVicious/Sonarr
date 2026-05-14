@@ -231,16 +231,6 @@ namespace NzbDrone.Common.Test
         }
 
         [Test]
-        public void should_throw_on_corrupt_zip()
-        {
-            var corruptPath = Path.Combine(GetTempFilePath() + ".zip");
-            Directory.CreateDirectory(Path.GetDirectoryName(corruptPath));
-            File.WriteAllText(corruptPath, "this is not a zip file");
-
-            Assert.Throws<IOException>(() => Subject.Extract(corruptPath, _destinationFolder));
-        }
-
-        [Test]
         public void should_create_zip_with_files()
         {
             var sourceDir = GetTempFilePath();

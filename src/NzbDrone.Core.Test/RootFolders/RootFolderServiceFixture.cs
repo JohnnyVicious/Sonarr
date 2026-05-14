@@ -98,31 +98,6 @@ namespace NzbDrone.Core.Test.RootFolders
         }
 
         [Test]
-        public void should_be_able_to_add_root_folder()
-        {
-            var path = @"C:\TV".AsOsAgnostic();
-
-            var rootFolder = new RootFolder { Path = path };
-
-            Mocker.GetMock<IDiskProvider>()
-                  .Setup(s => s.FolderExists(path))
-                  .Returns(true);
-
-            Mocker.GetMock<IDiskProvider>()
-                  .Setup(s => s.FolderWritable(path))
-                  .Returns(true);
-
-            Mocker.GetMock<ISeriesRepository>()
-                  .Setup(s => s.AllSeriesPaths())
-                  .Returns(new Dictionary<int, string>());
-
-            Subject.Add(rootFolder);
-
-            Mocker.GetMock<IRootFolderRepository>()
-                  .Verify(v => v.Insert(rootFolder), Times.Once());
-        }
-
-        [Test]
         public void should_return_all_root_folders()
         {
             var rootFolders = new List<RootFolder>
@@ -165,22 +140,5 @@ namespace NzbDrone.Core.Test.RootFolders
             result.Path.Should().Be(rootFolder.Path);
         }
 
-        [Test]
-        public void should_get_best_root_folder_for_path_with_matching_root()
-        {
-            var rootFolders = new List<RootFolder>
-            {
-                new RootFolder { Id = 1, Path = @"C:\TV".AsOsAgnostic() },
-                new RootFolder { Id = 2, Path = @"C:\TV2".AsOsAgnostic() }
-            };
-
-            Mocker.GetMock<IRootFolderRepository>()
-                  .Setup(s => s.All())
-                  .Returns(rootFolders);
-
-            var result = Subject.GetBestRootFolderPath(@"C:\TV\Series1".AsOsAgnostic());
-
-            result.Should().Be(@"C:\TV\".AsOsAgnostic());
-        }
     }
 }

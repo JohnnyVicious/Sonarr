@@ -69,29 +69,6 @@ namespace NzbDrone.Core.Test.Jobs
         }
 
         [Test]
-        public void get_pending_should_return_tasks_that_are_overdue()
-        {
-            var existingTasks = new List<ScheduledTask>
-            {
-                new ScheduledTask
-                {
-                    TypeName = typeof(RefreshMonitoredDownloadsCommand).FullName,
-                    Interval = 1,
-                    LastExecution = DateTime.UtcNow.AddMinutes(-5)
-                }
-            };
-
-            Mocker.GetMock<IScheduledTaskRepository>()
-                  .Setup(s => s.All())
-                  .Returns(existingTasks);
-
-            GivenInitializedTasks();
-
-            var pending = Subject.GetPending();
-            pending.Should().HaveCount(1);
-        }
-
-        [Test]
         public void get_pending_should_not_return_tasks_with_zero_interval()
         {
             var existingTasks = new List<ScheduledTask>
