@@ -10,6 +10,9 @@ namespace NzbDrone.Http.Test.Extensions
     [TestFixture]
     public class RequestExtensionsFixture : TestBase
     {
+        private static readonly IPAddress TestRemoteIp = new IPAddress(new byte[] { 192, 168, 1, 100 });
+        private static readonly IPAddress TestMappableIp = new IPAddress(new byte[] { 192, 168, 1, 1 });
+
         [Test]
         public void is_api_request_should_return_true_for_api_path()
         {
@@ -95,9 +98,9 @@ namespace NzbDrone.Http.Test.Extensions
         public void get_remote_ip_should_return_ip_from_context()
         {
             var context = new DefaultHttpContext();
-            context.Connection.RemoteIpAddress = IPAddress.Parse("192.168.1.100"); // NOSONAR
+            context.Connection.RemoteIpAddress = TestRemoteIp;
 
-            context.GetRemoteIP().Should().Be("192.168.1.100"); // NOSONAR
+            context.GetRemoteIP().Should().Be(TestRemoteIp.ToString());
         }
 
         [Test]
@@ -110,9 +113,9 @@ namespace NzbDrone.Http.Test.Extensions
         public void get_remote_ip_should_map_ipv6_to_ipv4()
         {
             var context = new DefaultHttpContext();
-            context.Connection.RemoteIpAddress = IPAddress.Parse("192.168.1.1").MapToIPv6(); // NOSONAR
+            context.Connection.RemoteIpAddress = TestMappableIp.MapToIPv6();
 
-            context.GetRemoteIP().Should().Be("192.168.1.1"); // NOSONAR
+            context.GetRemoteIP().Should().Be(TestMappableIp.ToString());
         }
 
         [Test]

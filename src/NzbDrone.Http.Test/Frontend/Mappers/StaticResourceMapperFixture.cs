@@ -25,12 +25,16 @@ namespace NzbDrone.Http.Test.Frontend.Mappers
                   .Returns("UI");
         }
 
-        [TestCase("/content/styles.css")]
-        [TestCase("/content/images/logo.png")]
-        public void should_handle_content_urls(string url) // NOSONAR
+        [Test]
+        public void should_handle_content_css_url()
         {
-            // nosemgrep: codacy.csharp.security.null-dereference
-            Subject.CanHandle(url).Should().BeTrue();
+            Subject.CanHandle("/content/styles.css").Should().BeTrue();
+        }
+
+        [Test]
+        public void should_handle_content_image_url()
+        {
+            Subject.CanHandle("/content/images/logo.png").Should().BeTrue();
         }
 
         [Test]

@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.IO;
 using FluentAssertions;
 using Microsoft.Extensions.Options;
 using Moq;
@@ -26,7 +27,7 @@ namespace NzbDrone.Core.Test.Configuration
         {
             Mocker.GetMock<IAppFolderInfo>()
                   .SetupGet(s => s.AppDataFolder)
-                  .Returns(@"/tmp/sonarr_test"); // NOSONAR
+                  .Returns(Path.Combine(Path.GetTempPath(), "sonarr_test"));
 
             Mocker.SetConstant<IOptions<PostgresOptions>>(Options.Create(new PostgresOptions()));
             Mocker.SetConstant<IOptions<AuthOptions>>(Options.Create(new AuthOptions()));

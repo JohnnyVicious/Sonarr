@@ -30,9 +30,9 @@ namespace NzbDrone.Http.Test.Frontend.Mappers
                 HtmlPath = path;
             }
 
-            public void SetUrlBase(string urlBase) // NOSONAR
+            public void SetBasePathPrefix(string basePath)
             {
-                UrlBase = urlBase;
+                UrlBase = basePath;
             }
 
             public override string Map(string resourceUrl)
@@ -47,7 +47,6 @@ namespace NzbDrone.Http.Test.Frontend.Mappers
 
             public string GetHtmlTextPublic(Microsoft.AspNetCore.Http.HttpContext context)
             {
-                // nosemgrep: codacy.csharp.security.null-dereference
                 return GetHtmlText(context);
             }
         }
@@ -74,7 +73,7 @@ namespace NzbDrone.Http.Test.Frontend.Mappers
                 .Returns("<html><head><base href=\"__URL_BASE__/\" /></head></html>");
 
             _subject.SetHtmlPath("/app/index.html");
-            _subject.SetUrlBase("/sonarr");
+            _subject.SetBasePathPrefix("/sonarr");
 
             var result = _subject.GetHtmlTextPublic(new Microsoft.AspNetCore.Http.DefaultHttpContext());
 
@@ -89,7 +88,7 @@ namespace NzbDrone.Http.Test.Frontend.Mappers
                 .Returns("<html><head><base href=\"__URL_BASE__/\" /></head></html>");
 
             _subject.SetHtmlPath("/app/index.html");
-            _subject.SetUrlBase("");
+            _subject.SetBasePathPrefix("");
 
             var result = _subject.GetHtmlTextPublic(new Microsoft.AspNetCore.Http.DefaultHttpContext());
 
@@ -104,7 +103,7 @@ namespace NzbDrone.Http.Test.Frontend.Mappers
                 .Returns("<html><head><link href=\"Content/styles.css\" /></head></html>");
 
             _subject.SetHtmlPath("/app/index.html");
-            _subject.SetUrlBase("");
+            _subject.SetBasePathPrefix("");
 
             var result = _subject.GetHtmlTextPublic(new Microsoft.AspNetCore.Http.DefaultHttpContext());
 
@@ -118,7 +117,7 @@ namespace NzbDrone.Http.Test.Frontend.Mappers
                 .Returns("<html><body><script src=\"app.js\"></script></body></html>");
 
             _subject.SetHtmlPath("/app/index.html");
-            _subject.SetUrlBase("");
+            _subject.SetBasePathPrefix("");
 
             var result = _subject.GetHtmlTextPublic(new Microsoft.AspNetCore.Http.DefaultHttpContext());
 
@@ -132,7 +131,7 @@ namespace NzbDrone.Http.Test.Frontend.Mappers
                 .Returns("<html><head><link href=\"Content/styles.css\" /></head></html>");
 
             _subject.SetHtmlPath("/app/index.html");
-            _subject.SetUrlBase("/sonarr");
+            _subject.SetBasePathPrefix("/sonarr");
 
             var result = _subject.GetHtmlTextPublic(new Microsoft.AspNetCore.Http.DefaultHttpContext());
 
@@ -146,7 +145,7 @@ namespace NzbDrone.Http.Test.Frontend.Mappers
                 .Returns("<html><body><script src=\"app.js\"></script></body></html>");
 
             _subject.SetHtmlPath("/app/index.html");
-            _subject.SetUrlBase("/sonarr");
+            _subject.SetBasePathPrefix("/sonarr");
 
             var result = _subject.GetHtmlTextPublic(new Microsoft.AspNetCore.Http.DefaultHttpContext());
 
@@ -160,7 +159,7 @@ namespace NzbDrone.Http.Test.Frontend.Mappers
                 .Returns("<html><head><link href=\"Content/styles.css\" data-no-hash /></head></html>");
 
             _subject.SetHtmlPath("/app/index.html");
-            _subject.SetUrlBase("");
+            _subject.SetBasePathPrefix("");
 
             var result = _subject.GetHtmlTextPublic(new Microsoft.AspNetCore.Http.DefaultHttpContext());
 
@@ -175,7 +174,7 @@ namespace NzbDrone.Http.Test.Frontend.Mappers
                 .Returns("<html><body><img src=\"Content/images/logo.png\" /></body></html>");
 
             _subject.SetHtmlPath("/app/index.html");
-            _subject.SetUrlBase("");
+            _subject.SetBasePathPrefix("");
 
             var result = _subject.GetHtmlTextPublic(new Microsoft.AspNetCore.Http.DefaultHttpContext());
 

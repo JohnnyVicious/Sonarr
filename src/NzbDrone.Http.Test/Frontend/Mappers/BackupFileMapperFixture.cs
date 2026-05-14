@@ -21,13 +21,22 @@ namespace NzbDrone.Http.Test.Frontend.Mappers
                   .Returns(BACKUP_FOLDER);
         }
 
-        [TestCase("/backup/sonarr_backup_v5.0.0_2024.01.01.zip")]
-        [TestCase("/backup/sonarr_backup_2024.01.01.zip")]
-        [TestCase("/backup/nzbdrone_backup_v3.0.0_2020.05.15.zip")]
-        public void should_handle_valid_backup_urls(string url) // NOSONAR
+        [Test]
+        public void should_handle_sonarr_versioned_backup_url()
         {
-            // nosemgrep: codacy.csharp.security.null-dereference
-            Subject.CanHandle(url).Should().BeTrue();
+            Subject.CanHandle("/backup/sonarr_backup_v5.0.0_2024.01.01.zip").Should().BeTrue();
+        }
+
+        [Test]
+        public void should_handle_sonarr_unversioned_backup_url()
+        {
+            Subject.CanHandle("/backup/sonarr_backup_2024.01.01.zip").Should().BeTrue();
+        }
+
+        [Test]
+        public void should_handle_nzbdrone_backup_url()
+        {
+            Subject.CanHandle("/backup/nzbdrone_backup_v3.0.0_2020.05.15.zip").Should().BeTrue();
         }
 
         [Test]

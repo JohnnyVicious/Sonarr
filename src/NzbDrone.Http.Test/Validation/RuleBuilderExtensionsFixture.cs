@@ -12,7 +12,7 @@ namespace NzbDrone.Http.Test.Validation
         public class TestResource
         {
             public int Id { get; set; }
-            public string Url { get; set; } // NOSONAR
+            public string Address { get; set; }
             public string Name { get; set; }
             public int RssSyncInterval { get; set; }
         }
@@ -37,7 +37,7 @@ namespace NzbDrone.Http.Test.Validation
         {
             public HttpProtocolValidator()
             {
-                RuleFor(r => r.Url).HaveHttpProtocol();
+                RuleFor(r => r.Address).HaveHttpProtocol();
             }
         }
 
@@ -116,7 +116,7 @@ namespace NzbDrone.Http.Test.Validation
         public void http_protocol_should_pass_for_http_url()
         {
             var validator = new HttpProtocolValidator();
-            var resource = new TestResource { Url = "http://localhost:8989" };
+            var resource = new TestResource { Address = "http://localhost:8989" };
 
             var result = validator.Validate(resource);
 
@@ -127,7 +127,7 @@ namespace NzbDrone.Http.Test.Validation
         public void http_protocol_should_pass_for_https_url()
         {
             var validator = new HttpProtocolValidator();
-            var resource = new TestResource { Url = "https://sonarr.example.com" };
+            var resource = new TestResource { Address = "https://sonarr.example.com" };
 
             var result = validator.Validate(resource);
 
@@ -138,7 +138,7 @@ namespace NzbDrone.Http.Test.Validation
         public void http_protocol_should_fail_for_ftp_url()
         {
             var validator = new HttpProtocolValidator();
-            var resource = new TestResource { Url = "ftp://files.example.com" };
+            var resource = new TestResource { Address = "ftp://files.example.com" };
 
             var result = validator.Validate(resource);
 
@@ -149,7 +149,7 @@ namespace NzbDrone.Http.Test.Validation
         public void http_protocol_should_fail_for_no_protocol()
         {
             var validator = new HttpProtocolValidator();
-            var resource = new TestResource { Url = "localhost:8989" };
+            var resource = new TestResource { Address = "localhost:8989" };
 
             var result = validator.Validate(resource);
 

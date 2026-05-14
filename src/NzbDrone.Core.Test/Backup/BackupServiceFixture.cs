@@ -26,7 +26,7 @@ namespace NzbDrone.Core.Test.Backup
         [SetUp]
         public void Setup()
         {
-            _tempFolder = @"C:\temp".AsOsAgnostic(); // NOSONAR
+            _tempFolder = GetTempFilePath();
             _appDataFolder = @"C:\appdata".AsOsAgnostic();
             _backupFolder = Path.Combine(_appDataFolder, "Backups");
 
@@ -332,7 +332,6 @@ namespace NzbDrone.Core.Test.Backup
         [TestCase("sonarr_backup_v4.0.0_2024.01.01_12.00.00.txt", false)]
         public void backup_file_regex_should_match_correctly(string fileName, bool shouldMatch)
         {
-            // nosemgrep: codacy.csharp.security.null-dereference
             BackupService.BackupFileRegex.IsMatch(fileName).Should().Be(shouldMatch);
         }
     }
