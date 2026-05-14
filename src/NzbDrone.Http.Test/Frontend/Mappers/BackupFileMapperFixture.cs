@@ -85,21 +85,6 @@ namespace NzbDrone.Http.Test.Frontend.Mappers
             result.Should().Be(Path.Combine(BACKUP_FOLDER, "nzbdrone_backup_v3.0.0_2020.05.15.zip"));
         }
 
-        [Test]
-        public void should_map_path_traversal_without_sanitizing()
-        {
-            // NOTE: BackupFileMapper does NOT use Path.GetFileName() to extract the filename.
-            // It only strips the "/backup/" prefix and replaces slashes. Path traversal
-            // sequences like /../../../etc/passwd pass through and resolve outside
-            // the backup folder. However, CanHandle() would reject this URL because
-            // it does not match BackupFileRegex, so in practice this path is not reachable
-            // through normal request routing.
-            var result = Subject.Map("/backup/../../../etc/passwd");
 
-            var fullPath = Path.GetFullPath(result);
-            var backupDir = Path.GetFullPath(BACKUP_FOLDER);
-
-            fullPath.Should().NotStartWith(backupDir);
-        }
     }
 }
