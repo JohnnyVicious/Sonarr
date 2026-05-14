@@ -13,11 +13,12 @@ using NzbDrone.Core.Test.Framework;
 using NzbDrone.Core.Tv;
 using NzbDrone.Core.Tv.Events;
 using NzbDrone.Test.Common;
+using MediaFileDeletionServiceSubject = NzbDrone.Core.MediaFiles.MediaFileDeletionService;
 
 namespace NzbDrone.Core.Test.MediaFiles
 {
     [TestFixture]
-    public class MediaFileDeletionServiceFixture : CoreTest<MediaFileDeletionService>
+    public class MediaFileDeletionServiceFixture : CoreTest<MediaFileDeletionServiceSubject>
     {
         private Series _series;
         private EpisodeFile _episodeFile;
