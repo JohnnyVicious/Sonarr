@@ -6,6 +6,7 @@ export type QueryParamValue = string | QueryParamValue[] | QueryParams;
 
 const ARRAY_LIMIT = 20;
 const APPEND_ARRAY = Symbol('appendArray');
+const ARRAY_INDEX_PATTERN = /^\d+$/;
 const UNSAFE_KEYS = new Set(['__proto__', 'constructor']);
 
 type QueryParamArray = QueryParamValue[] & {
@@ -29,7 +30,7 @@ function isUnsafeKey(key: string) {
 function isArrayIndex(key: string) {
   const index = Number(key);
 
-  return /^\d+$/.test(key) && index <= ARRAY_LIMIT;
+  return ARRAY_INDEX_PATTERN.test(key) && index <= ARRAY_LIMIT;
 }
 
 function parseKey(key: string) {
@@ -86,6 +87,32 @@ function mergeObjects(existing: QueryParams, incoming: QueryParams) {
   return result;
 }
 
+function mergeExistingArray(
+  existing: QueryParamValue[],
+  incoming: QueryParamValue
+) {
+  if (Array.isArray(incoming)) {
+    return mergeArrays(existing, incoming);
+  }
+
+  if (isQueryParams(incoming)) {
+    return mergeObjects(arrayToObject(existing), incoming);
+  }
+
+  return existing.concat(incoming);
+}
+
+function mergeIncomingArray(
+  existing: QueryParamValue,
+  incoming: QueryParamValue[]
+) {
+  if (isQueryParams(existing)) {
+    return mergeObjects(existing, arrayToObject(incoming));
+  }
+
+  return [existing, ...incoming];
+}
+
 function mergeValues(
   existing: QueryParamValue | undefined,
   incoming: QueryParamValue
@@ -95,23 +122,11 @@ function mergeValues(
   }
 
   if (Array.isArray(existing)) {
-    if (Array.isArray(incoming)) {
-      return mergeArrays(existing, incoming);
-    }
-
-    if (isQueryParams(incoming)) {
-      return mergeObjects(arrayToObject(existing), incoming);
-    }
-
-    return existing.concat(incoming);
+    return mergeExistingArray(existing, incoming);
   }
 
   if (Array.isArray(incoming)) {
-    if (isQueryParams(existing)) {
-      return mergeObjects(existing, arrayToObject(incoming));
-    }
-
-    return [existing, ...incoming];
+    return mergeIncomingArray(existing, incoming);
   }
 
   if (isQueryParams(existing) && isQueryParams(incoming)) {
