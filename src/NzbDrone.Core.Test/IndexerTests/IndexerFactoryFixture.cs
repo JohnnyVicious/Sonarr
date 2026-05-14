@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using FizzWare.NBuilder;
@@ -152,23 +153,31 @@ namespace NzbDrone.Core.Test.IndexerTests
         [Test]
         public void test_should_record_success_for_existing_definition_with_valid_result()
         {
+            var mockIndexer = new Mock<IIndexer>();
             var definition = Builder<IndexerDefinition>.CreateNew()
                 .With(d => d.Id = 5)
+                .With(d => d.Implementation = mockIndexer.Object.GetType().Name)
                 .Build();
 
-            var mockIndexer = new Mock<IIndexer>();
+            mockIndexer.SetupProperty(s => s.Definition);
             mockIndexer.Setup(s => s.Test()).Returns(new FluentValidation.Results.ValidationResult());
-            mockIndexer.SetupGet(s => s.Definition).Returns(definition);
+            mockIndexer.SetupGet(s => s.Protocol).Returns(DownloadProtocol.Usenet);
+            mockIndexer.SetupGet(s => s.SupportsRss).Returns(true);
+            mockIndexer.SetupGet(s => s.SupportsSearch).Returns(true);
 
-            // The Test method in base class calls GetInstance which needs the container,
-            // but we can verify the status service recording behavior.
-            // Since we can't easily mock GetInstance, verify via the status service.
+            Mocker.SetConstant<IEnumerable<IIndexer>>(new[] { mockIndexer.Object });
+            Mocker.GetMock<IServiceProvider>()
+                  .Setup(s => s.GetService(mockIndexer.Object.GetType()))
+                  .Returns(mockIndexer.Object);
             Mocker.GetMock<IIndexerStatusService>()
                   .Setup(s => s.RecordSuccess(5));
 
-            // We can at least verify the method exists and the status service is used
+            var result = Subject.Test(definition);
+
+            result.IsValid.Should().BeTrue();
+            mockIndexer.Verify(v => v.Test(), Times.Once());
             Mocker.GetMock<IIndexerStatusService>()
-                  .Verify(v => v.RecordSuccess(It.IsAny<int>()), Times.Never());
+                  .Verify(v => v.RecordSuccess(5), Times.Once());
         }
     }
 }

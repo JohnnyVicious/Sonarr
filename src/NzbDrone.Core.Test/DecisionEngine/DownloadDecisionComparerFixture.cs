@@ -178,9 +178,7 @@ namespace NzbDrone.Core.Test.DecisionEngine
             // For torrents, age comparison should be skipped (returns 0)
             var result = Subject.Compare(first, second);
 
-            // Result depends on size/peers, but age shouldn't matter
-            // Just verify it doesn't throw
-            result.Should().Be(result);
+            result.Should().Be(0);
         }
     }
 }
