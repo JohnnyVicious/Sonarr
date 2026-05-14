@@ -11,6 +11,7 @@ using NLog;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Common.Http;
 using NzbDrone.Common.Instrumentation;
+using NzbDrone.Common.Xml;
 using NzbDrone.Core.Indexers.Exceptions;
 using NzbDrone.Core.Languages;
 using NzbDrone.Core.Parser.Model;
@@ -98,7 +99,7 @@ namespace NzbDrone.Core.Indexers
                 var content = XmlCleaner.ReplaceEntities(indexerResponse.Content);
                 content = XmlCleaner.ReplaceUnicode(content);
 
-                using (var xmlTextReader = XmlReader.Create(new StringReader(content), new XmlReaderSettings { DtdProcessing = DtdProcessing.Ignore, IgnoreComments = true }))
+                using (var xmlTextReader = XmlReader.Create(new StringReader(content), SafeXmlReaderSettings.Create()))
                 {
                     return XDocument.Load(xmlTextReader);
                 }

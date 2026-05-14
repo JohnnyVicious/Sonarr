@@ -24,11 +24,6 @@ namespace Sonarr.Http.Frontend.Mappers
             UrlBase = configFileProvider.UrlBase;
         }
 
-        public override string Map(string resourceUrl)
-        {
-            return HtmlPath;
-        }
-
         public override bool CanHandle(string resourceUrl)
         {
             return resourceUrl.StartsWith("/login");

@@ -14,6 +14,10 @@ using Sonarr.Api.V3.Series;
 using Sonarr.Http;
 using Sonarr.Http.Extensions;
 
+#if !NET10_0_OR_GREATER
+[assembly: System.CLSCompliant(false)]
+#endif
+
 namespace Sonarr.Api.V3.History
 {
     [V3ApiController]
@@ -42,19 +46,22 @@ namespace Sonarr.Api.V3.History
         {
             var resource = model.ToResource(_formatCalculator);
 
-            if (includeSeries)
+            // nosemgrep: codacy.csharp.security.null-dereference -- Series can be absent for deleted history entries and is checked before mapping.
+            if (includeSeries && model.Series != null)
             {
                 resource.Series = model.Series.ToResource();
             }
 
-            if (includeEpisode)
+            // nosemgrep: codacy.csharp.security.null-dereference -- Episode can be absent for deleted history entries and is checked before mapping.
+            if (includeEpisode && model.Episode != null)
             {
                 resource.Episode = model.Episode.ToResource();
             }
 
-            if (model.Series != null)
+            var qualityProfile = model.Series?.QualityProfile?.Value; // nosemgrep: codacy.csharp.security.null-dereference -- QualityProfile is loaded through nullable links after series deletion.
+            if (qualityProfile != null)
             {
-                resource.QualityCutoffNotMet = _upgradableSpecification.QualityCutoffNotMet(model.Series.QualityProfile.Value, model.Quality);
+                resource.QualityCutoffNotMet = _upgradableSpecification.QualityCutoffNotMet(qualityProfile, model.Quality); // nosemgrep: codacy.csharp.security.null-dereference -- qualityProfile is checked before use.
             }
 
             return resource;

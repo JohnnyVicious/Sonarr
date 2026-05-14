@@ -1,11 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Net;
+using System.Xml;
 using NLog;
 using NzbDrone.Common.Cache;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Common.Http;
 using NzbDrone.Common.Serializer;
+using NzbDrone.Common.Xml;
 
 namespace NzbDrone.Core.Download.Clients.UTorrent
 {
@@ -262,8 +265,15 @@ namespace NzbDrone.Core.Download.Clients.UTorrent
                     response = _httpClient.Execute(authLoginRequest);
                     _logger.Debug("uTorrent authentication succeeded.");
 
-                    var xmlDoc = new System.Xml.XmlDocument();
-                    xmlDoc.LoadXml(response.Content);
+                    var xmlDoc = new XmlDocument
+                    {
+                        XmlResolver = null
+                    };
+
+                    using (var xmlTextReader = XmlReader.Create(new StringReader(response.Content), SafeXmlReaderSettings.Create()))
+                    {
+                        xmlDoc.Load(xmlTextReader);
+                    }
 
                     authToken = xmlDoc.FirstChild.FirstChild.InnerText;
                 }

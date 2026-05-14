@@ -1,6 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFrameworks>net10.0</TargetFrameworks>
+    <!-- This legacy assembly exposes non-CLS public APIs; S3990 requires an API-wide migration. -->
+    <NoWarn>$(NoWarn);S3990</NoWarn>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="NBuilder" Version="6.1.0" />
