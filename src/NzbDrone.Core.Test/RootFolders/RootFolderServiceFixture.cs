@@ -139,4 +139,5 @@ namespace NzbDrone.Core.Test.RootFolders
 
             result.Path.Should().Be(rootFolder.Path);
         }
+    }
 }
