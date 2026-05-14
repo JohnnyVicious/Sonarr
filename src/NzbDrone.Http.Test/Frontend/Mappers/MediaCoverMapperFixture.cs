@@ -65,13 +65,13 @@ namespace NzbDrone.Http.Test.Frontend.Mappers
 
             var result = Subject.Map("/MediaCover/1/poster.jpg");
 
-            result.Should().Be($"{S}app{S}data{S}MediaCover{S}1{S}poster.jpg");
+            result.Should().Be(Path.Combine($"{S}app{S}data", "MediaCover", "1", "poster.jpg"));
         }
 
         [Test]
         public void should_return_direct_path_when_file_exists_and_size_greater_than_zero()
         {
-            var expectedPath = $"{S}app{S}data{S}MediaCover{S}1{S}poster.jpg";
+            var expectedPath = Path.Combine($"{S}app{S}data", "MediaCover", "1", "poster.jpg");
 
             Mocker.GetMock<IDiskProvider>()
                   .Setup(c => c.FileExists(expectedPath))
@@ -89,7 +89,7 @@ namespace NzbDrone.Http.Test.Frontend.Mappers
         [Test]
         public void should_fallback_to_original_when_resized_image_does_not_exist()
         {
-            var resizedPath = $"{S}app{S}data{S}MediaCover{S}1{S}poster-300.jpg";
+            var resizedPath = Path.Combine($"{S}app{S}data", "MediaCover", "1", "poster-300.jpg");
 
             Mocker.GetMock<IDiskProvider>()
                   .Setup(c => c.FileExists(resizedPath))
@@ -98,13 +98,13 @@ namespace NzbDrone.Http.Test.Frontend.Mappers
             var result = Subject.Map("/MediaCover/1/poster-300.jpg");
 
             // When resized file doesn't exist, it should fall back to the non-resized version
-            result.Should().Be($"{S}app{S}data{S}MediaCover{S}1{S}poster.jpg");
+            result.Should().Be(Path.Combine($"{S}app{S}data", "MediaCover", "1", "poster.jpg"));
         }
 
         [Test]
         public void should_fallback_to_original_when_resized_image_has_zero_size()
         {
-            var resizedPath = $"{S}app{S}data{S}MediaCover{S}1{S}poster-300.jpg";
+            var resizedPath = Path.Combine($"{S}app{S}data", "MediaCover", "1", "poster-300.jpg");
 
             Mocker.GetMock<IDiskProvider>()
                   .Setup(c => c.FileExists(resizedPath))
@@ -116,13 +116,13 @@ namespace NzbDrone.Http.Test.Frontend.Mappers
 
             var result = Subject.Map("/MediaCover/1/poster-300.jpg");
 
-            result.Should().Be($"{S}app{S}data{S}MediaCover{S}1{S}poster.jpg");
+            result.Should().Be(Path.Combine($"{S}app{S}data", "MediaCover", "1", "poster.jpg"));
         }
 
         [Test]
         public void should_not_fallback_for_non_resized_image_that_does_not_exist()
         {
-            var path = $"{S}app{S}data{S}MediaCover{S}1{S}poster.jpg";
+            var path = Path.Combine($"{S}app{S}data", "MediaCover", "1", "poster.jpg");
 
             Mocker.GetMock<IDiskProvider>()
                   .Setup(c => c.FileExists(path))
