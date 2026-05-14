@@ -39,7 +39,7 @@ namespace NzbDrone.Core.Test.CustomFormats
             var remoteEpisode = new RemoteEpisode
             {
                 Series = _series,
-                ParsedEpisodeInfo = new ParsedEpisodeInfo { Quality = new QualityModel(Quality.HDTV720p), ReleaseType = ReleaseType.SingleEpisode },
+                ParsedEpisodeInfo = new ParsedEpisodeInfo { Quality = new QualityModel(Quality.HDTV720p), EpisodeNumbers = new[] { 1 } },
                 Languages = new List<Language> { Language.English },
                 Release = new ReleaseInfo { IndexerFlags = 0 }
             };
@@ -68,7 +68,7 @@ namespace NzbDrone.Core.Test.CustomFormats
             var remoteEpisode = new RemoteEpisode
             {
                 Series = _series,
-                ParsedEpisodeInfo = new ParsedEpisodeInfo { Quality = new QualityModel(Quality.HDTV720p), ReleaseType = ReleaseType.SingleEpisode },
+                ParsedEpisodeInfo = new ParsedEpisodeInfo { Quality = new QualityModel(Quality.HDTV720p), EpisodeNumbers = new[] { 1 } },
                 Languages = new List<Language> { Language.English },
                 Release = new ReleaseInfo { IndexerFlags = 0 }
             };
@@ -98,7 +98,7 @@ namespace NzbDrone.Core.Test.CustomFormats
             var remoteEpisode = new RemoteEpisode
             {
                 Series = _series,
-                ParsedEpisodeInfo = new ParsedEpisodeInfo { Quality = new QualityModel(Quality.HDTV720p), ReleaseType = ReleaseType.SingleEpisode },
+                ParsedEpisodeInfo = new ParsedEpisodeInfo { Quality = new QualityModel(Quality.HDTV720p), EpisodeNumbers = new[] { 1 } },
                 Languages = new List<Language> { Language.English },
                 Release = new ReleaseInfo { IndexerFlags = 0 }
             };
@@ -207,7 +207,7 @@ namespace NzbDrone.Core.Test.CustomFormats
             var remoteEpisode = new RemoteEpisode
             {
                 Series = _series,
-                ParsedEpisodeInfo = new ParsedEpisodeInfo { Quality = new QualityModel(Quality.HDTV720p), ReleaseType = ReleaseType.SingleEpisode },
+                ParsedEpisodeInfo = new ParsedEpisodeInfo { Quality = new QualityModel(Quality.HDTV720p), EpisodeNumbers = new[] { 1 } },
                 Languages = new List<Language> { Language.English },
                 Release = new ReleaseInfo { IndexerFlags = 0 }
             };

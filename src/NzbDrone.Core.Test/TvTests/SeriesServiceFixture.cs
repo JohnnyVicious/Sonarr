@@ -219,7 +219,7 @@ namespace NzbDrone.Core.Test.TvTests
             Subject.RemoveAddOptions(_fakeSeries);
 
             Mocker.GetMock<ISeriesRepository>()
-                  .Verify(v => v.SetFields(_fakeSeries, It.IsAny<System.Linq.Expressions.Expression<System.Func<Series, AddSeriesOptions>>>()), Times.Once());
+                  .Verify(v => v.SetFields(_fakeSeries, It.IsAny<System.Linq.Expressions.Expression<System.Func<Series, object>>>()), Times.Once());
         }
     }
 }

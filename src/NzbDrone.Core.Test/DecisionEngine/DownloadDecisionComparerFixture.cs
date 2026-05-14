@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using FizzWare.NBuilder;
 using FluentAssertions;
@@ -65,8 +66,7 @@ namespace NzbDrone.Core.Test.DecisionEngine
                     IndexerPriority = indexerPriority,
                     DownloadProtocol = protocol,
                     Size = size,
-                    Age = age,
-                    AgeHours = age * 24
+                    PublishDate = DateTime.UtcNow.AddDays(-age)
                 }
             };
 
