@@ -10,7 +10,8 @@
     "watch": "webpack --watch --config ./frontend/build/webpack.config.js",
     "lint": "eslint --config frontend/.eslintrc.js --ignore-path frontend/.eslintignore frontend/",
     "lint-fix": "yarn lint --fix",
-    "stylelint": "stylelint \"frontend/**/*.css\" --config frontend/.stylelintrc"
+    "stylelint": "stylelint \"frontend/**/*.css\" --config frontend/.stylelintrc",
+    "test:frontend": "node scripts/run-frontend-tests.cjs"
   },
   "repository": "https://github.com/Sonarr/Sonarr",
   "author": "Team Sonarr",
@@ -50,7 +51,6 @@
     "mousetrap": "1.6.5",
     "normalize.css": "8.0.1",
     "prop-types": "15.8.1",
-    "qs": "6.15.0",
     "rdndmb-html5-to-touch": "8.1.2",
     "react": "18.3.1",
     "react-addons-shallow-compare": "15.6.3",
@@ -97,7 +97,6 @@
     "@types/lodash": "4.14.202",
     "@types/moment-timezone": "0.5.30",
     "@types/mousetrap": "1.6.15",
-    "@types/qs": "6.9.16",
     "@types/react-autosuggest": "10.1.11",
     "@types/react-document-title": "2.0.10",
     "@types/react-google-recaptcha": "2.1.9",

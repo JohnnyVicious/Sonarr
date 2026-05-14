@@ -55,6 +55,9 @@ dotnet_diagnostic.IDE0018.severity = error
 # Call async methods when in an async method
 dotnet_diagnostic.CA1849.severity = warning
 
+# Sonar S3990 requires CLSCompliant(true), but this legacy codebase exposes non-CLS public APIs.
+dotnet_diagnostic.S3990.severity = none
+
 # Stylecop Rules
 dotnet_diagnostic.SA0001.severity = none
 dotnet_diagnostic.SA1025.severity = none

@@ -9,6 +9,10 @@ using NzbDrone.Core.MediaFiles;
 using NzbDrone.Core.Tags;
 using NzbDrone.Core.Tv;
 
+#if !NET10_0_OR_GREATER
+[assembly: System.CLSCompliant(false)]
+#endif
+
 namespace NzbDrone.Core.Notifications.Webhook
 {
     public abstract class WebhookBase<TSettings> : NotificationBase<TSettings>
@@ -59,7 +63,7 @@ namespace NzbDrone.Core.Notifications.Webhook
                 InstanceName = _configFileProvider.InstanceName,
                 ApplicationUrl = _configService.ApplicationUrl,
                 Series = GetSeries(message.Series),
-                Episodes = episodeFile.Episodes.Value.ConvertAll(x => new WebhookEpisode(x)),
+                Episodes = episodeFile.Episodes?.Value?.ConvertAll(x => new WebhookEpisode(x)) ?? new List<WebhookEpisode>(),
                 EpisodeFile = new WebhookEpisodeFile(episodeFile)
                 {
                     SourcePath = message.SourcePath
@@ -115,7 +119,7 @@ namespace NzbDrone.Core.Notifications.Webhook
                 InstanceName = _configFileProvider.InstanceName,
                 ApplicationUrl = _configService.ApplicationUrl,
                 Series = GetSeries(deleteMessage.Series),
-                Episodes = deleteMessage.EpisodeFile.Episodes.Value.ConvertAll(x => new WebhookEpisode(x)),
+                Episodes = deleteMessage.EpisodeFile?.Episodes?.Value?.ConvertAll(x => new WebhookEpisode(x)) ?? new List<WebhookEpisode>(), // nosemgrep: codacy.csharp.security.null-dereference -- Episode associations can be missing after deletion; payload uses an empty list.
                 EpisodeFile = new WebhookEpisodeFile(deleteMessage.EpisodeFile),
                 DeleteReason = deleteMessage.Reason
             };

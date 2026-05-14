@@ -1,0 +1,23 @@
+name: AI Review Grace Period
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+
+concurrency:
+  group: ai-review-grace-period-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  wait:
+    name: AI review grace period
+    runs-on: [self-hosted, Linux, X64]
+    timeout-minutes: 4
+    steps:
+      - name: Wait for asynchronous PR reviewers
+        run: |
+          echo "Waiting 2 minutes so asynchronous PR reviewers can post comments."
+          sleep 120

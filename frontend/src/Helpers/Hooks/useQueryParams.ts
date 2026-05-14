@@ -1,18 +1,12 @@
 import { useMemo } from 'react';
 import { useLocation } from 'react-router';
+import parseScalarQueryParams from 'Utilities/String/parseScalarQueryParams';
 
 function useQueryParams<T>() {
   const { search } = useLocation();
 
   return useMemo(() => {
-    const searchParams = new URLSearchParams(search);
-
-    return searchParams.entries().reduce<T>((acc, [key, value]) => {
-      return {
-        ...acc,
-        [key]: value,
-      };
-    }, {} as T);
+    return parseScalarQueryParams<T>(search);
   }, [search]);
 }
 

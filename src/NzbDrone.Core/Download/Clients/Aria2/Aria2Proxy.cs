@@ -1,9 +1,12 @@
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Xml;
 using System.Xml.Linq;
 using System.Xml.XPath;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Common.Http;
+using NzbDrone.Common.Xml;
 using NzbDrone.Core.Download.Extensions;
 
 namespace NzbDrone.Core.Download.Clients.Aria2
@@ -162,7 +165,12 @@ namespace NzbDrone.Core.Download.Clients.Aria2
 
             var response = _httpClient.Execute(request);
 
-            var doc = XDocument.Parse(response.Content);
+            XDocument doc;
+
+            using (var xmlTextReader = XmlReader.Create(new StringReader(response.Content), SafeXmlReaderSettings.Create()))
+            {
+                doc = XDocument.Load(xmlTextReader);
+            }
 
             var faultElement = doc.XPathSelectElement("./methodResponse/fault");
 

@@ -12,6 +12,10 @@ using Sonarr.Api.V3.EpisodeFiles;
 using Sonarr.Api.V3.Series;
 using Sonarr.Http.REST;
 
+#if !NET10_0_OR_GREATER
+[assembly: System.CLSCompliant(false)]
+#endif
+
 namespace Sonarr.Api.V3.Episodes
 {
     public abstract class EpisodeControllerWithSignalR : RestControllerWithSignalR<EpisodeResource, Episode>,
@@ -71,9 +75,12 @@ namespace Sonarr.Api.V3.Episodes
                     resource.Series = series.ToResource();
                 }
 
-                if (includeEpisodeFile && episode.EpisodeFileId != 0)
+                var episodeFile = episode.EpisodeFile?.Value; // nosemgrep: codacy.csharp.security.null-dereference -- EpisodeFile is optional after file deletion; null-conditional access is the guard.
+
+                // nosemgrep: codacy.csharp.security.null-dereference -- episodeFile is checked before it is mapped.
+                if (includeEpisodeFile && episode.EpisodeFileId != 0 && episodeFile != null)
                 {
-                    resource.EpisodeFile = episode.EpisodeFile.Value.ToResource(series, _upgradableSpecification, _formatCalculator);
+                    resource.EpisodeFile = episodeFile.ToResource(series, _upgradableSpecification, _formatCalculator);
                 }
 
                 if (includeImages)
@@ -105,9 +112,11 @@ namespace Sonarr.Api.V3.Episodes
                         resource.Series = series.ToResource();
                     }
 
-                    if (includeEpisodeFile && episode.EpisodeFileId != 0)
+                    var episodeFile = episode.EpisodeFile?.Value;
+
+                    if (includeEpisodeFile && episode.EpisodeFileId != 0 && episodeFile != null)
                     {
-                        resource.EpisodeFile = episode.EpisodeFile.Value.ToResource(series, _upgradableSpecification, _formatCalculator);
+                        resource.EpisodeFile = episodeFile.ToResource(series, _upgradableSpecification, _formatCalculator);
                     }
 
                     if (includeImages)
