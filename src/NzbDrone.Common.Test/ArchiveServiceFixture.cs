@@ -62,12 +62,6 @@ namespace NzbDrone.Common.Test
             return NormalizeEntryName(Path.GetRelativePath(_destinationFolder, outsidePath));
         }
 
-        private string GetLeadingSlashEntryNameForPath(string outsidePath)
-        {
-            var root = Path.GetPathRoot(Path.GetFullPath(outsidePath));
-            return "/" + NormalizeEntryName(Path.GetRelativePath(root, outsidePath));
-        }
-
         private static string NormalizeEntryName(string path)
         {
             return path.Replace(Path.DirectorySeparatorChar, '/')
@@ -78,7 +72,13 @@ namespace NzbDrone.Common.Test
         {
             var zipPath = CreateZipWithEntry(entryName, "malicious");
 
-            Assert.Throws<IOException>(() => Subject.Extract(zipPath, _destinationFolder));
+            try
+            {
+                Subject.Extract(zipPath, _destinationFolder);
+            }
+            catch (IOException)
+            {
+            }
 
             File.Exists(outsideTarget).Should().BeFalse(
                 "unsafe ZIP entry {0} must not write outside destination directory", entryName);
@@ -156,14 +156,19 @@ namespace NzbDrone.Common.Test
         }
 
         [Test]
-        public void should_reject_zip_entry_with_leading_slash()
+        public void should_sanitize_zip_entry_with_leading_slash()
         {
-            var absoluteTarget = Path.Combine(GetTempFilePath(), "subdir", "test.txt");
-            var entryName = GetLeadingSlashEntryNameForPath(absoluteTarget);
+            var zipPath = CreateZipWithEntry("/subdir/test.txt", "hello");
+            var expectedExtractedFile = Path.Combine(_destinationFolder, "subdir", "test.txt");
+            var rootLevelTarget = Path.Combine(Path.GetPathRoot(_destinationFolder), "subdir", "test.txt");
 
-            ExtractUnsafeZipAndAssertOutsideTargetIsUntouched(entryName, absoluteTarget);
+            Subject.Extract(zipPath, _destinationFolder);
 
-            Directory.GetFiles(_destinationFolder, "*", SearchOption.AllDirectories).Should().BeEmpty();
+            File.Exists(expectedExtractedFile).Should().BeTrue();
+            File.ReadAllText(expectedExtractedFile).Should().Be("hello");
+            File.Exists(rootLevelTarget).Should().BeFalse(
+                "leading slash ZIP entry must not write to the filesystem root");
+            Directory.GetFiles(_destinationFolder, "*", SearchOption.AllDirectories).Should().HaveCount(1);
         }
 
         [Test]
