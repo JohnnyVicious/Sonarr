@@ -133,6 +133,4 @@ namespace NzbDrone.Http.Test.Frontend.Mappers
             // No fallback for non-resized images, returns the original path
             result.Should().Be(path);
         }
-
-    }
 }
