@@ -93,9 +93,67 @@ test('promotes scalar values before appending array-style duplicates', () => {
 });
 
 test('treats indexes above the qs array limit as object keys', () => {
-  assert.deepEqual(parseQueryParams('tags[999999999]=alpha'), {
+  assert.deepEqual(parseQueryParams('tags[21]=alpha&tags[999999999]=beta'), {
     tags: {
-      999999999: 'alpha'
+      21: 'alpha',
+      999999999: 'beta'
+    }
+  });
+});
+
+test('preserves mixed array and object notation', () => {
+  assert.deepEqual(parseQueryParams('tag[0]=alpha&tag[name]=beta'), {
+    tag: {
+      0: 'alpha',
+      name: 'beta'
+    }
+  });
+});
+
+test('preserves scalar values before object-style duplicates', () => {
+  assert.deepEqual(parseQueryParams('tag=alpha&tag[name]=beta'), {
+    tag: [
+      'alpha',
+      {
+        name: 'beta'
+      }
+    ]
+  });
+});
+
+test('ignores Object prototype shadowing keys', () => {
+  assert.deepEqual(
+    parseQueryParams('tag[hasOwnProperty]=alpha&toString=beta'),
+    {}
+  );
+});
+
+test('caps parsed parameters at the qs default limit', () => {
+  const queryString = Array.from(
+    { length: 1002 },
+    (_, index) => `tag${index}=value`
+  ).join('&');
+  const params = parseQueryParams(queryString);
+
+  assert.equal(Object.keys(params).length, 1000);
+  assert.equal(params.tag999, 'value');
+  assert.equal(params.tag1000, undefined);
+});
+
+test('keeps nesting past the qs depth limit as a literal key', () => {
+  assert.deepEqual(parseQueryParams('a[b][c][d][e][f][g]=h'), {
+    a: {
+      b: {
+        c: {
+          d: {
+            e: {
+              f: {
+                '[g]': 'h'
+              }
+            }
+          }
+        }
+      }
     }
   });
 });

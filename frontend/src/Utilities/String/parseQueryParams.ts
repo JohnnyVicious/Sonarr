@@ -5,10 +5,13 @@ export interface QueryParams {
 export type QueryParamValue = string | QueryParamValue[] | QueryParams;
 
 type QueryContainer = QueryParamValue[] | QueryParams;
+type QueryArrayObject = QueryParamValue[] & QueryParams;
 
 const ARRAY_LIMIT = 20;
 const ARRAY_INDEX_PATTERN = /^\d+$/;
+const DEPTH_LIMIT = 5;
 const KEY_SEGMENT_PATTERN = /([^[\]]+)|\[([^\]]*)\]/g;
+const PARAMETER_LIMIT = 1000;
 const UNSAFE_KEYS = new Set(['__proto__', 'constructor']);
 
 function isQueryParams(
@@ -24,7 +27,7 @@ function isContainer(
 }
 
 function isUnsafeKey(key: string) {
-  return key !== '' && UNSAFE_KEYS.has(key);
+  return key !== '' && (UNSAFE_KEYS.has(key) || key in Object.prototype);
 }
 
 function isArrayIndex(key: string) {
@@ -42,7 +45,16 @@ function parseKey(key: string) {
     match = KEY_SEGMENT_PATTERN.exec(key);
   }
 
-  return segments;
+  if (segments.length <= DEPTH_LIMIT + 1) {
+    return segments;
+  }
+
+  return segments.slice(0, DEPTH_LIMIT + 1).concat(
+    segments
+      .slice(DEPTH_LIMIT + 1)
+      .map((segment) => `[${segment}]`)
+      .join('')
+  );
 }
 
 function createContainer(nextKey: string): QueryContainer {
@@ -51,7 +63,13 @@ function createContainer(nextKey: string): QueryContainer {
 
 function getValue(container: QueryContainer, key: string) {
   if (Array.isArray(container)) {
-    return key === '' ? undefined : container[Number(key)];
+    if (key === '') {
+      return undefined;
+    }
+
+    return isArrayIndex(key)
+      ? container[Number(key)]
+      : (container as QueryArrayObject)[key];
   }
 
   return container[key];
@@ -67,6 +85,8 @@ function setValue(
       container.push(value);
     } else if (isArrayIndex(key)) {
       container[Number(key)] = value;
+    } else {
+      (container as QueryArrayObject)[key] = value;
     }
 
     return;
@@ -77,7 +97,7 @@ function setValue(
 
 function mergeValue(
   existingValue: QueryParamValue | undefined,
-  value: string
+  value: QueryParamValue
 ): QueryParamValue {
   if (existingValue == null) {
     return value;
@@ -86,6 +106,10 @@ function mergeValue(
   return Array.isArray(existingValue)
     ? existingValue.concat(value)
     : [existingValue, value];
+}
+
+function getArrayObjectKeys(value: QueryParamValue[]) {
+  return Object.keys(value).filter((key) => !isArrayIndex(key));
 }
 
 function setLeaf(container: QueryContainer, key: string, value: string) {
@@ -110,7 +134,7 @@ function assignParam(result: QueryParams, segments: string[], value: string) {
     const existingValue = getValue(container, key);
 
     if (
-      nextKey === '' &&
+      (nextKey === '' || isArrayIndex(nextKey)) &&
       existingValue != null &&
       !isContainer(existingValue)
     ) {
@@ -121,9 +145,15 @@ function assignParam(result: QueryParams, segments: string[], value: string) {
 
     if (isContainer(existingValue)) {
       container = existingValue;
+    } else if (existingValue == null) {
+      const nextContainer = createContainer(nextKey);
+
+      setValue(container, key, nextContainer);
+      container = nextContainer;
     } else {
       const nextContainer = createContainer(nextKey);
-      setValue(container, key, nextContainer);
+
+      setValue(container, key, mergeValue(existingValue, nextContainer));
       container = nextContainer;
     }
   }
@@ -131,9 +161,26 @@ function assignParam(result: QueryParams, segments: string[], value: string) {
 
 function compactQueryParam(value: QueryParamValue): QueryParamValue {
   if (Array.isArray(value)) {
-    return value
+    const compactedItems = value
       .filter((item) => item != null)
       .map((item) => compactQueryParam(item));
+    const objectKeys = getArrayObjectKeys(value);
+
+    if (objectKeys.length === 0) {
+      return compactedItems;
+    }
+
+    const result: QueryParams = {};
+
+    compactedItems.forEach((item, index) => {
+      result[index.toString()] = item;
+    });
+
+    objectKeys.forEach((key) => {
+      result[key] = compactQueryParam((value as QueryArrayObject)[key]);
+    });
+
+    return result;
   }
 
   if (isQueryParams(value)) {
@@ -149,13 +196,17 @@ function compactQueryParam(value: QueryParamValue): QueryParamValue {
   return value;
 }
 
+function limitSearch(search: string) {
+  return search.split('&', PARAMETER_LIMIT).join('&');
+}
+
 export default function parseQueryParams(queryString: string) {
   const result: QueryParams = {};
   const search = queryString.startsWith('?')
     ? queryString.substring(1)
     : queryString;
 
-  new URLSearchParams(search).forEach((value, key) => {
+  new URLSearchParams(limitSearch(search)).forEach((value, key) => {
     const segments = parseKey(key);
 
     if (segments.length === 0 || segments.some(isUnsafeKey)) {
