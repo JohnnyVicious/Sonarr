@@ -365,7 +365,13 @@ namespace NzbDrone.Core.Notifications
             {
                 try
                 {
-                    if (!ShouldHandleSeries(notification.Definition, message.Episode.Series))
+                    if (series == null && notification.Definition.Tags.Any())
+                    {
+                        _logger.Debug("{0} has tags but manual interaction has no series. Notification will not be sent.", notification.Definition.Name);
+                        continue;
+                    }
+
+                    if (series != null && !ShouldHandleSeries(notification.Definition, series))
                     {
                         continue;
                     }
