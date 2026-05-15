@@ -34,7 +34,7 @@ namespace NzbDrone.Core.Test.IndexerTests.FileListTests
 
             Mocker.GetMock<IHttpClient>()
                 .Setup(o => o.ExecuteAsync(It.Is<HttpRequest>(v => v.Method == HttpMethod.Get)))
-                .ReturnsAsync((HttpRequest r, CancellationToken _) => new HttpResponse(r, new HttpHeader { { "Content-Type", "application/json" } }, recentFeed));
+                .ReturnsAsync((HttpRequest r) => new HttpResponse(r, new HttpHeader { { "Content-Type", "application/json" } }, recentFeed));
 
             var releases = await Subject.FetchRecent();
 

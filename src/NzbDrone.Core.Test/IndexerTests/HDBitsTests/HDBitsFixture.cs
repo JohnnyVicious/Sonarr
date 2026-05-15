@@ -38,7 +38,7 @@ namespace NzbDrone.Core.Test.IndexerTests.HDBitsTests
 
             Mocker.GetMock<IHttpClient>()
                 .Setup(o => o.ExecuteAsync(It.Is<HttpRequest>(v => v.Method == HttpMethod.Post)))
-                .ReturnsAsync((HttpRequest r, CancellationToken _) => new HttpResponse(r, new HttpHeader(), responseJson));
+                .ReturnsAsync((HttpRequest r) => new HttpResponse(r, new HttpHeader(), responseJson));
 
             var torrents = await Subject.FetchRecent();
 
@@ -67,7 +67,7 @@ namespace NzbDrone.Core.Test.IndexerTests.HDBitsTests
 
             Mocker.GetMock<IHttpClient>()
                 .Setup(v => v.ExecuteAsync(It.IsAny<HttpRequest>()))
-                .ReturnsAsync((HttpRequest r, CancellationToken _) => new HttpResponse(r, new HttpHeader(), Encoding.UTF8.GetBytes(responseJson)));
+                .ReturnsAsync((HttpRequest r) => new HttpResponse(r, new HttpHeader(), Encoding.UTF8.GetBytes(responseJson)));
 
             var torrents = await Subject.FetchRecent();
 

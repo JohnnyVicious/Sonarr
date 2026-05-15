@@ -66,7 +66,7 @@ namespace NzbDrone.Core.Test.Download.DownloadClientTests.Blackhole
         protected void GivenFailedDownload()
         {
             Mocker.GetMock<IHttpClient>()
-                .Setup(s => s.GetAsync(It.IsAny<HttpRequest>()))
+                .Setup(s => s.GetAsync(It.IsAny<HttpRequest>(), It.IsAny<CancellationToken>()))
                 .Throws(new WebException());
         }
 

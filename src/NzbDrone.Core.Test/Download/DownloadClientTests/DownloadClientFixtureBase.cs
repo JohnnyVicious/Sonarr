@@ -38,7 +38,7 @@ namespace NzbDrone.Core.Test.Download.DownloadClientTests
                 .Returns(() => CreateRemoteEpisode());
 
             Mocker.GetMock<IHttpClient>()
-                  .Setup(s => s.GetAsync(It.IsAny<HttpRequest>()))
+                  .Setup(s => s.GetAsync(It.IsAny<HttpRequest>(), It.IsAny<CancellationToken>()))
                   .ReturnsAsync((HttpRequest r, CancellationToken _) => new HttpResponse(r, new HttpHeader(), Array.Empty<byte>()));
 
             Mocker.GetMock<IRemotePathMappingService>()

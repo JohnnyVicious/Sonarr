@@ -25,7 +25,7 @@ namespace NzbDrone.Core.Test.IndexerTests
 
             Mocker.GetMock<IHttpClient>()
                 .Setup(o => o.ExecuteAsync(It.Is<HttpRequest>(v => v.Method == HttpMethod.Get)))
-                .ReturnsAsync((HttpRequest r, CancellationToken _) => new HttpResponse(r, new HttpHeader(), "<xml></xml>"));
+                .ReturnsAsync((HttpRequest r) => new HttpResponse(r, new HttpHeader(), "<xml></xml>"));
         }
 
         private void WithIndexer(bool paging, int resultCount)

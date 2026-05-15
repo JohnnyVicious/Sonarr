@@ -52,7 +52,7 @@ namespace NzbDrone.Core.Test.IndexerTests.TorznabTests
 
             Mocker.GetMock<IHttpClient>()
                 .Setup(o => o.ExecuteAsync(It.Is<HttpRequest>(v => v.Method == HttpMethod.Get)))
-                .ReturnsAsync((HttpRequest r, CancellationToken _) => new HttpResponse(r, new HttpHeader(), recentFeed));
+                .ReturnsAsync((HttpRequest r) => new HttpResponse(r, new HttpHeader(), recentFeed));
 
             var releases = await Subject.FetchRecent();
 
@@ -83,7 +83,7 @@ namespace NzbDrone.Core.Test.IndexerTests.TorznabTests
 
             Mocker.GetMock<IHttpClient>()
                 .Setup(o => o.ExecuteAsync(It.Is<HttpRequest>(v => v.Method == HttpMethod.Get)))
-                .ReturnsAsync((HttpRequest r, CancellationToken _) => new HttpResponse(r, new HttpHeader(), recentFeed));
+                .ReturnsAsync((HttpRequest r) => new HttpResponse(r, new HttpHeader(), recentFeed));
 
             var releases = await Subject.FetchRecent();
 
@@ -113,7 +113,7 @@ namespace NzbDrone.Core.Test.IndexerTests.TorznabTests
 
             Mocker.GetMock<IHttpClient>()
                 .Setup(o => o.ExecuteAsync(It.Is<HttpRequest>(v => v.Method == HttpMethod.Get)))
-                .ReturnsAsync((HttpRequest r, CancellationToken _) => new HttpResponse(r, new HttpHeader(), recentFeed));
+                .ReturnsAsync((HttpRequest r) => new HttpResponse(r, new HttpHeader(), recentFeed));
 
             var releases = await Subject.FetchRecent();
 
@@ -176,7 +176,7 @@ namespace NzbDrone.Core.Test.IndexerTests.TorznabTests
 
             Mocker.GetMock<IHttpClient>()
                 .Setup(o => o.ExecuteAsync(It.Is<HttpRequest>(v => v.Method == HttpMethod.Get)))
-                .ReturnsAsync((HttpRequest r, CancellationToken _) => new HttpResponse(r, new HttpHeader(), recentFeed));
+                .ReturnsAsync((HttpRequest r) => new HttpResponse(r, new HttpHeader(), recentFeed));
 
             var result = new NzbDroneValidationResult(Subject.Test());
             result.IsValid.Should().BeTrue();
@@ -191,7 +191,7 @@ namespace NzbDrone.Core.Test.IndexerTests.TorznabTests
 
             Mocker.GetMock<IHttpClient>()
                   .Setup(o => o.ExecuteAsync(It.Is<HttpRequest>(v => v.Method == HttpMethod.Get)))
-                  .ReturnsAsync((HttpRequest r, CancellationToken _) => new HttpResponse(r, new HttpHeader(), recentFeed));
+                  .ReturnsAsync((HttpRequest r) => new HttpResponse(r, new HttpHeader(), recentFeed));
 
             (Subject.Definition.Settings as TorznabSettings).ApiPath = apiPath;
 

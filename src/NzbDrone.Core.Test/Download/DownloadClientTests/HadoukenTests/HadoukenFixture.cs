@@ -105,7 +105,7 @@ namespace NzbDrone.Core.Test.Download.DownloadClientTests.HadoukenTests
         protected void GivenSuccessfulDownload()
         {
             Mocker.GetMock<IHttpClient>()
-                  .Setup(s => s.GetAsync(It.IsAny<HttpRequest>()))
+                  .Setup(s => s.GetAsync(It.IsAny<HttpRequest>(), It.IsAny<CancellationToken>()))
                   .ReturnsAsync((HttpRequest r, CancellationToken _) => new HttpResponse(r, new HttpHeader(), new byte[1000]));
 
             Mocker.GetMock<IHadoukenProxy>()

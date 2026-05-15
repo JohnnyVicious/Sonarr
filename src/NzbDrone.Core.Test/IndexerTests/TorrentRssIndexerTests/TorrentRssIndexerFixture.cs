@@ -38,7 +38,7 @@ namespace NzbDrone.Core.Test.IndexerTests.TorrentRssIndexerTests
 
             Mocker.GetMock<IHttpClient>()
                 .Setup(o => o.ExecuteAsync(It.IsAny<HttpRequest>()))
-                .ReturnsAsync((HttpRequest r, CancellationToken _) => new HttpResponse(r, new HttpHeader(), recentFeed));
+                .ReturnsAsync((HttpRequest r) => new HttpResponse(r, new HttpHeader(), recentFeed));
 
             Mocker.GetMock<IHttpClient>()
                 .Setup(o => o.Execute(It.IsAny<HttpRequest>()))
