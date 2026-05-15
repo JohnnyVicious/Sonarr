@@ -30,8 +30,8 @@ namespace NzbDrone.Common.Http
 
         Task<HttpResponse> ExecuteAsync(HttpRequest request);
         Task<HttpResponse> ExecuteAsync(HttpRequest request, CancellationToken cancellationToken);
-        Task DownloadFileAsync(string url, string fileName);
-        Task DownloadFileAsync(string url, string fileName, CancellationToken cancellationToken);
+        Task DownloadFileAsync(string source, string fileName);
+        Task DownloadFileAsync(string source, string fileName, CancellationToken cancellationToken);
         Task DownloadFileAsync(Uri url, string fileName);
         Task DownloadFileAsync(Uri url, string fileName, CancellationToken cancellationToken);
         Task<HttpResponse> GetAsync(HttpRequest request);
@@ -304,14 +304,14 @@ namespace NzbDrone.Common.Http
             }
         }
 
-        public Task DownloadFileAsync(string url, string fileName)
+        public Task DownloadFileAsync(string source, string fileName)
         {
-            return DownloadFileAsync(url, fileName, CancellationToken.None);
+            return DownloadFileAsync(source, fileName, CancellationToken.None);
         }
 
-        public Task DownloadFileAsync(string url, string fileName, CancellationToken cancellationToken)
+        public Task DownloadFileAsync(string source, string fileName, CancellationToken cancellationToken)
         {
-            return DownloadFileAsync(new HttpRequest(url), url, fileName, cancellationToken);
+            return DownloadFileAsync(new HttpRequest(source), source, fileName, cancellationToken);
         }
 
         public Task DownloadFileAsync(Uri url, string fileName)
@@ -324,7 +324,7 @@ namespace NzbDrone.Common.Http
             await DownloadFileAsync(new HttpRequest(url.OriginalString), url.OriginalString, fileName, cancellationToken);
         }
 
-        private async Task DownloadFileAsync(HttpRequest request, string url, string fileName, CancellationToken cancellationToken)
+        private async Task DownloadFileAsync(HttpRequest request, string source, string fileName, CancellationToken cancellationToken)
         {
             var fileNamePart = fileName + ".part";
 
@@ -336,7 +336,7 @@ namespace NzbDrone.Common.Http
                     fileInfo.Directory.Create();
                 }
 
-                _logger.Debug("Downloading [{0}] to [{1}]", url, fileName);
+                _logger.Debug("Downloading [{0}] to [{1}]", source, fileName);
 
                 var stopWatch = Stopwatch.StartNew();
                 await using (var fileStream = new FileStream(fileNamePart, FileMode.Create, FileAccess.ReadWrite))
