@@ -9,9 +9,14 @@ on:
       - ".github/workflows/build_v5.yml"
       - ".github/workflows/deploy.yml"
   workflow_dispatch:
+    inputs:
+      publish_ref:
+        description: "Git ref to build and publish"
+        required: false
+        default: "v5-custom"
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: ${{ github.workflow }}-${{ github.event_name == 'workflow_dispatch' && (inputs.publish_ref || 'v5-custom') || github.ref_name }}
   cancel-in-progress: true
 
 env:
@@ -25,16 +30,46 @@ jobs:
     outputs:
       version: ${{ steps.vars.outputs.version }}
       branch: ${{ steps.vars.outputs.branch }}
+      full_sha: ${{ steps.vars.outputs.full_sha }}
+      sha: ${{ steps.vars.outputs.sha }}
     steps:
       - name: Check out
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'workflow_dispatch' && (inputs.publish_ref || 'v5-custom') || github.sha }}
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v5
+        with:
+          global-json-file: global.json
+        env:
+          DOTNET_INSTALL_DIR: ${{ runner.temp }}/dotnet
 
       - name: Setup variables
         id: vars
+        env:
+          IS_WORKFLOW_DISPATCH: ${{ github.event_name == 'workflow_dispatch' }}
+          DEFAULT_PUBLISH_REF: v5-custom
+          PUBLISH_REF_INPUT: ${{ inputs.publish_ref }}
+          TRIGGER_REF_NAME: ${{ github.ref_name }}
+          TRIGGER_SHA: ${{ github.sha }}
         run: |
-          BRANCH="${GITHUB_REF_NAME//\//-}"
+          if [ "$IS_WORKFLOW_DISPATCH" = "true" ]; then
+            RAW_BRANCH="${PUBLISH_REF_INPUT:-$DEFAULT_PUBLISH_REF}"
+          else
+            RAW_BRANCH="$TRIGGER_REF_NAME"
+          fi
+
+          BRANCH="$(printf '%s' "$RAW_BRANCH" | sed -e 's#[[:space:]/]#-#g' -e 's#[^A-Za-z0-9._-]#-#g' -e 's#--*#-#g' -e 's|^-||' -e 's|-$||')"
+          if [ -z "$BRANCH" ]; then
+            BRANCH="build"
+          fi
+
+          FULL_SHA="$(git rev-parse HEAD)"
           VERSION="${{ env.VERSION }}.${{ github.run_number }}"
           echo "branch=$BRANCH" >> "$GITHUB_OUTPUT"
+          echo "full_sha=$FULL_SHA" >> "$GITHUB_OUTPUT"
+          echo "sha=${FULL_SHA:0:7}" >> "$GITHUB_OUTPUT"
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
 
       - name: Stamp version
@@ -119,6 +154,8 @@ jobs:
     steps:
       - name: Check out (for Dockerfile)
         uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.build.outputs.full_sha }}
 
       - name: Download build artifact
         uses: actions/download-artifact@v4
@@ -153,7 +190,7 @@ jobs:
           tags: |
             type=raw,value=${{ needs.build.outputs.version }}
             type=raw,value=latest
-            type=sha,prefix=
+            type=raw,value=${{ needs.build.outputs.sha }}
 
       - name: Build and push
         uses: docker/build-push-action@v6
@@ -161,6 +198,8 @@ jobs:
           context: .
           push: true
           tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
+          labels: |
+            ${{ steps.meta.outputs.labels }}
+            org.opencontainers.image.revision=${{ needs.build.outputs.full_sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
