@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using System.Net.Http;
-using System.Threading;
 using FizzWare.NBuilder;
 using Moq;
 using NUnit.Framework;
