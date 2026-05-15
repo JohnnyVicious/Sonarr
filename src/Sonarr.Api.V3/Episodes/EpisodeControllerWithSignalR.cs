@@ -75,12 +75,14 @@ namespace Sonarr.Api.V3.Episodes
                     resource.Series = series.ToResource();
                 }
 
-                var episodeFile = episode.EpisodeFile?.Value; // nosemgrep: codacy.csharp.security.null-dereference -- EpisodeFile is optional after file deletion; null-conditional access is the guard.
-
-                // nosemgrep: codacy.csharp.security.null-dereference -- episodeFile is checked before it is mapped.
-                if (includeEpisodeFile && episode.EpisodeFileId != 0 && episodeFile != null)
+                if (includeEpisodeFile && episode.EpisodeFileId != 0)
                 {
-                    resource.EpisodeFile = episodeFile.ToResource(series, _upgradableSpecification, _formatCalculator);
+                    var episodeFile = episode.EpisodeFile?.Value;
+
+                    if (episodeFile != null)
+                    {
+                        resource.EpisodeFile = episodeFile.ToResource(series, _upgradableSpecification, _formatCalculator);
+                    }
                 }
 
                 if (includeImages)
@@ -112,11 +114,14 @@ namespace Sonarr.Api.V3.Episodes
                         resource.Series = series.ToResource();
                     }
 
-                    var episodeFile = episode.EpisodeFile?.Value;
-
-                    if (includeEpisodeFile && episode.EpisodeFileId != 0 && episodeFile != null)
+                    if (includeEpisodeFile && episode.EpisodeFileId != 0)
                     {
-                        resource.EpisodeFile = episodeFile.ToResource(series, _upgradableSpecification, _formatCalculator);
+                        var episodeFile = episode.EpisodeFile?.Value;
+
+                        if (episodeFile != null)
+                        {
+                            resource.EpisodeFile = episodeFile.ToResource(series, _upgradableSpecification, _formatCalculator);
+                        }
                     }
 
                     if (includeImages)
