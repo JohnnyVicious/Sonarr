@@ -129,7 +129,7 @@ namespace NzbDrone.Common.Http.Dispatchers
                 var data = await ReadResponseDataAsync(request, responseMessage, sendCancellationToken);
                 var headers = GetResponseHeaders(responseMessage);
 
-                return new HttpResponse(request, new HttpHeader(headers), data, responseMessage.StatusCode, responseMessage.Version);
+                return new HttpResponse(request, headers, data, responseMessage.StatusCode, responseMessage.Version);
             }
             catch (OperationCanceledException) when (callerCancellationToken.IsCancellationRequested)
             {
@@ -152,6 +152,10 @@ namespace NzbDrone.Common.Http.Dispatchers
                 }
 
                 return await responseMessage.Content.ReadAsByteArrayAsync(cancellationToken);
+            }
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            {
+                throw;
             }
             catch (Exception ex)
             {
