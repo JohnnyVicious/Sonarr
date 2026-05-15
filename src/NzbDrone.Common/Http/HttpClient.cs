@@ -28,14 +28,25 @@ namespace NzbDrone.Common.Http
         HttpResponse<T> Post<T>(HttpRequest request)
             where T : new();
 
-        Task<HttpResponse> ExecuteAsync(HttpRequest request, CancellationToken cancellationToken = default);
-        Task DownloadFileAsync(string url, string fileName, CancellationToken cancellationToken = default);
-        Task<HttpResponse> GetAsync(HttpRequest request, CancellationToken cancellationToken = default);
-        Task<HttpResponse<T>> GetAsync<T>(HttpRequest request, CancellationToken cancellationToken = default)
+        Task<HttpResponse> ExecuteAsync(HttpRequest request);
+        Task<HttpResponse> ExecuteAsync(HttpRequest request, CancellationToken cancellationToken);
+        Task DownloadFileAsync(string url, string fileName);
+        Task DownloadFileAsync(string url, string fileName, CancellationToken cancellationToken);
+        Task DownloadFileAsync(Uri url, string fileName);
+        Task DownloadFileAsync(Uri url, string fileName, CancellationToken cancellationToken);
+        Task<HttpResponse> GetAsync(HttpRequest request);
+        Task<HttpResponse> GetAsync(HttpRequest request, CancellationToken cancellationToken);
+        Task<HttpResponse<T>> GetAsync<T>(HttpRequest request)
             where T : new();
-        Task<HttpResponse> HeadAsync(HttpRequest request, CancellationToken cancellationToken = default);
-        Task<HttpResponse> PostAsync(HttpRequest request, CancellationToken cancellationToken = default);
-        Task<HttpResponse<T>> PostAsync<T>(HttpRequest request, CancellationToken cancellationToken = default)
+        Task<HttpResponse<T>> GetAsync<T>(HttpRequest request, CancellationToken cancellationToken)
+            where T : new();
+        Task<HttpResponse> HeadAsync(HttpRequest request);
+        Task<HttpResponse> HeadAsync(HttpRequest request, CancellationToken cancellationToken);
+        Task<HttpResponse> PostAsync(HttpRequest request);
+        Task<HttpResponse> PostAsync(HttpRequest request, CancellationToken cancellationToken);
+        Task<HttpResponse<T>> PostAsync<T>(HttpRequest request)
+            where T : new();
+        Task<HttpResponse<T>> PostAsync<T>(HttpRequest request, CancellationToken cancellationToken)
             where T : new();
     }
 
@@ -63,62 +74,38 @@ namespace NzbDrone.Common.Http
             _cookieContainerCache = cacheManager.GetCache<CookieContainer>(typeof(HttpClient));
         }
 
-        public virtual async Task<HttpResponse> ExecuteAsync(HttpRequest request, CancellationToken cancellationToken = default)
+        public virtual Task<HttpResponse> ExecuteAsync(HttpRequest request)
+        {
+            return ExecuteAsync(request, CancellationToken.None);
+        }
+
+        public virtual async Task<HttpResponse> ExecuteAsync(HttpRequest request, CancellationToken cancellationToken)
         {
             var cookieContainer = InitializeRequestCookies(request);
+            var response = await ExecuteWithRedirectsAsync(request, cookieContainer, cancellationToken);
 
+            LogDeveloperRedirect(response);
+            ThrowIfHttpError(request, response);
+
+            return response;
+        }
+
+        private async Task<HttpResponse> ExecuteWithRedirectsAsync(HttpRequest request, CookieContainer cookieContainer, CancellationToken cancellationToken)
+        {
             var response = await ExecuteRequestAsync(request, cookieContainer, cancellationToken);
 
-            if (request.AllowAutoRedirect && response.HasHttpRedirect)
+            if (!request.AllowAutoRedirect || !response.HasHttpRedirect)
             {
-                var autoRedirectChain = new List<string> { request.Url.ToString() };
-
-                do
-                {
-                    request.Url += new HttpUri(response.Headers.GetSingleValue("Location"));
-                    autoRedirectChain.Add(request.Url.ToString());
-
-                    _logger.Trace("Redirected to {0}", request.Url);
-
-                    if (autoRedirectChain.Count > MaxRedirects)
-                    {
-                        throw new WebException($"Too many automatic redirections were attempted for {autoRedirectChain.Join(" -> ")}", WebExceptionStatus.ProtocolError);
-                    }
-
-                    // 302 or 303 should default to GET on redirect even if POST on original
-                    if (RequestRequiresForceGet(response.StatusCode, response.Request.Method))
-                    {
-                        request.Method = HttpMethod.Get;
-                        request.ContentData = null;
-                        request.ContentSummary = null;
-                    }
-
-                    response = await ExecuteRequestAsync(request, cookieContainer, cancellationToken);
-                }
-                while (response.HasHttpRedirect);
+                return response;
             }
 
-            if (response.HasHttpRedirect && !RuntimeInfo.IsProduction)
-            {
-                _logger.Error("Server requested a redirect to [{0}] while in developer mode. Update the request URL to avoid this redirect.", response.Headers["Location"]);
-            }
+            var autoRedirectChain = new List<string> { request.Url.ToString() };
 
-            if (!request.SuppressHttpError && response.HasHttpError && (request.SuppressHttpErrorStatusCodes == null || !request.SuppressHttpErrorStatusCodes.Contains(response.StatusCode)))
+            do
             {
-                if (request.LogHttpError)
-                {
-                    _logger.Warn("HTTP Error - {0}", response);
-                }
-
-                if ((int)response.StatusCode == 429)
-                {
-                    throw new TooManyRequestsException(request, response);
-                }
-                else
-                {
-                    throw new HttpException(request, response);
-                }
+                response = await ExecuteRedirectAsync(request, cookieContainer, response, autoRedirectChain, cancellationToken);
             }
+            while (response.HasHttpRedirect);
 
             return response;
         }
@@ -126,6 +113,61 @@ namespace NzbDrone.Common.Http
         public HttpResponse Execute(HttpRequest request)
         {
             return ExecuteAsync(request).GetAwaiter().GetResult();
+        }
+
+        private async Task<HttpResponse> ExecuteRedirectAsync(HttpRequest request,
+                                                              CookieContainer cookieContainer,
+                                                              HttpResponse response,
+                                                              List<string> autoRedirectChain,
+                                                              CancellationToken cancellationToken)
+        {
+            request.Url += new HttpUri(response.Headers.GetSingleValue("Location"));
+            autoRedirectChain.Add(request.Url.ToString());
+
+            _logger.Trace("Redirected to {0}", request.Url);
+
+            if (autoRedirectChain.Count > MaxRedirects)
+            {
+                throw new WebException($"Too many automatic redirections were attempted for {autoRedirectChain.Join(" -> ")}", WebExceptionStatus.ProtocolError);
+            }
+
+            // 302 or 303 should default to GET on redirect even if POST on original
+            if (RequestRequiresForceGet(response.StatusCode, response.Request.Method))
+            {
+                request.Method = HttpMethod.Get;
+                request.ContentData = null;
+                request.ContentSummary = null;
+            }
+
+            return await ExecuteRequestAsync(request, cookieContainer, cancellationToken);
+        }
+
+        private void LogDeveloperRedirect(HttpResponse response)
+        {
+            if (response.HasHttpRedirect && !RuntimeInfo.IsProduction)
+            {
+                _logger.Error("Server requested a redirect to [{0}] while in developer mode. Update the request URL to avoid this redirect.", response.Headers["Location"]);
+            }
+        }
+
+        private void ThrowIfHttpError(HttpRequest request, HttpResponse response)
+        {
+            if (request.SuppressHttpError || !response.HasHttpError || request.SuppressHttpErrorStatusCodes?.Contains(response.StatusCode) == true)
+            {
+                return;
+            }
+
+            if (request.LogHttpError)
+            {
+                _logger.Warn("HTTP Error - {0}", response);
+            }
+
+            if ((int)response.StatusCode == 429)
+            {
+                throw new TooManyRequestsException(request, response);
+            }
+
+            throw new HttpException(request, response);
         }
 
         private static bool RequestRequiresForceGet(HttpStatusCode statusCode, HttpMethod requestMethod)
@@ -138,7 +180,7 @@ namespace NzbDrone.Common.Http
             };
         }
 
-        private async Task<HttpResponse> ExecuteRequestAsync(HttpRequest request, CookieContainer cookieContainer, CancellationToken cancellationToken = default)
+        private async Task<HttpResponse> ExecuteRequestAsync(HttpRequest request, CookieContainer cookieContainer, CancellationToken cancellationToken)
         {
             foreach (var interceptor in _requestInterceptors)
             {
@@ -262,7 +304,27 @@ namespace NzbDrone.Common.Http
             }
         }
 
-        public async Task DownloadFileAsync(string url, string fileName, CancellationToken cancellationToken = default)
+        public Task DownloadFileAsync(string url, string fileName)
+        {
+            return DownloadFileAsync(url, fileName, CancellationToken.None);
+        }
+
+        public Task DownloadFileAsync(string url, string fileName, CancellationToken cancellationToken)
+        {
+            return DownloadFileAsync(new HttpRequest(url), url, fileName, cancellationToken);
+        }
+
+        public Task DownloadFileAsync(Uri url, string fileName)
+        {
+            return DownloadFileAsync(url, fileName, CancellationToken.None);
+        }
+
+        public async Task DownloadFileAsync(Uri url, string fileName, CancellationToken cancellationToken)
+        {
+            await DownloadFileAsync(new HttpRequest(url.OriginalString), url.OriginalString, fileName, cancellationToken);
+        }
+
+        private async Task DownloadFileAsync(HttpRequest request, string url, string fileName, CancellationToken cancellationToken)
         {
             var fileNamePart = fileName + ".part";
 
@@ -279,7 +341,6 @@ namespace NzbDrone.Common.Http
                 var stopWatch = Stopwatch.StartNew();
                 await using (var fileStream = new FileStream(fileNamePart, FileMode.Create, FileAccess.ReadWrite))
                 {
-                    var request = new HttpRequest(url);
                     request.AllowAutoRedirect = true;
                     request.ResponseStream = fileStream;
                     request.RequestTimeout = TimeSpan.FromSeconds(300);
@@ -316,7 +377,12 @@ namespace NzbDrone.Common.Http
             Task.Run(() => DownloadFileAsync(url, fileName)).GetAwaiter().GetResult();
         }
 
-        public Task<HttpResponse> GetAsync(HttpRequest request, CancellationToken cancellationToken = default)
+        public Task<HttpResponse> GetAsync(HttpRequest request)
+        {
+            return GetAsync(request, CancellationToken.None);
+        }
+
+        public Task<HttpResponse> GetAsync(HttpRequest request, CancellationToken cancellationToken)
         {
             request.Method = HttpMethod.Get;
             return ExecuteAsync(request, cancellationToken);
@@ -327,7 +393,13 @@ namespace NzbDrone.Common.Http
             return Task.Run(() => GetAsync(request)).GetAwaiter().GetResult();
         }
 
-        public async Task<HttpResponse<T>> GetAsync<T>(HttpRequest request, CancellationToken cancellationToken = default)
+        public Task<HttpResponse<T>> GetAsync<T>(HttpRequest request)
+            where T : new()
+        {
+            return GetAsync<T>(request, CancellationToken.None);
+        }
+
+        public async Task<HttpResponse<T>> GetAsync<T>(HttpRequest request, CancellationToken cancellationToken)
             where T : new()
         {
             var response = await GetAsync(request, cancellationToken);
@@ -341,7 +413,12 @@ namespace NzbDrone.Common.Http
             return Task.Run(() => GetAsync<T>(request)).GetAwaiter().GetResult();
         }
 
-        public Task<HttpResponse> HeadAsync(HttpRequest request, CancellationToken cancellationToken = default)
+        public Task<HttpResponse> HeadAsync(HttpRequest request)
+        {
+            return HeadAsync(request, CancellationToken.None);
+        }
+
+        public Task<HttpResponse> HeadAsync(HttpRequest request, CancellationToken cancellationToken)
         {
             request.Method = HttpMethod.Head;
             return ExecuteAsync(request, cancellationToken);
@@ -352,7 +429,12 @@ namespace NzbDrone.Common.Http
             return Task.Run(() => HeadAsync(request)).GetAwaiter().GetResult();
         }
 
-        public Task<HttpResponse> PostAsync(HttpRequest request, CancellationToken cancellationToken = default)
+        public Task<HttpResponse> PostAsync(HttpRequest request)
+        {
+            return PostAsync(request, CancellationToken.None);
+        }
+
+        public Task<HttpResponse> PostAsync(HttpRequest request, CancellationToken cancellationToken)
         {
             request.Method = HttpMethod.Post;
             return ExecuteAsync(request, cancellationToken);
@@ -363,7 +445,13 @@ namespace NzbDrone.Common.Http
             return Task.Run(() => PostAsync(request)).GetAwaiter().GetResult();
         }
 
-        public async Task<HttpResponse<T>> PostAsync<T>(HttpRequest request, CancellationToken cancellationToken = default)
+        public Task<HttpResponse<T>> PostAsync<T>(HttpRequest request)
+            where T : new()
+        {
+            return PostAsync<T>(request, CancellationToken.None);
+        }
+
+        public async Task<HttpResponse<T>> PostAsync<T>(HttpRequest request, CancellationToken cancellationToken)
             where T : new()
         {
             var response = await PostAsync(request, cancellationToken);

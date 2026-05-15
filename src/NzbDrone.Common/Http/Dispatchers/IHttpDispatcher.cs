@@ -6,6 +6,7 @@ namespace NzbDrone.Common.Http.Dispatchers
 {
     public interface IHttpDispatcher
     {
-        Task<HttpResponse> GetResponseAsync(HttpRequest request, CookieContainer cookies, CancellationToken cancellationToken = default);
+        Task<HttpResponse> GetResponseAsync(HttpRequest request, CookieContainer cookies);
+        Task<HttpResponse> GetResponseAsync(HttpRequest request, CookieContainer cookies, CancellationToken cancellationToken);
     }
 }

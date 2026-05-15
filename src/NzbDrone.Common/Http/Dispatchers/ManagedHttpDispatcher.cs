@@ -44,7 +44,12 @@ namespace NzbDrone.Common.Http.Dispatchers
             _httpHappyEyeballs = new HttpHappyEyeballs(logger);
         }
 
-        public async Task<HttpResponse> GetResponseAsync(HttpRequest request, CookieContainer cookies, CancellationToken cancellationToken = default)
+        public Task<HttpResponse> GetResponseAsync(HttpRequest request, CookieContainer cookies)
+        {
+            return GetResponseAsync(request, cookies, CancellationToken.None);
+        }
+
+        public async Task<HttpResponse> GetResponseAsync(HttpRequest request, CookieContainer cookies, CancellationToken cancellationToken)
         {
             using var requestMessage = new HttpRequestMessage(request.Method, (Uri)request.Url);
             requestMessage.Version = HttpVersion.Version20;
