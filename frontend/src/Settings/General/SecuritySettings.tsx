@@ -62,7 +62,7 @@ export const authenticationRequiredOptions: EnhancedSelectInputValue<string>[] =
       },
     },
     {
-      key: 'disabledForLocalHost',
+      key: 'disabledForLocalhost',
       get value() {
         return translate('DisabledForLocalhost');
       },
