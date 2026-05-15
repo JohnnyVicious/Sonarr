@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using FluentAssertions;
 using NUnit.Framework;
 using NzbDrone.Common.EnvironmentInfo;
@@ -38,7 +39,23 @@ namespace NzbDrone.Core.Test.Localization
 
             localizedString.Should().Be("Langue de l'interface utilisateur");
 
-            ExceptionVerification.ExpectedErrors(1);
+            ExceptionVerification.ExpectedErrors(0);
+        }
+
+        [Test]
+        public void should_not_log_error_for_missing_regional_dictionary_when_language_dictionary_exists()
+        {
+            Mocker.GetMock<IConfigService>().Setup(m => m.UILanguage).Returns((int)Language.French);
+            Mocker.GetMock<IAppFolderInfo>().Setup(m => m.StartUpFolder).Returns(TempFolder);
+
+            GivenLocalizationFile("en", "UI Language");
+            GivenLocalizationFile("fr", "Langue de l'interface utilisateur");
+
+            var localizedString = Subject.GetLocalizedString("UiLanguage");
+
+            localizedString.Should().Be("Langue de l'interface utilisateur");
+
+            ExceptionVerification.ExpectedErrors(0);
         }
 
         [Test]
@@ -76,6 +93,14 @@ namespace NzbDrone.Core.Test.Localization
         public void should_throw_if_null_string_passed()
         {
             Assert.Throws<ArgumentNullException>(() => Subject.GetLocalizedString(null));
+        }
+
+        private void GivenLocalizationFile(string culture, string uiLanguage)
+        {
+            var localizationPath = Path.Combine(TempFolder, "Localization", "Core");
+
+            Directory.CreateDirectory(localizationPath);
+            File.WriteAllText(Path.Combine(localizationPath, culture + ".json"), $"{{\"UiLanguage\":\"{uiLanguage}\"}}");
         }
     }
 }
