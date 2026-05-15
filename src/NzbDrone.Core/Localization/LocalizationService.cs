@@ -144,15 +144,17 @@ namespace NzbDrone.Core.Localization
 
             var alternativeFilenamePath = Path.Combine(prefix, GetResourceFilename(culture));
 
+            var isRegionalCulture = culture.Contains('_');
+
             await CopyInto(dictionary, baseFilenamePath, true).ConfigureAwait(false);
 
-            if (culture.Contains('_'))
+            if (isRegionalCulture)
             {
                 var languageBaseFilenamePath = Path.Combine(prefix, GetResourceFilename(culture.Split('_')[0]));
-                await CopyInto(dictionary, languageBaseFilenamePath, false).ConfigureAwait(false);
+                await CopyInto(dictionary, languageBaseFilenamePath, true).ConfigureAwait(false);
             }
 
-            await CopyInto(dictionary, alternativeFilenamePath, true).ConfigureAwait(false);
+            await CopyInto(dictionary, alternativeFilenamePath, !isRegionalCulture).ConfigureAwait(false);
 
             return dictionary;
         }
