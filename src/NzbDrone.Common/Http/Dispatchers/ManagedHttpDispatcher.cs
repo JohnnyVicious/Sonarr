@@ -55,7 +55,7 @@ namespace NzbDrone.Common.Http.Dispatchers
             using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
             cts.CancelAfter(GetRequestTimeout(request));
 
-            return await SendAsync(request, requestMessage, cts.Token);
+            return await SendAsync(request, requestMessage, cts.Token, cancellationToken);
         }
 
         private HttpRequestMessage CreateRequestMessage(HttpRequest request, CookieContainer cookies)
@@ -118,20 +118,24 @@ namespace NzbDrone.Common.Http.Dispatchers
             return request.RequestTimeout != TimeSpan.Zero ? request.RequestTimeout : TimeSpan.FromSeconds(100);
         }
 
-        private async Task<HttpResponse> SendAsync(HttpRequest request, HttpRequestMessage requestMessage, CancellationToken cancellationToken)
+        private async Task<HttpResponse> SendAsync(HttpRequest request, HttpRequestMessage requestMessage, CancellationToken sendCancellationToken, CancellationToken callerCancellationToken)
         {
             var httpClient = GetClient(request.Url);
 
             try
             {
-                using var responseMessage = await httpClient.SendAsync(requestMessage, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
+                using var responseMessage = await httpClient.SendAsync(requestMessage, HttpCompletionOption.ResponseHeadersRead, sendCancellationToken);
 
-                var data = await ReadResponseDataAsync(request, responseMessage, cancellationToken);
+                var data = await ReadResponseDataAsync(request, responseMessage, sendCancellationToken);
                 var headers = GetResponseHeaders(responseMessage);
 
                 return new HttpResponse(request, new HttpHeader(headers), data, responseMessage.StatusCode, responseMessage.Version);
             }
-            catch (OperationCanceledException ex) when (cancellationToken.IsCancellationRequested)
+            catch (OperationCanceledException) when (callerCancellationToken.IsCancellationRequested)
+            {
+                throw;
+            }
+            catch (OperationCanceledException ex) when (sendCancellationToken.IsCancellationRequested)
             {
                 throw new WebException("Http request timed out", ex, WebExceptionStatus.Timeout, null);
             }
