@@ -151,7 +151,7 @@ namespace NzbDrone.Core.Test.Download.DownloadClientTests.Blackhole
 
             await Subject.Download(remoteEpisode, CreateIndexer());
 
-            Mocker.GetMock<IHttpClient>().Verify(c => c.GetAsync(It.Is<HttpRequest>(v => v.Url.FullUri == _downloadUrl)), Times.Once());
+            Mocker.GetMock<IHttpClient>().Verify(c => c.GetAsync(It.Is<HttpRequest>(v => v.Url.FullUri == _downloadUrl), It.IsAny<CancellationToken>()), Times.Once());
             Mocker.GetMock<IDiskProvider>().Verify(c => c.OpenWriteStream(_filePath), Times.Once());
             Mocker.GetMock<IHttpClient>().Verify(c => c.DownloadFileAsync(It.IsAny<string>(), It.IsAny<string>()), Times.Never());
         }
@@ -167,7 +167,7 @@ namespace NzbDrone.Core.Test.Download.DownloadClientTests.Blackhole
 
             await Subject.Download(remoteEpisode, CreateIndexer());
 
-            Mocker.GetMock<IHttpClient>().Verify(c => c.GetAsync(It.Is<HttpRequest>(v => v.Url.FullUri == _downloadUrl)), Times.Never());
+            Mocker.GetMock<IHttpClient>().Verify(c => c.GetAsync(It.Is<HttpRequest>(v => v.Url.FullUri == _downloadUrl), It.IsAny<CancellationToken>()), Times.Never());
             Mocker.GetMock<IDiskProvider>().Verify(c => c.OpenWriteStream(_filePath), Times.Never());
             Mocker.GetMock<IDiskProvider>().Verify(c => c.OpenWriteStream(_magnetFilePath), Times.Once());
             Mocker.GetMock<IHttpClient>().Verify(c => c.DownloadFileAsync(It.IsAny<string>(), It.IsAny<string>()), Times.Never());
@@ -186,7 +186,7 @@ namespace NzbDrone.Core.Test.Download.DownloadClientTests.Blackhole
 
             await Subject.Download(remoteEpisode, CreateIndexer());
 
-            Mocker.GetMock<IHttpClient>().Verify(c => c.GetAsync(It.Is<HttpRequest>(v => v.Url.FullUri == _downloadUrl)), Times.Never());
+            Mocker.GetMock<IHttpClient>().Verify(c => c.GetAsync(It.Is<HttpRequest>(v => v.Url.FullUri == _downloadUrl), It.IsAny<CancellationToken>()), Times.Never());
             Mocker.GetMock<IDiskProvider>().Verify(c => c.OpenWriteStream(_filePath), Times.Never());
             Mocker.GetMock<IDiskProvider>().Verify(c => c.OpenWriteStream(_magnetFilePath), Times.Once());
             Mocker.GetMock<IHttpClient>().Verify(c => c.DownloadFileAsync(It.IsAny<string>(), It.IsAny<string>()), Times.Never());
@@ -201,7 +201,7 @@ namespace NzbDrone.Core.Test.Download.DownloadClientTests.Blackhole
 
             Assert.ThrowsAsync<ReleaseDownloadException>(async () => await Subject.Download(remoteEpisode, CreateIndexer()));
 
-            Mocker.GetMock<IHttpClient>().Verify(c => c.GetAsync(It.Is<HttpRequest>(v => v.Url.FullUri == _downloadUrl)), Times.Never());
+            Mocker.GetMock<IHttpClient>().Verify(c => c.GetAsync(It.Is<HttpRequest>(v => v.Url.FullUri == _downloadUrl), It.IsAny<CancellationToken>()), Times.Never());
             Mocker.GetMock<IDiskProvider>().Verify(c => c.OpenWriteStream(_filePath), Times.Never());
             Mocker.GetMock<IDiskProvider>().Verify(c => c.OpenWriteStream(_magnetFilePath), Times.Never());
             Mocker.GetMock<IHttpClient>().Verify(c => c.DownloadFileAsync(It.IsAny<string>(), It.IsAny<string>()), Times.Never());
@@ -216,7 +216,7 @@ namespace NzbDrone.Core.Test.Download.DownloadClientTests.Blackhole
 
             await Subject.Download(remoteEpisode, CreateIndexer());
 
-            Mocker.GetMock<IHttpClient>().Verify(c => c.GetAsync(It.Is<HttpRequest>(v => v.Url.FullUri == _downloadUrl)), Times.Once());
+            Mocker.GetMock<IHttpClient>().Verify(c => c.GetAsync(It.Is<HttpRequest>(v => v.Url.FullUri == _downloadUrl), It.IsAny<CancellationToken>()), Times.Once());
             Mocker.GetMock<IDiskProvider>().Verify(c => c.OpenWriteStream(_filePath), Times.Once());
             Mocker.GetMock<IDiskProvider>().Verify(c => c.OpenWriteStream(_magnetFilePath), Times.Never());
             Mocker.GetMock<IHttpClient>().Verify(c => c.DownloadFileAsync(It.IsAny<string>(), It.IsAny<string>()), Times.Never());
@@ -233,7 +233,7 @@ namespace NzbDrone.Core.Test.Download.DownloadClientTests.Blackhole
 
             await Subject.Download(remoteEpisode, CreateIndexer());
 
-            Mocker.GetMock<IHttpClient>().Verify(c => c.GetAsync(It.Is<HttpRequest>(v => v.Url.FullUri == _downloadUrl)), Times.Once());
+            Mocker.GetMock<IHttpClient>().Verify(c => c.GetAsync(It.Is<HttpRequest>(v => v.Url.FullUri == _downloadUrl), It.IsAny<CancellationToken>()), Times.Once());
             Mocker.GetMock<IDiskProvider>().Verify(c => c.OpenWriteStream(expectedFilename), Times.Once());
             Mocker.GetMock<IHttpClient>().Verify(c => c.DownloadFileAsync(It.IsAny<string>(), It.IsAny<string>()), Times.Never());
         }
