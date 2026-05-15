@@ -685,6 +685,16 @@
           }
         ],
         "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/calendar": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
           "204": {
             "description": "No Content"
           }
@@ -6510,7 +6520,8 @@
       "AuthenticationRequiredType": {
         "enum": [
           "enabled",
-          "disabledForLocalAddresses"
+          "disabledForLocalAddresses",
+          "disabledForLocalhost"
         ],
         "type": "string"
       },
