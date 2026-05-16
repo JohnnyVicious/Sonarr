@@ -32,6 +32,13 @@ public class TaskController : RestControllerWithSignalR<TaskResource, ScheduledT
                                .ToList());
     }
 
+    public override Results<Ok<TaskResource>, NotFound> GetResourceByIdWithErrorHandler(int id)
+    {
+        var resource = GetResourceById(id);
+
+        return resource == null ? TypedResults.NotFound() : TypedResults.Ok(resource);
+    }
+
     protected override TaskResource? GetResourceById(int id)
     {
         var task = _taskManager.GetAll()
