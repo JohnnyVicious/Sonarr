@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Moq;
@@ -104,8 +105,8 @@ namespace NzbDrone.Core.Test.Download.DownloadClientTests.HadoukenTests
         protected void GivenSuccessfulDownload()
         {
             Mocker.GetMock<IHttpClient>()
-                  .Setup(s => s.GetAsync(It.IsAny<HttpRequest>()))
-                  .ReturnsAsync((HttpRequest r) => new HttpResponse(r, new HttpHeader(), new byte[1000]));
+                  .Setup(s => s.GetAsync(It.IsAny<HttpRequest>(), It.IsAny<CancellationToken>()))
+                  .ReturnsAsync((HttpRequest r, CancellationToken _) => new HttpResponse(r, new HttpHeader(), new byte[1000]));
 
             Mocker.GetMock<IHadoukenProxy>()
                 .Setup(s => s.AddTorrentUri(It.IsAny<HadoukenSettings>(), It.IsAny<string>()))

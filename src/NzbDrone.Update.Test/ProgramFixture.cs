@@ -40,5 +40,30 @@ namespace NzbDrone.Update.Test
 
             Mocker.GetMock<IInstallUpdateService>().Verify(c => c.Start(@"C:\Sonarr".AsOsAgnostic(), 12), Times.Once());
         }
+
+        [Test]
+        public void should_throw_clear_error_when_process_id_cannot_be_resolved()
+        {
+            Mocker.GetMock<IProcessProvider>().Setup(c => c.GetProcessById(12))
+                .Returns((ProcessInfo)null);
+
+            var exception = Assert.Throws<InvalidOperationException>(() => Subject.Start(new[] { "12" }));
+
+            Assert.That(exception.Message, Does.Contain("Could not find process with ID 12"));
+            Mocker.GetMock<IProcessProvider>().Verify(c => c.GetProcessById(12), Times.Once());
+        }
+
+        [Test]
+        public void should_use_executing_application_without_process_lookup()
+        {
+            PosixOnly();
+
+            var processPath = @"C:\Sonarr\Sonarr.exe".AsOsAgnostic();
+
+            Subject.Start(new[] { "12", "", processPath });
+
+            Mocker.GetMock<IProcessProvider>().Verify(c => c.GetProcessById(It.IsAny<int>()), Times.Never());
+            Mocker.GetMock<IInstallUpdateService>().Verify(c => c.Start(@"C:\Sonarr".AsOsAgnostic(), 12), Times.Once());
+        }
     }
 }
