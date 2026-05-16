@@ -221,7 +221,7 @@ namespace NzbDrone.Integration.Test.ApiTests
 
         private V5EpisodeFileResource PutEpisodeFile(V5EpisodeFileResource episodeFile)
         {
-            return Read<V5EpisodeFileResource>(ApiV5.Put($"episodefile/{episodeFile.Id}", episodeFile));
+            return Read<V5EpisodeFileResource>(ApiV5.Put($"episodefile/{episodeFile.Id}", episodeFile, HttpStatusCode.Accepted));
         }
 
         private List<V5EpisodeFileResource> PutEpisodeFilesBulk(List<V5EpisodeFileResource> episodeFiles, HttpStatusCode statusCode = HttpStatusCode.OK, bool authenticated = true)
