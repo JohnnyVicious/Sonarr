@@ -193,7 +193,7 @@ namespace NzbDrone.Integration.Test.ApiTests
 
         private static bool MatchesQueuedDownload(V5QueueResource record, V3QueueResource queued)
         {
-            return string.Equals(record.OutputPath, queued.OutputPath, System.StringComparison.OrdinalIgnoreCase) ||
+            return (!string.IsNullOrWhiteSpace(record.OutputPath) && string.Equals(record.OutputPath, queued.OutputPath, System.StringComparison.OrdinalIgnoreCase)) ||
                    (string.Equals(record.DownloadClient, queued.DownloadClient, System.StringComparison.OrdinalIgnoreCase) &&
                     string.Equals(record.Title, queued.Title, System.StringComparison.OrdinalIgnoreCase));
         }
