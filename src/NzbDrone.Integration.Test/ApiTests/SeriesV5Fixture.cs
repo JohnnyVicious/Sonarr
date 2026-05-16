@@ -83,6 +83,8 @@ namespace NzbDrone.Integration.Test.ApiTests
                 ApiV5.Get("series/1000000", HttpStatusCode.NotFound);
                 ApiV5.Get("series/1000000/folder", HttpStatusCode.NotFound);
                 ApiV5.Put("series/1000000/season", new V5SeasonResource { SeasonNumber = 1 }, HttpStatusCode.NotFound);
+                ApiV5.Put("series/0", new V5SeriesResource { Id = 0 }, HttpStatusCode.BadRequest);
+                ApiV5.Delete("series/0", HttpStatusCode.BadRequest);
             }
             finally
             {
