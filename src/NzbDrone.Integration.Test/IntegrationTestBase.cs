@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
@@ -14,6 +15,7 @@ using NzbDrone.Common.EnvironmentInfo;
 using NzbDrone.Common.Processes;
 using NzbDrone.Core.Qualities;
 using NzbDrone.Core.Tv.Commands;
+using NzbDrone.Integration.Test.ApiTests;
 using NzbDrone.Integration.Test.Client;
 using NzbDrone.SignalR;
 using NzbDrone.Test.Common.Categories;
@@ -79,6 +81,8 @@ namespace NzbDrone.Integration.Test
 
         public string TempDirectory { get; private set; }
 
+        public ApiTestData TestData { get; private set; }
+
         public abstract string SeriesRootFolder { get; }
 
         protected abstract string RootUrl { get; }
@@ -137,6 +141,7 @@ namespace NzbDrone.Integration.Test
         public void IntegrationSetUp()
         {
             TempDirectory = Path.Combine(TestContext.CurrentContext.TestDirectory, "_test_" + ProcessProvider.GetCurrentProcessId() + "_" + DateTime.UtcNow.Ticks);
+            TestData = new ApiTestData(this, TestContext.CurrentContext.Test.FullName);
 
             // Wait for things to get quiet, otherwise the previous test might influence the current one.
             Commands.WaitAll();
@@ -145,6 +150,19 @@ namespace NzbDrone.Integration.Test
         [TearDown]
         public async Task IntegrationTearDown()
         {
+            Exception cleanupFailure = null;
+
+            try
+            {
+                TestData?.Cleanup();
+            }
+            catch (Exception ex)
+            {
+                cleanupFailure = ex;
+            }
+
+            TestData = null;
+
             if (_signalrConnection != null)
             {
                 await _signalrConnection.StopAsync();
@@ -162,6 +180,11 @@ namespace NzbDrone.Integration.Test
                 catch
                 {
                 }
+            }
+
+            if (cleanupFailure != null)
+            {
+                ExceptionDispatchInfo.Capture(cleanupFailure).Throw();
             }
         }
 
