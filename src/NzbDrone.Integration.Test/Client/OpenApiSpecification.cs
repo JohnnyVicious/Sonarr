@@ -13,7 +13,7 @@ namespace NzbDrone.Integration.Test.Client
     {
         private readonly JsonObject _paths;
 
-        private OpenApiSpecification(string version, JsonObject paths)
+        public OpenApiSpecification(string version, JsonObject paths)
         {
             Version = version;
             _paths = paths;
@@ -52,7 +52,12 @@ namespace NzbDrone.Integration.Test.Client
             ShouldDeclareResponse(method, path, response.StatusCode);
         }
 
-        public JsonObject GetResponseSchema(Method method, string path, HttpStatusCode statusCode, string contentType = "application/json")
+        public JsonObject GetResponseSchema(Method method, string path, HttpStatusCode statusCode)
+        {
+            return GetResponseSchema(method, path, statusCode, "application/json");
+        }
+
+        public JsonObject GetResponseSchema(Method method, string path, HttpStatusCode statusCode, string contentType)
         {
             var operation = GetOperation(method, path);
             var schema = operation["responses"]?[((int)statusCode).ToString()]?["content"]?[contentType]?["schema"] as JsonObject;

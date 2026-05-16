@@ -101,8 +101,8 @@ namespace NzbDrone.Integration.Test
 
         protected virtual void InitRestClients()
         {
-            ApiV3 = new VersionedApiClient(RootUrl, "v3", ApiKey);
-            ApiV5 = new VersionedApiClient(RootUrl, "v5", ApiKey);
+            ApiV3 = new VersionedApiClient(new Uri(RootUrl), "v3", ApiKey);
+            ApiV5 = new VersionedApiClient(new Uri(RootUrl), "v5", ApiKey);
             RestClient = ApiV3.AuthenticatedRestClient;
 
             Blocklist = new ClientBase<BlocklistResource>(RestClient, ApiKey);
