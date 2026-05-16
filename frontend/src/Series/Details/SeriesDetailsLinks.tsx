@@ -13,7 +13,7 @@ type SeriesDetailsLinksProps = Pick<
 >;
 
 interface SeriesDetailsLink {
-  externalId: string | number;
+  externalId?: string | number;
   name: string;
   url: string;
 }
@@ -25,18 +25,11 @@ function SeriesDetailsLinks(props: SeriesDetailsLinksProps) {
     const validLinks: SeriesDetailsLink[] = [];
 
     if (tvdbId) {
-      validLinks.push(
-        {
-          externalId: tvdbId,
-          name: 'The TVDB',
-          url: `https://www.thetvdb.com/?tab=series&id=${tvdbId}`,
-        },
-        {
-          externalId: tvdbId,
-          name: 'Trakt',
-          url: `https://trakt.tv/search/tvdb/${tvdbId}?id_type=show`,
-        }
-      );
+      validLinks.push({
+        externalId: tvdbId,
+        name: 'The TVDB',
+        url: `https://www.thetvdb.com/?tab=series&id=${tvdbId}`,
+      });
     }
 
     if (tvMazeId) {
@@ -44,6 +37,21 @@ function SeriesDetailsLinks(props: SeriesDetailsLinksProps) {
         externalId: tvMazeId,
         name: 'TV Maze',
         url: `https://www.tvmaze.com/shows/${tvMazeId}/_`,
+      });
+    }
+
+    // Trakt resolves IMDB IDs as slugs (e.g. /shows/tt0944947 redirects to the show page).
+    // Fall back to legacy TVDB search for series without an IMDB ID — flaky since Trakt's
+    // v3 migration in early 2026, but better than no link for TVDB-only series.
+    if (imdbId) {
+      validLinks.push({
+        name: 'Trakt',
+        url: `https://trakt.tv/shows/${imdbId}`,
+      });
+    } else if (tvdbId) {
+      validLinks.push({
+        name: 'Trakt',
+        url: `https://trakt.tv/search/tvdb/${tvdbId}?id_type=show`,
       });
     }
 
@@ -55,7 +63,6 @@ function SeriesDetailsLinks(props: SeriesDetailsLinksProps) {
           url: `https://imdb.com/title/${imdbId}/`,
         },
         {
-          externalId: imdbId,
           name: 'MDBList',
           url: `https://mdblist.com/show/${imdbId}`,
         }
@@ -87,13 +94,15 @@ function SeriesDetailsLinks(props: SeriesDetailsLinksProps) {
             </Label>
           </Link>
 
-          <ClipboardButton
-            value={`${link.externalId}`}
-            title={translate('CopyToClipboard')}
-            kind={kinds.DEFAULT}
-            size={sizes.SMALL}
-            label={link.externalId}
-          />
+          {link.externalId ? (
+            <ClipboardButton
+              value={`${link.externalId}`}
+              title={translate('CopyToClipboard')}
+              kind={kinds.DEFAULT}
+              size={sizes.SMALL}
+              label={link.externalId}
+            />
+          ) : null}
         </div>
       ))}
     </div>

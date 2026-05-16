@@ -1,9 +1,11 @@
+using System;
+using System.IO;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using FluentValidation;
 using FluentValidation.Validators;
 using NLog;
-using NzbDrone.Common.Extensions;
+using NzbDrone.Common.Http;
 using NzbDrone.Common.Instrumentation;
 
 namespace Sonarr.Api.V3.Config
@@ -34,32 +36,22 @@ namespace Sonarr.Api.V3.Config
                 return true;
             }
 
-            var certPath = resource.SslCertPath;
-            var keyPath = resource.SslKeyPath;
-            var certPassword = resource.SslCertPassword;
-            var type = X509Certificate2.GetCertContentType(certPath);
+            var type = X509Certificate2.GetCertContentType(resource.SslCertPath);
+            if (type != X509ContentType.Cert && type != X509ContentType.Pkcs12)
+            {
+                Logger.Debug("Invalid SSL certificate file. Unexpected certificate type: {0}", type);
+                context.MessageFormatter.AppendArgument("passwordOrKey", "password");
+
+                return false;
+            }
 
             try
             {
-                if (type == X509ContentType.Cert)
-                {
-                    X509Certificate2.CreateFromPemFile(certPath, keyPath.IsNullOrWhiteSpace() ? null : keyPath);
-                }
-                else if (type == X509ContentType.Pkcs12)
-                {
-                    X509CertificateLoader.LoadPkcs12FromFile(certPath, certPassword, X509KeyStorageFlags.DefaultKeySet);
-                }
-                else
-                {
-                    Logger.Debug("Invalid SSL certificate file. Unexpected certificate type: {0}", type);
-                    context.MessageFormatter.AppendArgument("passwordOrKey", "password");
-
-                    return false;
-                }
+                SslCertificateLoader.ValidateCertificate(resource.SslCertPath, resource.SslKeyPath, resource.SslCertPassword);
 
                 return true;
             }
-            catch (CryptographicException ex)
+            catch (Exception ex) when (ex is CryptographicException or SslCertificateLoadException or IOException)
             {
                 var passwordOrKey = type == X509ContentType.Cert ? "key" : "password";
 
