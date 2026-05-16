@@ -10,11 +10,11 @@ using NzbDrone.Integration.Test.Client;
 using RestSharp;
 using Sonarr.Api.V3.CustomFormats;
 using Sonarr.Api.V3.Profiles.Delay;
+using JsonArray = System.Text.Json.Nodes.JsonArray;
 using V5AutoTaggingResource = Sonarr.Api.V5.AutoTagging.AutoTaggingResource;
 using V5AutoTaggingSpecificationSchema = Sonarr.Api.V5.AutoTagging.AutoTaggingSpecificationSchema;
 using V5QualityDefinitionResource = Sonarr.Api.V5.Qualities.QualityDefinitionResource;
 using V5QualityProfileResource = Sonarr.Api.V5.Profiles.Quality.QualityProfileResource;
-using JsonArray = System.Text.Json.Nodes.JsonArray;
 
 namespace NzbDrone.Integration.Test.ApiTests
 {
@@ -295,11 +295,13 @@ namespace NzbDrone.Integration.Test.ApiTests
                 updated.IncludeCustomFormatWhenRenaming.Should().BeTrue();
                 GetCustomFormat(created.Id).Name.Should().Be(byId.Name);
 
-                var bulk = PutCustomFormatsBulk(new CustomFormatBulkResource
-                {
-                    Ids = new HashSet<int> { created.Id },
-                    IncludeCustomFormatWhenRenaming = false
-                }, HttpStatusCode.Accepted);
+                var bulk = PutCustomFormatsBulk(
+                    new CustomFormatBulkResource
+                    {
+                        Ids = new HashSet<int> { created.Id },
+                        IncludeCustomFormatWhenRenaming = false
+                    },
+                    HttpStatusCode.Accepted);
 
                 bulk.Should().ContainSingle(format => format.Id == created.Id && format.IncludeCustomFormatWhenRenaming == false);
                 GetCustomFormat(created.Id).IncludeCustomFormatWhenRenaming.Should().BeFalse();
