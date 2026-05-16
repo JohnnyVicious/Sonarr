@@ -166,7 +166,7 @@ namespace NzbDrone.Integration.Test.ApiTests
                 {
                     queuedDownload = QueuePage(includeUnknownSeriesItems: true)
                         .Records
-                        .FirstOrDefault(record => IsQueuedDownload(record, filePath, safeFileName));
+                        .FirstOrDefault(record => IsQueuedDownload(record, filePath, safeFileName, client.Name));
 
                     return queuedDownload != null;
                 },
@@ -179,6 +179,10 @@ namespace NzbDrone.Integration.Test.ApiTests
         public PagingResource<QueueResource> QueuePage(bool includeUnknownSeriesItems = false)
         {
             var request = _test.Queue.BuildRequest();
+            request.AddParameter("page", 1);
+            request.AddParameter("pageSize", 1000);
+            request.AddParameter("sortKey", "added");
+            request.AddParameter("sortDirection", "descending");
 
             if (includeUnknownSeriesItems)
             {
@@ -316,13 +320,11 @@ namespace NzbDrone.Integration.Test.ApiTests
                 1000);
         }
 
-        private static bool IsQueuedDownload(QueueResource record, string filePath, string fileName)
+        internal static bool IsQueuedDownload(QueueResource record, string filePath, string fileName, string downloadClient)
         {
-            var title = Path.GetFileNameWithoutExtension(fileName);
-
             return string.Equals(record.OutputPath, filePath, StringComparison.OrdinalIgnoreCase) ||
-                   string.Equals(record.Title, fileName, StringComparison.OrdinalIgnoreCase) ||
-                   (record.Title?.Contains(title, StringComparison.OrdinalIgnoreCase) ?? false);
+                   (string.Equals(record.DownloadClient, downloadClient, StringComparison.OrdinalIgnoreCase) &&
+                    string.Equals(record.Title, fileName, StringComparison.OrdinalIgnoreCase));
         }
 
         private void Track(Action cleanup)

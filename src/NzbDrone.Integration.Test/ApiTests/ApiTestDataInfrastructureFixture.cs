@@ -1,6 +1,7 @@
 using System;
 using FluentAssertions;
 using NUnit.Framework;
+using Sonarr.Api.V3.Queue;
 
 namespace NzbDrone.Integration.Test.ApiTests
 {
@@ -39,6 +40,35 @@ namespace NzbDrone.Integration.Test.ApiTests
             nested.Should().Throw<ArgumentException>();
             currentDirectory.Should().Throw<ArgumentException>();
             parentDirectory.Should().Throw<ArgumentException>();
+        }
+
+        [Test]
+        public void should_match_queued_download_with_unique_path_or_client_title_pair()
+        {
+            var filePath = "/tmp/watch/Series.Title.S01E01.mkv";
+            var fileName = "Series.Title.S01E01.mkv";
+            var downloadClient = "api-usenet-blackhole-test-01";
+
+            ApiTestData.IsQueuedDownload(new QueueResource { OutputPath = filePath }, filePath, fileName, downloadClient)
+                .Should().BeTrue();
+
+            ApiTestData.IsQueuedDownload(
+                new QueueResource { DownloadClient = downloadClient, Title = fileName },
+                filePath,
+                fileName,
+                downloadClient).Should().BeTrue();
+
+            ApiTestData.IsQueuedDownload(
+                new QueueResource { DownloadClient = "other-client", Title = fileName },
+                filePath,
+                fileName,
+                downloadClient).Should().BeFalse();
+
+            ApiTestData.IsQueuedDownload(
+                new QueueResource { DownloadClient = downloadClient, Title = "Other.Series.Title.S01E01.mkv" },
+                filePath,
+                fileName,
+                downloadClient).Should().BeFalse();
         }
     }
 }
