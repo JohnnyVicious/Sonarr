@@ -5,6 +5,7 @@ exclude_paths:
   - "src/NzbDrone.Core.Test/**"
   - "src/NzbDrone.Http.Test/**"
   - "src/NzbDrone.Api.Test/**"
+  - "src/NzbDrone.Integration.Test/**"
   # Upstream frontend (has its own ESLint/prettier CI)
   - "frontend/**"
   # Upstream CI/build scripts
