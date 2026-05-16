@@ -35,23 +35,23 @@ namespace Sonarr.Api.V5.Settings
                 return true;
             }
 
+            var type = X509Certificate2.GetCertContentType(resource.SslCertPath!);
+            if (type != X509ContentType.Cert && type != X509ContentType.Pkcs12)
+            {
+                Logger.Debug("Invalid SSL certificate file. Unexpected certificate type: {0}", type);
+                context.MessageFormatter.AppendArgument("passwordOrKey", "password");
+
+                return false;
+            }
+
             try
             {
-                SslCertificateLoader.ValidateCertificate(resource.SslCertPath, resource.SslKeyPath, resource.SslCertPassword);
+                SslCertificateLoader.ValidateCertificate(resource.SslCertPath!, resource.SslKeyPath, resource.SslCertPassword);
 
                 return true;
             }
             catch (Exception ex) when (ex is CryptographicException or SslCertificateLoadException or IOException)
             {
-                var type = X509Certificate2.GetCertContentType(resource.SslCertPath!);
-                if (type != X509ContentType.Cert && type != X509ContentType.Pkcs12)
-                {
-                    Logger.Debug("Invalid SSL certificate file. Unexpected certificate type: {0}", type);
-                    context.MessageFormatter.AppendArgument("passwordOrKey", "password");
-
-                    return false;
-                }
-
                 var passwordOrKey = type == X509ContentType.Cert ? "key" : "password";
 
                 Logger.Debug(ex, "Invalid SSL certificate file or {0}. {1}", passwordOrKey, ex.Message);
