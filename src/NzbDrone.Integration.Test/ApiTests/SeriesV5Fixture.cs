@@ -26,6 +26,8 @@ namespace NzbDrone.Integration.Test.ApiTests
         {
             ApiV5.OpenApi.ShouldDeclareResponse(Method.GET, "series", HttpStatusCode.OK);
             ApiV5.OpenApi.ShouldDeclareResponse(Method.POST, "series", HttpStatusCode.Created);
+            // Runtime validation failures are asserted below; the current v5 OpenAPI generator does not declare
+            // shared RestController validation responses for this endpoint.
             ApiV5.OpenApi.ShouldDeclareResponse(Method.GET, "series/{id}", HttpStatusCode.OK);
             ApiV5.OpenApi.ShouldDeclareResponse(Method.PUT, "series/{id}", HttpStatusCode.Accepted);
             ApiV5.OpenApi.ShouldDeclareResponse(Method.DELETE, "series/{id}", HttpStatusCode.NoContent);
@@ -60,24 +62,31 @@ namespace NzbDrone.Integration.Test.ApiTests
         {
             EnsureNoSeries(266189, "The Blacklist");
 
-            var missingProfile = NewSeriesPayload(266189);
-            missingProfile.QualityProfileId = 0;
+            try
+            {
+                var missingProfile = NewSeriesPayload(266189);
+                missingProfile.QualityProfileId = 0;
 
-            ShouldHaveValidationErrorFor(
-                ApiV5.Post("series", missingProfile, HttpStatusCode.BadRequest),
-                "qualityProfileId");
+                ShouldHaveValidationErrorFor(
+                    ApiV5.Post("series", missingProfile, HttpStatusCode.BadRequest),
+                    "qualityProfileId");
 
-            var missingPath = NewSeriesPayload(266189);
-            missingPath.Path = null;
-            missingPath.RootFolderPath = null;
+                var missingPath = NewSeriesPayload(266189);
+                missingPath.Path = null;
+                missingPath.RootFolderPath = null;
 
-            ShouldHaveValidationErrorFor(
-                ApiV5.Post("series", missingPath, HttpStatusCode.BadRequest),
-                "path");
+                ShouldHaveValidationErrorFor(
+                    ApiV5.Post("series", missingPath, HttpStatusCode.BadRequest),
+                    "path");
 
-            ApiV5.Get("series/1000000", HttpStatusCode.NotFound);
-            ApiV5.Get("series/1000000/folder", HttpStatusCode.NotFound);
-            ApiV5.Put("series/1000000/season", new V5SeasonResource { SeasonNumber = 1 }, HttpStatusCode.NotFound);
+                ApiV5.Get("series/1000000", HttpStatusCode.NotFound);
+                ApiV5.Get("series/1000000/folder", HttpStatusCode.NotFound);
+                ApiV5.Put("series/1000000/season", new V5SeasonResource { SeasonNumber = 1 }, HttpStatusCode.NotFound);
+            }
+            finally
+            {
+                DeleteSeriesWithTvdbIfPresent(266189);
+            }
         }
 
         [Test]
