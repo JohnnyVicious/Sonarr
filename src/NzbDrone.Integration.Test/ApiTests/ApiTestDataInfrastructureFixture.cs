@@ -32,9 +32,13 @@ namespace NzbDrone.Integration.Test.ApiTests
 
             var rooted = () => ApiTestData.SafePathSegment("/tmp/escape", "fileName");
             var nested = () => ApiTestData.SafePathSegment("nested/path", "fileName");
+            var currentDirectory = () => ApiTestData.SafePathSegment(".", "fileName");
+            var parentDirectory = () => ApiTestData.SafePathSegment("..", "fileName");
 
             rooted.Should().Throw<ArgumentException>();
             nested.Should().Throw<ArgumentException>();
+            currentDirectory.Should().Throw<ArgumentException>();
+            parentDirectory.Should().Throw<ArgumentException>();
         }
     }
 }

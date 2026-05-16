@@ -145,6 +145,7 @@ namespace NzbDrone.Integration.Test.ApiTests
 
         public QueueResource QueuedDownload(string fileName = "Series.Title.S01E01.mkv")
         {
+            var safeFileName = SafePathSegment(fileName, nameof(fileName));
             var client = DownloadClient();
             var watchFolder = client.Fields.First(field => field.Name == "watchFolder").Value as string;
             if (watchFolder == null)
@@ -152,12 +153,25 @@ namespace NzbDrone.Integration.Test.ApiTests
                 throw new InvalidOperationException("UsenetBlackhole schema did not produce a watchFolder path.");
             }
 
-            File.WriteAllText(Path.Combine(watchFolder, SafePathSegment(fileName, nameof(fileName))), "Test Download");
+            var filePath = Path.Combine(watchFolder, safeFileName);
+            QueueResource queuedDownload = null;
+
+            File.WriteAllText(filePath, "Test Download");
             RefreshMonitoredDownloads();
 
-            IntegrationTestBase.WaitForCompletion(() => QueuePage(includeUnknownSeriesItems: true).TotalRecords > 0, 30000, 1000);
+            IntegrationTestBase.WaitForCompletion(
+                () =>
+                {
+                    queuedDownload = QueuePage(includeUnknownSeriesItems: true)
+                        .Records
+                        .FirstOrDefault(record => IsQueuedDownload(record, filePath, safeFileName));
 
-            return QueuePage(includeUnknownSeriesItems: true).Records.First();
+                    return queuedDownload != null;
+                },
+                30000,
+                1000);
+
+            return queuedDownload;
         }
 
         public PagingResource<QueueResource> QueuePage(bool includeUnknownSeriesItems = false)
@@ -267,6 +281,15 @@ namespace NzbDrone.Integration.Test.ApiTests
                 1000);
         }
 
+        private static bool IsQueuedDownload(QueueResource record, string filePath, string fileName)
+        {
+            var title = Path.GetFileNameWithoutExtension(fileName);
+
+            return string.Equals(record.OutputPath, filePath, StringComparison.OrdinalIgnoreCase) ||
+                   string.Equals(record.Title, fileName, StringComparison.OrdinalIgnoreCase) ||
+                   (record.Title?.Contains(title, StringComparison.OrdinalIgnoreCase) ?? false);
+        }
+
         private void Track(Action cleanup)
         {
             _cleanup.Add(cleanup);
@@ -274,16 +297,20 @@ namespace NzbDrone.Integration.Test.ApiTests
 
         internal static string SafePathSegment(string value, string parameterName)
         {
-            if (string.IsNullOrWhiteSpace(value) ||
-                Path.IsPathRooted(value) ||
-                value.Contains('/') ||
-                value.Contains('\\') ||
-                value.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0)
+            var segment = value?.Trim();
+
+            if (string.IsNullOrWhiteSpace(segment) ||
+                segment == "." ||
+                segment == ".." ||
+                Path.IsPathRooted(segment) ||
+                segment.Contains('/') ||
+                segment.Contains('\\') ||
+                segment.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0)
             {
                 throw new ArgumentException("API test data paths must be single relative path segments.", parameterName);
             }
 
-            return value;
+            return segment;
         }
     }
 
