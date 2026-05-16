@@ -31,8 +31,6 @@ namespace NzbDrone.Common.Http
             {
                 cert.Dispose();
             }
-
-            leafCert.Dispose();
         }
 
         private static (X509Certificate2 LeafCert, X509Certificate2Collection Collection) LoadCertificates(string certPath, string keyPath, string certPassword)
@@ -68,7 +66,7 @@ namespace NzbDrone.Common.Http
                 throw new SslCertificateLoadException($"Invalid certificate type: {type}");
             }
 
-            if (leafCert == null)
+            if (leafCert == null || !leafCert.HasPrivateKey)
             {
                 throw new SslCertificateLoadException(
                     $"The SSL certificate file {certPath} does not contain a certificate with an associated private key");
