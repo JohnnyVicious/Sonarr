@@ -40,18 +40,26 @@ function SeriesDetailsLinks(props: SeriesDetailsLinksProps) {
       });
     }
 
+    // Trakt: prefer direct IMDB link (rock solid), fall back to legacy TVDB search
+    // (flaky since Trakt's v3 migration in early 2026, but better than no link for TVDB-only series).
+    if (imdbId) {
+      validLinks.push({
+        name: 'Trakt',
+        url: `https://trakt.tv/shows/${imdbId}`,
+      });
+    } else if (tvdbId) {
+      validLinks.push({
+        name: 'Trakt',
+        url: `https://trakt.tv/search/tvdb/${tvdbId}?id_type=show`,
+      });
+    }
+
     if (imdbId) {
       validLinks.push(
         {
           externalId: imdbId,
           name: 'IMDB',
           url: `https://imdb.com/title/${imdbId}/`,
-        },
-        {
-          // Trakt's TVDB search URL (trakt.tv/search/tvdb/:id) broke in early 2026.
-          // IMDB-based URL is the only reliable format; series without imdbId won't get a Trakt link.
-          name: 'Trakt',
-          url: `https://trakt.tv/shows/${imdbId}`,
         },
         {
           name: 'MDBList',
