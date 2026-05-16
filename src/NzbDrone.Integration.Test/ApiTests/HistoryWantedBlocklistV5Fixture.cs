@@ -111,8 +111,10 @@ namespace NzbDrone.Integration.Test.ApiTests
             history.Episode.Should().NotBeNull();
             history.Quality.Quality.Id.Should().Be(Quality.SDTV.Id);
 
-            GetHistoryPage(eventTypes: new[] { (int)EpisodeHistoryEventType.EpisodeFileDeleted })
-                .Records.Should().Contain(record => record.Id == history.Id);
+            var deletedHistory = GetHistoryPage(eventTypes: new[] { (int)EpisodeHistoryEventType.EpisodeFileDeleted }).Records;
+
+            deletedHistory.Should().ContainSingle(record => record.Id == history.Id);
+            deletedHistory.Should().OnlyContain(record => record.EventType == EpisodeHistoryEventType.EpisodeFileDeleted);
             GetHistoryPage(seriesIds: new[] { series.Id })
                 .Records.Should().Contain(record => record.Id == history.Id);
             GetHistoryPage(episodeId: episode.Id)
@@ -494,7 +496,16 @@ namespace NzbDrone.Integration.Test.ApiTests
 
         private static string QualityModelJson(Quality quality)
         {
-            return $"{{\"quality\":{quality.Id},\"revision\":{{\"version\":1,\"real\":0,\"isRepack\":false}}}}";
+            return new
+            {
+                quality = quality.Id,
+                revision = new
+                {
+                    version = 1,
+                    real = 0,
+                    isRepack = false
+                }
+            }.ToJson();
         }
 
         private static string LanguagesJson(params Language[] languages)
