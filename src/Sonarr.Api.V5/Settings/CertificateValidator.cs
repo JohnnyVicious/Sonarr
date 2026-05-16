@@ -1,3 +1,5 @@
+using System.IO;
+using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using FluentValidation;
 using FluentValidation.Validators;
@@ -39,7 +41,7 @@ namespace Sonarr.Api.V5.Settings
 
                 return true;
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex is CryptographicException or SslCertificateLoadException or IOException)
             {
                 var type = X509Certificate2.GetCertContentType(resource.SslCertPath!);
                 if (type != X509ContentType.Cert && type != X509ContentType.Pkcs12)
