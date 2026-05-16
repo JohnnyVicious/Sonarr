@@ -258,22 +258,25 @@ namespace NzbDrone.Integration.Test.ApiTests
         {
             var command = _test.Commands.Post(new SimpleCommandResource { Name = "RefreshMonitoredDownloads" });
 
-            IntegrationTestBase.WaitForCompletion(() =>
-            {
-                var updatedCommand = _test.Commands.Get(command.Id);
-
-                if (updatedCommand.Status is CommandStatus.Failed or CommandStatus.Aborted or CommandStatus.Cancelled or CommandStatus.Orphaned)
+            IntegrationTestBase.WaitForCompletion(
+                () =>
                 {
-                    throw new InvalidOperationException($"RefreshMonitoredDownloads finished with {updatedCommand.Status}.");
-                }
+                    var updatedCommand = _test.Commands.Get(command.Id);
 
-                if (updatedCommand.Status == CommandStatus.Completed)
-                {
-                    return true;
-                }
+                    if (updatedCommand.Status is CommandStatus.Failed or CommandStatus.Aborted or CommandStatus.Cancelled or CommandStatus.Orphaned)
+                    {
+                        throw new InvalidOperationException($"RefreshMonitoredDownloads finished with {updatedCommand.Status}.");
+                    }
 
-                return false;
-            }, 30000, 1000);
+                    if (updatedCommand.Status == CommandStatus.Completed)
+                    {
+                        return true;
+                    }
+
+                    return false;
+                },
+                30000,
+                1000);
         }
 
         private void Track(Action cleanup)
