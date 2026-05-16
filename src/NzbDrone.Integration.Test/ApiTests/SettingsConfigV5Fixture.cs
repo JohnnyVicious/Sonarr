@@ -215,20 +215,20 @@ namespace NzbDrone.Integration.Test.ApiTests
         [Test]
         public void should_validate_invalid_v5_settings_and_v3_config_values()
         {
-            var general = Copy(GetV5<V5GeneralSettingsResource>("settings/general"));
-            general.Port = 0;
-            ShouldHaveValidationErrorFor(ApiV5.Put("settings/general/1", general, HttpStatusCode.BadRequest), "port");
+            var portGeneral = Copy(GetV5<V5GeneralSettingsResource>("settings/general"));
+            portGeneral.Port = 0;
+            ShouldHaveValidationErrorFor(ApiV5.Put("settings/general/1", portGeneral, HttpStatusCode.BadRequest), "port");
 
-            general = Copy(GetV5<V5GeneralSettingsResource>("settings/general"));
-            general.UrlBase = "invalid url base";
-            ShouldHaveValidationErrorFor(ApiV5.Put("settings/general/1", general, HttpStatusCode.BadRequest), "urlBase");
+            var urlGeneral = Copy(GetV5<V5GeneralSettingsResource>("settings/general"));
+            urlGeneral.UrlBase = "invalid url base";
+            ShouldHaveValidationErrorFor(ApiV5.Put("settings/general/1", urlGeneral, HttpStatusCode.BadRequest), "urlBase");
 
-            general = Copy(GetV5<V5GeneralSettingsResource>("settings/general"));
-            general.Username = string.Empty;
-            general.Password = string.Empty;
-            general.PasswordConfirmation = string.Empty;
-            general.AuthenticationMethod = NzbDrone.Core.Authentication.AuthenticationType.Forms;
-            ShouldHaveValidationErrorFor(ApiV5.Put("settings/general/1", general, HttpStatusCode.BadRequest), "username");
+            var authGeneral = Copy(GetV5<V5GeneralSettingsResource>("settings/general"));
+            authGeneral.Username = string.Empty;
+            authGeneral.Password = string.Empty;
+            authGeneral.PasswordConfirmation = string.Empty;
+            authGeneral.AuthenticationMethod = NzbDrone.Core.Authentication.AuthenticationType.Forms;
+            ShouldHaveValidationErrorFor(ApiV5.Put("settings/general/1", authGeneral, HttpStatusCode.BadRequest), "username");
 
             var media = Copy(GetV5<V5MediaManagementSettingsResource>("settings/mediamanagement"));
             media.RecycleBin = Path.Combine(TempDirectory, "missing-recycle-bin");
