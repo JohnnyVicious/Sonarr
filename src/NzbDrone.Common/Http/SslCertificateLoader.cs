@@ -25,7 +25,7 @@ namespace NzbDrone.Common.Http
 
         public static void ValidateCertificate(string certPath, string keyPath, string certPassword)
         {
-            var (leafCert, certificateCollection) = LoadCertificates(certPath, keyPath, certPassword);
+            var (_, certificateCollection) = LoadCertificates(certPath, keyPath, certPassword);
 
             foreach (var cert in certificateCollection)
             {
