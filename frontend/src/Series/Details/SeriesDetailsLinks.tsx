@@ -40,8 +40,9 @@ function SeriesDetailsLinks(props: SeriesDetailsLinksProps) {
       });
     }
 
-    // Trakt: prefer direct IMDB link (rock solid), fall back to legacy TVDB search
-    // (flaky since Trakt's v3 migration in early 2026, but better than no link for TVDB-only series).
+    // Trakt resolves IMDB IDs as slugs (e.g. /shows/tt0944947 redirects to the show page).
+    // Fall back to legacy TVDB search for series without an IMDB ID — flaky since Trakt's
+    // v3 migration in early 2026, but better than no link for TVDB-only series.
     if (imdbId) {
       validLinks.push({
         name: 'Trakt',
