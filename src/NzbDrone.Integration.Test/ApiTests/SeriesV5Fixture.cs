@@ -68,10 +68,10 @@ namespace NzbDrone.Integration.Test.ApiTests
         {
             EnsureNoSeries(266189, "The Blacklist");
 
-            var created = CreateSeries(266189);
-
             try
             {
+                var created = CreateSeries(266189);
+
                 created.Id.Should().NotBe(0);
                 created.TvdbId.Should().Be(266189);
                 created.QualityProfileId.Should().Be(1);
@@ -117,7 +117,7 @@ namespace NzbDrone.Integration.Test.ApiTests
             }
             finally
             {
-                DeleteSeriesIfPresent(created.Id);
+                DeleteSeriesWithTvdbIfPresent(266189);
             }
         }
 
@@ -129,18 +129,18 @@ namespace NzbDrone.Integration.Test.ApiTests
             var lookup = LookupSeries("tvdb:79349");
             lookup.Should().Contain(series => series.TvdbId == 79349);
 
-            var payload = NewSeriesPayload(79349);
-            var imported = PostSeriesImport(new List<V5SeriesResource> { payload }).Single();
-
             try
             {
+                var payload = NewSeriesPayload(79349);
+                var imported = PostSeriesImport(new List<V5SeriesResource> { payload }).Single();
+
                 imported.Id.Should().NotBe(0);
                 imported.TvdbId.Should().Be(79349);
                 GetSeries(imported.Id).TvdbId.Should().Be(79349);
             }
             finally
             {
-                DeleteSeriesIfPresent(imported.Id);
+                DeleteSeriesWithTvdbIfPresent(79349);
             }
         }
 
@@ -150,11 +150,10 @@ namespace NzbDrone.Integration.Test.ApiTests
             EnsureNoSeries(266189, "The Blacklist");
             EnsureNoSeries(110381, "Archer (2009)");
 
-            var blacklist = CreateSeries(266189);
-            var archer = CreateSeries(110381);
-
             try
             {
+                var blacklist = CreateSeries(266189);
+                var archer = CreateSeries(110381);
                 var tag = TestData.Tag();
                 var editorResource = new V5SeriesEditorResource
                 {
@@ -202,8 +201,8 @@ namespace NzbDrone.Integration.Test.ApiTests
             }
             finally
             {
-                DeleteSeriesIfPresent(blacklist.Id);
-                DeleteSeriesIfPresent(archer.Id);
+                DeleteSeriesWithTvdbIfPresent(266189);
+                DeleteSeriesWithTvdbIfPresent(110381);
             }
         }
 
@@ -301,6 +300,17 @@ namespace NzbDrone.Integration.Test.ApiTests
             if (ListSeries().Any(series => series.Id == id))
             {
                 DeleteSeries(id);
+            }
+        }
+
+        private void DeleteSeriesWithTvdbIfPresent(int tvdbId)
+        {
+            foreach (var series in ListSeries(tvdbId))
+            {
+                if (series.Id != 0)
+                {
+                    DeleteSeries(series.Id);
+                }
             }
         }
 
