@@ -178,15 +178,16 @@ namespace NzbDrone.Integration.Test.Client
 
         public IRestResponse Execute(RestRequest request, HttpStatusCode statusCode, bool authenticated)
         {
-            var client = SelectRestClient(request, authenticated);
+            return WithRoutedRequest(request, authenticated, client =>
+            {
+                _logger.Info("{0}: {1}", request.Method, client.BuildUri(request));
 
-            _logger.Info("{0}: {1}", request.Method, client.BuildUri(request));
+                var response = client.Execute(request);
 
-            var response = client.Execute(request);
+                _logger.Info("Response: {0}", response.Content);
 
-            _logger.Info("Response: {0}", response.Content);
-
-            return response.ShouldHaveStatusCode(statusCode).ShouldDisableCache();
+                return response.ShouldHaveStatusCode(statusCode).ShouldDisableCache();
+            });
         }
 
         public Uri BuildUri(RestRequest request)
@@ -196,7 +197,7 @@ namespace NzbDrone.Integration.Test.Client
 
         public Uri BuildUri(RestRequest request, bool authenticated)
         {
-            return SelectRestClient(request, authenticated).BuildUri(request);
+            return WithRoutedRequest(request, authenticated, client => client.BuildUri(request));
         }
 
         public string ApiPath(string resource)
@@ -259,12 +260,30 @@ namespace NzbDrone.Integration.Test.Client
         {
             if (request.Resource.StartsWith("feed/", StringComparison.Ordinal))
             {
-                request.Resource = request.Resource["feed/".Length..];
-
                 return authenticated ? AuthenticatedFeedRestClient : UnauthenticatedFeedRestClient;
             }
 
             return authenticated ? AuthenticatedRestClient : UnauthenticatedRestClient;
+        }
+
+        private T WithRoutedRequest<T>(RestRequest request, bool authenticated, Func<RestClient, T> action)
+        {
+            var client = SelectRestClient(request, authenticated);
+            var originalResource = request.Resource;
+
+            if (originalResource.StartsWith("feed/", StringComparison.Ordinal))
+            {
+                request.Resource = originalResource["feed/".Length..];
+            }
+
+            try
+            {
+                return action(client);
+            }
+            finally
+            {
+                request.Resource = originalResource;
+            }
         }
 
         private static string RequestResource(string resource, string version)

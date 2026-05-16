@@ -65,6 +65,19 @@ namespace NzbDrone.Integration.Test.Client
         }
 
         [Test]
+        public void should_not_mutate_feed_requests_when_building_uris()
+        {
+            var apiV5 = new VersionedApiClient(new Uri("http://localhost:8989/"), "v5", "test-key");
+            var request = apiV5.BuildRequest("feed/calendar/sonarr.ics");
+
+            apiV5.BuildUri(request).ToString()
+                .Should().Be("http://localhost:8989/feed/v5/calendar/sonarr.ics");
+            request.Resource.Should().Be("feed/calendar/sonarr.ics");
+            apiV5.BuildUri(request).ToString()
+                .Should().Be("http://localhost:8989/feed/v5/calendar/sonarr.ics");
+        }
+
+        [Test]
         public void should_load_checked_in_openapi_specs_for_response_assertions()
         {
             var apiV3 = new VersionedApiClient(new Uri("http://localhost:8989/"), "v3", "test-key");
