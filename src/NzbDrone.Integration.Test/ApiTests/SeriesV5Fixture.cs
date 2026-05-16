@@ -26,6 +26,7 @@ namespace NzbDrone.Integration.Test.ApiTests
         {
             ApiV5.OpenApi.ShouldDeclareResponse(Method.GET, "series", HttpStatusCode.OK);
             ApiV5.OpenApi.ShouldDeclareResponse(Method.POST, "series", HttpStatusCode.Created);
+
             // Runtime validation failures are asserted below; the current v5 OpenAPI generator does not declare
             // shared RestController validation responses for this endpoint.
             ApiV5.OpenApi.ShouldDeclareResponse(Method.GET, "series/{id}", HttpStatusCode.OK);
