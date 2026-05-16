@@ -48,6 +48,8 @@ function SeriesDetailsLinks(props: SeriesDetailsLinksProps) {
           url: `https://imdb.com/title/${imdbId}/`,
         },
         {
+          // Trakt's TVDB search URL (trakt.tv/search/tvdb/:id) broke in early 2026.
+          // IMDB-based URL is the only reliable format; series without imdbId won't get a Trakt link.
           name: 'Trakt',
           url: `https://trakt.tv/shows/${imdbId}`,
         },
