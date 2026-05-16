@@ -16,9 +16,13 @@ namespace NzbDrone.Integration.Test.Client
             Version = NormalizeVersion(version);
             ApiKey = apiKey;
             var apiRootUrl = ApiRootUrl(rootUrl, Version);
+            var feedRootUrl = FeedRootUrl(rootUrl, Version);
             AuthenticatedRestClient = BuildRestClient(apiRootUrl, apiKey);
             // nosemgrep: csharp.lang.security.ssrf.rest-client.ssrf
             UnauthenticatedRestClient = new RestClient(apiRootUrl);
+            AuthenticatedFeedRestClient = BuildRestClient(feedRootUrl, apiKey);
+            // nosemgrep: csharp.lang.security.ssrf.rest-client.ssrf
+            UnauthenticatedFeedRestClient = new RestClient(feedRootUrl);
             _logger = LogManager.GetLogger("REST");
             _openApi = new Lazy<OpenApiSpecification>(() => OpenApiSpecification.Load(Version));
         }
@@ -27,6 +31,8 @@ namespace NzbDrone.Integration.Test.Client
         public string ApiKey { get; }
         public RestClient AuthenticatedRestClient { get; }
         public RestClient UnauthenticatedRestClient { get; }
+        public RestClient AuthenticatedFeedRestClient { get; }
+        public RestClient UnauthenticatedFeedRestClient { get; }
         public OpenApiSpecification OpenApi => _openApi.Value;
 
         public RestRequest BuildRequest(string resource)
@@ -36,7 +42,7 @@ namespace NzbDrone.Integration.Test.Client
 
         public RestRequest BuildRequest(string resource, Method method)
         {
-            return new RestRequest(resource.TrimStart('/'))
+            return new RestRequest(RequestResource(resource, Version))
             {
                 Method = method,
                 RequestFormat = DataFormat.Json
@@ -172,7 +178,7 @@ namespace NzbDrone.Integration.Test.Client
 
         public IRestResponse Execute(RestRequest request, HttpStatusCode statusCode, bool authenticated)
         {
-            var client = authenticated ? AuthenticatedRestClient : UnauthenticatedRestClient;
+            var client = SelectRestClient(request, authenticated);
 
             _logger.Info("{0}: {1}", request.Method, client.BuildUri(request));
 
@@ -180,7 +186,17 @@ namespace NzbDrone.Integration.Test.Client
 
             _logger.Info("Response: {0}", response.Content);
 
-            return response.ShouldHaveStatusCode(statusCode);
+            return response.ShouldHaveStatusCode(statusCode).ShouldDisableCache();
+        }
+
+        public Uri BuildUri(RestRequest request)
+        {
+            return BuildUri(request, true);
+        }
+
+        public Uri BuildUri(RestRequest request, bool authenticated)
+        {
+            return SelectRestClient(request, authenticated).BuildUri(request);
         }
 
         public string ApiPath(string resource)
@@ -202,7 +218,26 @@ namespace NzbDrone.Integration.Test.Client
         {
             ValidateRootUrl(rootUrl);
 
-            var builder = new UriBuilder(rootUrl.Scheme, "localhost", rootUrl.Port, $"api/{version}/");
+            var builder = new UriBuilder(rootUrl)
+            {
+                Path = $"api/{version}/",
+                Query = string.Empty,
+                Fragment = string.Empty
+            };
+
+            return builder.Uri;
+        }
+
+        private static Uri FeedRootUrl(Uri rootUrl, string version)
+        {
+            ValidateRootUrl(rootUrl);
+
+            var builder = new UriBuilder(rootUrl)
+            {
+                Path = $"feed/{version}/",
+                Query = string.Empty,
+                Fragment = string.Empty
+            };
 
             return builder.Uri;
         }
@@ -218,6 +253,37 @@ namespace NzbDrone.Integration.Test.Client
             {
                 throw new ArgumentException("API test clients must target a loopback Sonarr instance.", nameof(rootUrl));
             }
+        }
+
+        private RestClient SelectRestClient(RestRequest request, bool authenticated)
+        {
+            if (request.Resource.StartsWith("feed/", StringComparison.Ordinal))
+            {
+                request.Resource = request.Resource["feed/".Length..];
+
+                return authenticated ? AuthenticatedFeedRestClient : UnauthenticatedFeedRestClient;
+            }
+
+            return authenticated ? AuthenticatedRestClient : UnauthenticatedRestClient;
+        }
+
+        private static string RequestResource(string resource, string version)
+        {
+            var normalizedResource = resource.TrimStart('/');
+            var versionedApiPrefix = $"api/{version}/";
+            var versionedFeedPrefix = $"feed/{version}/";
+
+            if (normalizedResource.StartsWith(versionedApiPrefix, StringComparison.Ordinal))
+            {
+                return normalizedResource[versionedApiPrefix.Length..];
+            }
+
+            if (normalizedResource.StartsWith(versionedFeedPrefix, StringComparison.Ordinal))
+            {
+                return $"feed/{normalizedResource[versionedFeedPrefix.Length..]}";
+            }
+
+            return normalizedResource;
         }
 
         private static string NormalizeVersion(string version)

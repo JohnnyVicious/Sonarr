@@ -22,6 +22,15 @@ namespace NzbDrone.Integration.Test.Client
         }
 
         [Test]
+        public void should_preserve_supplied_loopback_authority()
+        {
+            var apiV5 = new VersionedApiClient(new Uri("http://127.0.0.1:8989/"), "v5", "test-key");
+
+            apiV5.BuildUri(apiV5.BuildRequest("system/status")).ToString()
+                .Should().Be("http://127.0.0.1:8989/api/v5/system/status");
+        }
+
+        [Test]
         public void should_reject_non_loopback_api_roots()
         {
             var createClient = () => new VersionedApiClient(new Uri("https://example.com/"), "v5", "test-key");
@@ -42,6 +51,17 @@ namespace NzbDrone.Integration.Test.Client
             apiV5.AuthenticatedRestClient.DefaultParameters
                 .Should().Contain(parameter => parameter.Name == "Authorization")
                 .And.Contain(parameter => parameter.Name == "X-Api-Key");
+        }
+
+        [Test]
+        public void should_build_feed_requests_against_the_versioned_feed_root()
+        {
+            var apiV5 = new VersionedApiClient(new Uri("http://localhost:8989/"), "v5", "test-key");
+
+            apiV5.BuildUri(apiV5.BuildRequest("feed/calendar/sonarr.ics")).ToString()
+                .Should().Be("http://localhost:8989/feed/v5/calendar/sonarr.ics");
+            apiV5.BuildUri(apiV5.BuildRequest("/feed/v5/calendar/sonarr.ics")).ToString()
+                .Should().Be("http://localhost:8989/feed/v5/calendar/sonarr.ics");
         }
 
         [Test]

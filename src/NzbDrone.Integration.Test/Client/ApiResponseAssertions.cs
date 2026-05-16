@@ -23,6 +23,17 @@ namespace NzbDrone.Integration.Test.Client
             return response;
         }
 
+        public static IRestResponse ShouldDisableCache(this IRestResponse response)
+        {
+            var headers = response.Headers;
+            ((string)headers.Single(header => header.Name == "Cache-Control").Value).Split(',').Select(header => header.Trim())
+                .Should().BeEquivalentTo("no-store, no-cache".Split(',').Select(header => header.Trim()));
+            headers.Single(header => header.Name == "Pragma").Value.Should().Be("no-cache");
+            headers.Single(header => header.Name == "Expires").Value.Should().Be("-1");
+
+            return response;
+        }
+
         public static JsonNode ShouldHaveJsonContent(this IRestResponse response)
         {
             response.Content.Should().NotBeNullOrWhiteSpace();
