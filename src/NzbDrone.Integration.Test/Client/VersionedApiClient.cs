@@ -18,9 +18,11 @@ namespace NzbDrone.Integration.Test.Client
             var apiRootUrl = ApiRootUrl(rootUrl, Version);
             var feedRootUrl = FeedRootUrl(rootUrl, Version);
             AuthenticatedRestClient = BuildRestClient(apiRootUrl, apiKey);
+
             // nosemgrep: csharp.lang.security.ssrf.rest-client.ssrf
             UnauthenticatedRestClient = new RestClient(apiRootUrl);
             AuthenticatedFeedRestClient = BuildRestClient(feedRootUrl, apiKey);
+
             // nosemgrep: csharp.lang.security.ssrf.rest-client.ssrf
             UnauthenticatedFeedRestClient = new RestClient(feedRootUrl);
             _logger = LogManager.GetLogger("REST");
