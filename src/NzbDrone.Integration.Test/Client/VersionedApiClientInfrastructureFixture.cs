@@ -29,6 +29,11 @@ namespace NzbDrone.Integration.Test.Client
 
             apiV5.UnauthenticatedRestClient.BuildUri(request).ToString()
                 .Should().Be("http://localhost:8989/api/v5/system/status");
+            apiV5.UnauthenticatedRestClient.DefaultParameters
+                .Should().NotContain(parameter => parameter.Name == "Authorization" || parameter.Name == "X-Api-Key");
+            apiV5.AuthenticatedRestClient.DefaultParameters
+                .Should().Contain(parameter => parameter.Name == "Authorization")
+                .And.Contain(parameter => parameter.Name == "X-Api-Key");
         }
 
         [Test]
@@ -41,6 +46,57 @@ namespace NzbDrone.Integration.Test.Client
             apiV5.OpenApi.ShouldDeclareResponse(Method.GET, "system/status", HttpStatusCode.OK);
             apiV5.OpenApi.GetResponseSchema(Method.GET, "system/status", HttpStatusCode.OK)
                 .ContainsKey("$ref").Should().BeTrue();
+        }
+
+        [Test]
+        public void should_normalize_relative_and_absolute_api_paths_for_openapi_assertions()
+        {
+            var apiV5 = new VersionedApiClient(new Uri("http://localhost:8989/"), "v5", "test-key");
+
+            apiV5.OpenApi.ApiPath("system/status").Should().Be("/api/v5/system/status");
+            apiV5.OpenApi.ApiPath("/system/status").Should().Be("/api/v5/system/status");
+            apiV5.OpenApi.ApiPath("/api/v5/system/status").Should().Be("/api/v5/system/status");
+        }
+
+        [Test]
+        public void should_parse_json_array_responses()
+        {
+            var response = new RestResponse
+            {
+                StatusCode = HttpStatusCode.OK,
+                ContentType = "application/json; charset=utf-8",
+                Content = "[{\"id\":1}]"
+            };
+
+            response.ShouldHaveJsonArrayContent().Count.Should().Be(1);
+        }
+
+        [Test]
+        public void should_validate_bad_request_validation_error_shapes()
+        {
+            var response = new RestResponse
+            {
+                StatusCode = HttpStatusCode.BadRequest,
+                ContentType = "application/json; charset=utf-8",
+                Content = "[{\"propertyName\":\"path\",\"errorMessage\":\"Path is required\"}]"
+            };
+
+            response.ShouldHaveValidationErrors().Count.Should().Be(1);
+        }
+
+        [Test]
+        public void should_reject_malformed_validation_error_shapes()
+        {
+            var response = new RestResponse
+            {
+                StatusCode = HttpStatusCode.BadRequest,
+                ContentType = "application/json; charset=utf-8",
+                Content = "[{\"propertyName\":\"path\"}]"
+            };
+
+            var validation = () => response.ShouldHaveValidationErrors();
+
+            validation.Should().Throw<AssertionException>();
         }
     }
 }

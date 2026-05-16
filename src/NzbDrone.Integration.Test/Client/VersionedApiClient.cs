@@ -189,7 +189,6 @@ namespace NzbDrone.Integration.Test.Client
         private static RestClient BuildRestClient(Uri rootUrl, string version, string apiKey)
         {
             var restClient = new RestClient(ApiRootUrl(rootUrl, version));
-            restClient.AddDefaultHeader("Authentication", apiKey);
             restClient.AddDefaultHeader("Authorization", apiKey);
             restClient.AddDefaultHeader("X-Api-Key", apiKey);
 

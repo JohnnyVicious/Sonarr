@@ -69,12 +69,15 @@ namespace NzbDrone.Integration.Test.Client
 
         public string ApiPath(string resource)
         {
-            if (resource.StartsWith("/", StringComparison.Ordinal))
+            var normalizedResource = resource.TrimStart('/');
+
+            if (normalizedResource.StartsWith("api/", StringComparison.Ordinal) ||
+                normalizedResource.StartsWith("feed/", StringComparison.Ordinal))
             {
-                return resource;
+                return $"/{normalizedResource}";
             }
 
-            return $"/api/{Version}/{resource.TrimStart('/')}";
+            return $"/api/{Version}/{normalizedResource}";
         }
 
         private JsonObject GetOperation(Method method, string path)
