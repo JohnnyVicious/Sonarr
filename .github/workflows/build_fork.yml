@@ -190,7 +190,7 @@ jobs:
             ghcr.io/${{ github.repository_owner }}/sonarr-xt
             ${{ vars.DOCKERHUB_USERNAME != '' && format('{0}/sonarr-xt', vars.DOCKERHUB_USERNAME) || '' }}
           tags: |
-            type=raw,value=dev
+            type=raw,value=dev,enable=${{ github.ref_name == 'v5-custom' || inputs.publish_ref == 'v5-custom' }}
             type=raw,value=${{ needs.build.outputs.version }},enable=${{ inputs.publish_image == true }}
             type=raw,value=latest,enable=${{ inputs.publish_image == true }}
 
@@ -218,9 +218,14 @@ jobs:
         with:
           script: |
             const tag = `v${{ needs.build.outputs.version }}`;
-            await github.rest.git.createRef({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              ref: `refs/tags/${tag}`,
-              sha: '${{ needs.build.outputs.full_sha }}',
-            });
+            try {
+              await github.rest.git.createRef({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                ref: `refs/tags/${tag}`,
+                sha: '${{ needs.build.outputs.full_sha }}',
+              });
+            } catch (e) {
+              if (e.status !== 422) throw e;
+              console.log(`Tag ${tag} already exists, skipping`);
+            }
