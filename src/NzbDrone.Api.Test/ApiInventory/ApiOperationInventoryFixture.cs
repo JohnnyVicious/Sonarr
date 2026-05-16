@@ -8,8 +8,6 @@ using System.Text.RegularExpressions;
 using FluentAssertions;
 using NUnit.Framework;
 using Sonarr.Http;
-using V3SeriesController = Sonarr.Api.V3.Series.SeriesController;
-using V5SeriesController = Sonarr.Api.V5.Series.SeriesController;
 
 namespace NzbDrone.Api.Test.ApiInventory;
 
@@ -17,17 +15,6 @@ namespace NzbDrone.Api.Test.ApiInventory;
 public class ApiOperationInventoryFixture
 {
     private static readonly string[] KnownApiVersions = ["v3", "v5"];
-
-    private static readonly HashSet<string> AllowedClassifications = new(StringComparer.Ordinal)
-    {
-        "v5-primary",
-        "v5-only",
-        "v3-compat",
-        "v3-only",
-        "destructive-smoke-only",
-        "external-provider-mocked",
-        "manual/excluded-with-rationale"
-    };
 
     private static readonly HashSet<string> HttpMethods = new(StringComparer.OrdinalIgnoreCase)
     {
@@ -41,7 +28,7 @@ public class ApiOperationInventoryFixture
         "trace"
     };
 
-    private static readonly Regex VersionedPathRegex = new("^/(?:api|feed)/(?<version>v\\d+)(?:/|$)", RegexOptions.Compiled);
+    private static readonly Regex VersionedPathRegex = new("^/(?:api|feed)/(?<version>v[^/]*)(?:/|$)", RegexOptions.Compiled);
 
     [Test]
     public void openapi_specs_should_only_expose_known_api_versions()
@@ -61,11 +48,9 @@ public class ApiOperationInventoryFixture
     [Test]
     public void versioned_route_attributes_should_only_use_known_api_versions()
     {
-        var controllerAssemblies = new[]
-        {
-            typeof(V3SeriesController).Assembly,
-            typeof(V5SeriesController).Assembly
-        };
+        var controllerAssemblies = LoadVersionedApiAssemblies().ToList();
+
+        controllerAssemblies.Should().NotBeEmpty("versioned API assemblies should be present in the test output");
 
         var versions = controllerAssemblies
             .SelectMany(GetControllerRouteVersions)
@@ -81,7 +66,8 @@ public class ApiOperationInventoryFixture
     public void operation_classification_should_cover_current_openapi_operations()
     {
         var currentOperations = LoadCurrentApiOperations();
-        var classifiedOperations = LoadClassifiedOperations();
+        var classificationManifest = LoadClassificationManifest();
+        var classifiedOperations = classificationManifest.Operations;
 
         var duplicateEntries = classifiedOperations
             .GroupBy(operation => operation.Operation)
@@ -92,13 +78,21 @@ public class ApiOperationInventoryFixture
 
         duplicateEntries.Should().BeEmpty("each OpenAPI operation should have exactly one classification entry");
 
+        var invalidVersionFields = classifiedOperations
+            .Where(operation => !StringComparer.Ordinal.Equals(operation.Version, operation.Operation.Version))
+            .Select(operation => $"{operation.Operation}: version field is {operation.Version}, path version is {operation.Operation.Version}")
+            .OrderBy(value => value)
+            .ToList();
+
+        invalidVersionFields.Should().BeEmpty("classification version fields should agree with operation path versions");
+
         var invalidClassifications = classifiedOperations
-            .Where(operation => !AllowedClassifications.Contains(operation.Classification))
+            .Where(operation => !classificationManifest.AllowedClassifications.Contains(operation.Classification))
             .Select(operation => $"{operation.Operation}: {operation.Classification}")
             .OrderBy(value => value)
             .ToList();
 
-        invalidClassifications.Should().BeEmpty($"allowed classifications are: {string.Join(", ", AllowedClassifications.OrderBy(v => v))}");
+        invalidClassifications.Should().BeEmpty($"allowed classifications are: {string.Join(", ", classificationManifest.AllowedClassifications.OrderBy(v => v))}");
 
         var classifiedOperationSet = classifiedOperations
             .Select(operation => operation.Operation)
@@ -136,39 +130,52 @@ public class ApiOperationInventoryFixture
             .ToHashSet();
     }
 
-    private static List<ClassifiedOperation> LoadClassifiedOperations()
+    private static ClassificationManifest LoadClassificationManifest()
     {
         var classificationPath = InventoryPath("api-operation-classification.json");
         var document = JsonNode.Parse(File.ReadAllText(classificationPath))?.AsObject()
                        ?? throw new InvalidOperationException($"Unable to parse {classificationPath}");
 
+        var allowedClassificationNodes = document["allowedClassifications"]?.AsArray()
+                                         ?? throw new InvalidOperationException($"{classificationPath} is missing an allowedClassifications array");
+        var allowedClassifications = allowedClassificationNodes
+            .Select(node => node?.GetValue<string>()
+                            ?? throw new InvalidOperationException($"{classificationPath} contains a non-string allowed classification entry"))
+            .Where(value => !string.IsNullOrWhiteSpace(value))
+            .ToHashSet(StringComparer.Ordinal);
+
+        allowedClassifications.Should().NotBeEmpty($"{classificationPath} should define allowed classification values");
+
         var operations = document["operations"]?.AsArray()
                          ?? throw new InvalidOperationException($"{classificationPath} is missing an operations array");
 
-        return operations
+        var classifiedOperations = operations
             .Select(operationNode =>
             {
                 var operation = operationNode?.AsObject()
                                 ?? throw new InvalidOperationException($"{classificationPath} contains a non-object operation entry");
 
+                var version = RequiredString(operation, "version", classificationPath);
                 var method = RequiredString(operation, "method", classificationPath);
                 var path = RequiredString(operation, "path", classificationPath);
                 var classification = RequiredString(operation, "classification", classificationPath);
 
-                return new ClassifiedOperation(new ApiOperation(method, path), classification);
+                return new ClassifiedOperation(new ApiOperation(method, path), version, classification);
             })
             .ToList();
+
+        return new ClassificationManifest(allowedClassifications, classifiedOperations);
     }
 
     private static IEnumerable<OpenApiDocument> LoadOpenApiDocuments()
     {
-        yield return LoadOpenApiDocument("openapi.v3.json");
-        yield return LoadOpenApiDocument("openapi.v5.json");
+        return Directory.EnumerateFiles(InventoryDirectory(), "openapi.*.json")
+            .OrderBy(Path.GetFileName, StringComparer.Ordinal)
+            .Select(LoadOpenApiDocument);
     }
 
-    private static OpenApiDocument LoadOpenApiDocument(string fileName)
+    private static OpenApiDocument LoadOpenApiDocument(string documentPath)
     {
-        var documentPath = InventoryPath(fileName);
         var document = JsonNode.Parse(File.ReadAllText(documentPath))?.AsObject()
                        ?? throw new InvalidOperationException($"Unable to parse {documentPath}");
 
@@ -177,7 +184,7 @@ public class ApiOperationInventoryFixture
 
         var allPaths = paths.Select(path => path.Key).ToList();
         var operations = paths
-            .Where(path => path.Key.StartsWith("/api/v", StringComparison.Ordinal))
+            .Where(path => VersionedPathRegex.IsMatch(path.Key))
             .SelectMany(path =>
             {
                 var pathItem = path.Value?.AsObject()
@@ -190,6 +197,13 @@ public class ApiOperationInventoryFixture
             .ToList();
 
         return new OpenApiDocument(allPaths, operations);
+    }
+
+    private static IEnumerable<Assembly> LoadVersionedApiAssemblies()
+    {
+        return Directory.EnumerateFiles(TestContext.CurrentContext.TestDirectory, "Sonarr.Api.V*.dll")
+            .OrderBy(Path.GetFileName, StringComparer.Ordinal)
+            .Select(Assembly.LoadFrom);
     }
 
     private static string RequiredString(JsonObject operation, string propertyName, string classificationPath)
@@ -206,12 +220,19 @@ public class ApiOperationInventoryFixture
 
     private static string InventoryPath(string fileName)
     {
-        return Path.Combine(TestContext.CurrentContext.TestDirectory, "ApiInventory", fileName);
+        return Path.Combine(InventoryDirectory(), fileName);
+    }
+
+    private static string InventoryDirectory()
+    {
+        return Path.Combine(TestContext.CurrentContext.TestDirectory, "ApiInventory");
     }
 
     private sealed record OpenApiDocument(List<string> Paths, List<ApiOperation> ApiOperations);
 
-    private sealed record ClassifiedOperation(ApiOperation Operation, string Classification);
+    private sealed record ClassificationManifest(HashSet<string> AllowedClassifications, List<ClassifiedOperation> Operations);
+
+    private sealed record ClassifiedOperation(ApiOperation Operation, string Version, string Classification);
 
     private sealed record ApiOperation
     {
@@ -219,14 +240,28 @@ public class ApiOperationInventoryFixture
         {
             Method = method.ToUpperInvariant();
             Path = path;
+            Version = ExtractVersion(path);
         }
 
         public string Method { get; }
         public string Path { get; }
+        public string Version { get; }
 
         public override string ToString()
         {
             return $"{Method} {Path}";
+        }
+
+        private static string ExtractVersion(string path)
+        {
+            var match = VersionedPathRegex.Match(path);
+
+            if (!match.Success)
+            {
+                throw new InvalidOperationException($"{path} is not a versioned API or feed path");
+            }
+
+            return match.Groups["version"].Value;
         }
     }
 }

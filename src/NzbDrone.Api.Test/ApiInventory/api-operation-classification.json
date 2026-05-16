@@ -79,6 +79,12 @@
     {
       "version": "v3",
       "method": "GET",
+      "path": "/feed/v3/calendar/sonarr.ics",
+      "classification": "v3-compat"
+    },
+    {
+      "version": "v3",
+      "method": "GET",
       "path": "/api/v3/command",
       "classification": "v3-compat"
     },
@@ -1424,6 +1430,12 @@
       "version": "v5",
       "method": "GET",
       "path": "/api/v5/calendar/{id}",
+      "classification": "v5-primary"
+    },
+    {
+      "version": "v5",
+      "method": "GET",
+      "path": "/feed/v5/calendar/sonarr.ics",
       "classification": "v5-primary"
     },
     {
