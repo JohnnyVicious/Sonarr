@@ -219,25 +219,23 @@ namespace NzbDrone.Integration.Test.Client
 
         private static Uri ApiRootUrl(Uri rootUrl, string version)
         {
-            ValidateRootUrl(rootUrl);
-
-            var builder = new UriBuilder(rootUrl)
-            {
-                Path = $"api/{version}/",
-                Query = string.Empty,
-                Fragment = string.Empty
-            };
-
-            return builder.Uri;
+            return VersionedRootUrl(rootUrl, $"api/{version}/");
         }
 
         private static Uri FeedRootUrl(Uri rootUrl, string version)
         {
+            return VersionedRootUrl(rootUrl, $"feed/{version}/");
+        }
+
+        private static Uri VersionedRootUrl(Uri rootUrl, string versionedPath)
+        {
             ValidateRootUrl(rootUrl);
 
+            var rootPath = rootUrl.AbsolutePath.Trim('/');
+            var path = string.IsNullOrEmpty(rootPath) ? versionedPath : $"{rootPath}/{versionedPath}";
             var builder = new UriBuilder(rootUrl)
             {
-                Path = $"feed/{version}/",
+                Path = path,
                 Query = string.Empty,
                 Fragment = string.Empty
             };

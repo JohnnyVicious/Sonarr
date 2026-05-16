@@ -31,6 +31,17 @@ namespace NzbDrone.Integration.Test.Client
         }
 
         [Test]
+        public void should_preserve_supplied_url_base()
+        {
+            var apiV5 = new VersionedApiClient(new Uri("http://localhost:8989/sonarr/"), "v5", "test-key");
+
+            apiV5.BuildUri(apiV5.BuildRequest("system/status")).ToString()
+                .Should().Be("http://localhost:8989/sonarr/api/v5/system/status");
+            apiV5.BuildUri(apiV5.BuildRequest("feed/calendar/sonarr.ics")).ToString()
+                .Should().Be("http://localhost:8989/sonarr/feed/v5/calendar/sonarr.ics");
+        }
+
+        [Test]
         public void should_reject_non_loopback_api_roots()
         {
             var createClient = () => new VersionedApiClient(new Uri("https://example.com/"), "v5", "test-key");
