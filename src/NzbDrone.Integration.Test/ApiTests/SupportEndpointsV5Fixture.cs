@@ -333,11 +333,12 @@ namespace NzbDrone.Integration.Test.ApiTests
                 var appData = ReadObject(ApiV5.Get("system/status"))["appData"]!.GetValue<string>();
                 var coverFolder = Path.Combine(appData, "MediaCover", "1");
                 var coverPath = Path.Combine(coverFolder, "poster.jpg");
-                Directory.CreateDirectory(coverFolder);
-                File.WriteAllBytes(coverPath, new byte[] { 0xff, 0xd8, 0xff, 0xd9 });
 
                 try
                 {
+                    Directory.CreateDirectory(coverFolder);
+                    File.WriteAllBytes(coverPath, new byte[] { 0xff, 0xd8, 0xff, 0xd9 });
+
                     var cover = ApiV3.Get("mediacover/1/poster.jpg");
                     cover.ContentType.Should().StartWith("image/jpeg");
                     cover.RawBytes.Should().NotBeEmpty();
@@ -345,7 +346,10 @@ namespace NzbDrone.Integration.Test.ApiTests
                 }
                 finally
                 {
-                    File.Delete(coverPath);
+                    if (Directory.Exists(coverFolder))
+                    {
+                        Directory.Delete(coverFolder, true);
+                    }
                 }
             }
             finally
