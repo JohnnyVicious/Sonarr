@@ -48,20 +48,20 @@ namespace NzbDrone.Integration.Test.ApiTests
             ApiV5.OpenApi.ShouldDeclareResponse(Method.GET, "autotagging/schema", HttpStatusCode.OK);
 
             ApiV3.OpenApi.ShouldDeclareResponse(Method.GET, "customformat", HttpStatusCode.OK);
-            ApiV3.OpenApi.ShouldDeclareResponse(Method.POST, "customformat", HttpStatusCode.OK);
+            ApiV3.OpenApi.ShouldDeclareOperation(Method.POST, "customformat");
             ApiV3.OpenApi.ShouldDeclareResponse(Method.GET, "customformat/{id}", HttpStatusCode.OK);
-            ApiV3.OpenApi.ShouldDeclareResponse(Method.PUT, "customformat/{id}", HttpStatusCode.OK);
-            ApiV3.OpenApi.ShouldDeclareResponse(Method.DELETE, "customformat/{id}", HttpStatusCode.OK);
-            ApiV3.OpenApi.ShouldDeclareResponse(Method.PUT, "customformat/bulk", HttpStatusCode.OK);
-            ApiV3.OpenApi.ShouldDeclareResponse(Method.DELETE, "customformat/bulk", HttpStatusCode.OK);
+            ApiV3.OpenApi.ShouldDeclareOperation(Method.PUT, "customformat/{id}");
+            ApiV3.OpenApi.ShouldDeclareOperation(Method.DELETE, "customformat/{id}");
+            ApiV3.OpenApi.ShouldDeclareOperation(Method.PUT, "customformat/bulk");
+            ApiV3.OpenApi.ShouldDeclareOperation(Method.DELETE, "customformat/bulk");
             ApiV3.OpenApi.ShouldDeclareResponse(Method.GET, "customformat/schema", HttpStatusCode.OK);
 
             ApiV3.OpenApi.ShouldDeclareResponse(Method.GET, "delayprofile", HttpStatusCode.OK);
-            ApiV3.OpenApi.ShouldDeclareResponse(Method.POST, "delayprofile", HttpStatusCode.OK);
+            ApiV3.OpenApi.ShouldDeclareOperation(Method.POST, "delayprofile");
             ApiV3.OpenApi.ShouldDeclareResponse(Method.GET, "delayprofile/{id}", HttpStatusCode.OK);
-            ApiV3.OpenApi.ShouldDeclareResponse(Method.PUT, "delayprofile/{id}", HttpStatusCode.OK);
-            ApiV3.OpenApi.ShouldDeclareResponse(Method.DELETE, "delayprofile/{id}", HttpStatusCode.OK);
-            ApiV3.OpenApi.ShouldDeclareResponse(Method.PUT, "delayprofile/reorder/{id}", HttpStatusCode.OK);
+            ApiV3.OpenApi.ShouldDeclareOperation(Method.PUT, "delayprofile/{id}");
+            ApiV3.OpenApi.ShouldDeclareOperation(Method.DELETE, "delayprofile/{id}");
+            ApiV3.OpenApi.ShouldDeclareOperation(Method.PUT, "delayprofile/reorder/{id}");
         }
 
         [Test]
@@ -362,7 +362,8 @@ namespace NzbDrone.Integration.Test.ApiTests
                 updated.MinimumCustomFormatScore.Should().Be(100);
                 GetDelayProfile(created.Id).TorrentDelay.Should().Be(20);
 
-                var reordered = ReorderDelayProfile(created.Id, 1);
+                var reorderAnchor = GetDelayProfiles().First(profile => profile.Id != created.Id);
+                var reordered = ReorderDelayProfile(created.Id, reorderAnchor.Id);
 
                 reordered.Should().Contain(profile => profile.Id == created.Id);
 
@@ -402,13 +403,7 @@ namespace NzbDrone.Integration.Test.ApiTests
 
         private static V5QualityDefinitionResource CopyQualityDefinition(V5QualityDefinitionResource resource)
         {
-            return new V5QualityDefinitionResource
-            {
-                Id = resource.Id,
-                Quality = resource.Quality,
-                Title = resource.Title,
-                Weight = resource.Weight
-            };
+            return Json.Deserialize<V5QualityDefinitionResource>(resource.ToJson());
         }
 
         private List<V5AutoTaggingResource> GetAutoTags()
