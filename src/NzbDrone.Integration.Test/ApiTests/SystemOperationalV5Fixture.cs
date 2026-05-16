@@ -96,9 +96,7 @@ namespace NzbDrone.Integration.Test.ApiTests
             task["id"]!.GetValue<int>().Should().Be(taskId);
             task["taskName"]!.GetValue<string>().Should().NotBeNullOrWhiteSpace();
 
-            // The current v5 task controller returns 200 with an empty body for a missing task id.
-            // The OpenAPI 404 declaration is covered separately so a future behavior fix is visible.
-            ApiV5.Get("system/task/1000000", HttpStatusCode.OK).Content.Should().BeEmpty();
+            ApiV5.Get("system/task/1000000", HttpStatusCode.NotFound);
 
             var routes = ApiV5.Get("system/routes");
             routes.ContentType.Should().StartWith("text/plain");
@@ -200,15 +198,17 @@ namespace NzbDrone.Integration.Test.ApiTests
         public void should_list_and_serve_log_files_with_safe_paths()
         {
             var appData = ReadObject(ApiV5.Get("system/status"))["appData"]!.GetValue<string>();
-            var logFile = WriteTextFile(Path.Combine(appData, "logs"), "sonarr-api-test.txt", "sonarr log fixture");
-            var updateLogFile = WriteTextFile(Path.Combine(appData, "UpdateLogs"), "sonarr-update-api-test.txt", "sonarr update log fixture");
+            var logFileName = TestData.NextName("sonarr-api-test") + ".txt";
+            var updateLogFileName = TestData.NextName("sonarr-update-api-test") + ".txt";
+            var logFile = WriteTextFile(Path.Combine(appData, "logs"), logFileName, "sonarr log fixture");
+            var updateLogFile = WriteTextFile(Path.Combine(appData, "UpdateLogs"), updateLogFileName, "sonarr update log fixture");
 
             try
             {
                 var logFiles = ReadArray(ApiV5.Get("log/file"));
                 logFiles.Any(item => item?["filename"]?.GetValue<string>() == Path.GetFileName(logFile)).Should().BeTrue();
 
-                var logResponse = ApiV5.Get("log/file/sonarr-api-test.txt");
+                var logResponse = ApiV5.Get($"log/file/{logFileName}");
                 logResponse.ContentType.Should().StartWith("text/plain");
                 logResponse.Content.Should().Contain("sonarr log fixture");
                 ApiV5.Get("log/file/not-a-log.txt", HttpStatusCode.NotFound);
@@ -217,7 +217,7 @@ namespace NzbDrone.Integration.Test.ApiTests
                 var updateLogFiles = ReadArray(ApiV5.Get("log/file/update"));
                 updateLogFiles.Any(item => item?["filename"]?.GetValue<string>() == Path.GetFileName(updateLogFile)).Should().BeTrue();
 
-                var updateLogResponse = ApiV5.Get("log/file/update/sonarr-update-api-test.txt");
+                var updateLogResponse = ApiV5.Get($"log/file/update/{updateLogFileName}");
                 updateLogResponse.ContentType.Should().StartWith("text/plain");
                 updateLogResponse.Content.Should().Contain("sonarr update log fixture");
                 ApiV5.Get("log/file/update/not-a-log.txt", HttpStatusCode.NotFound);
@@ -242,7 +242,7 @@ namespace NzbDrone.Integration.Test.ApiTests
 
         private static string CommandStatus(JsonObject command)
         {
-            return command["status"]!.ToJsonString().Trim('"').ToLowerInvariant();
+            return command["status"]!.GetValue<string>().ToLowerInvariant();
         }
 
         private static string WriteTextFile(string folder, string filename, string content)
