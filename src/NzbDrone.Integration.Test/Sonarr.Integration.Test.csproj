@@ -2,8 +2,6 @@
   <PropertyGroup>
     <TargetFrameworks>net10.0</TargetFrameworks>
     <OutputType>Library</OutputType>
-    <!-- This legacy assembly exposes non-CLS public APIs; S3990 requires an API-wide migration. -->
-    <NoWarn>$(NoWarn);S3990</NoWarn>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="10.0.8" />

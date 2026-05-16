@@ -22,6 +22,14 @@ namespace NzbDrone.Integration.Test.Client
         }
 
         [Test]
+        public void should_reject_non_loopback_api_roots()
+        {
+            var createClient = () => new VersionedApiClient(new Uri("https://example.com/"), "v5", "test-key");
+
+            createClient.Should().Throw<ArgumentException>();
+        }
+
+        [Test]
         public void should_keep_unauthenticated_requests_on_the_same_versioned_root()
         {
             var apiV5 = new VersionedApiClient(new Uri("http://localhost:8989/"), "v5", "test-key");

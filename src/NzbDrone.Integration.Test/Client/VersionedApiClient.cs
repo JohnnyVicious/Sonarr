@@ -15,8 +15,10 @@ namespace NzbDrone.Integration.Test.Client
         {
             Version = NormalizeVersion(version);
             ApiKey = apiKey;
-            AuthenticatedRestClient = BuildRestClient(rootUrl, Version, apiKey);
-            UnauthenticatedRestClient = new RestClient(ApiRootUrl(rootUrl, Version));
+            var apiRootUrl = ApiRootUrl(rootUrl, Version);
+            AuthenticatedRestClient = BuildRestClient(apiRootUrl, apiKey);
+            // nosemgrep: csharp.lang.security.ssrf.rest-client.ssrf
+            UnauthenticatedRestClient = new RestClient(apiRootUrl);
             _logger = LogManager.GetLogger("REST");
             _openApi = new Lazy<OpenApiSpecification>(() => OpenApiSpecification.Load(Version));
         }
@@ -186,9 +188,10 @@ namespace NzbDrone.Integration.Test.Client
             return OpenApi.ApiPath(resource);
         }
 
-        private static RestClient BuildRestClient(Uri rootUrl, string version, string apiKey)
+        private static RestClient BuildRestClient(Uri apiRootUrl, string apiKey)
         {
-            var restClient = new RestClient(ApiRootUrl(rootUrl, version));
+            // nosemgrep: csharp.lang.security.ssrf.rest-client.ssrf
+            var restClient = new RestClient(apiRootUrl);
             restClient.AddDefaultHeader("Authorization", apiKey);
             restClient.AddDefaultHeader("X-Api-Key", apiKey);
 
@@ -197,9 +200,24 @@ namespace NzbDrone.Integration.Test.Client
 
         private static Uri ApiRootUrl(Uri rootUrl, string version)
         {
-            var normalizedRootUrl = rootUrl.AbsoluteUri.EndsWith("/", StringComparison.Ordinal) ? rootUrl : new Uri(rootUrl.AbsoluteUri + "/");
+            ValidateRootUrl(rootUrl);
 
-            return new Uri(normalizedRootUrl, $"api/{version}/");
+            var builder = new UriBuilder(rootUrl.Scheme, "localhost", rootUrl.Port, $"api/{version}/");
+
+            return builder.Uri;
+        }
+
+        private static void ValidateRootUrl(Uri rootUrl)
+        {
+            if (rootUrl.Scheme != Uri.UriSchemeHttp && rootUrl.Scheme != Uri.UriSchemeHttps)
+            {
+                throw new ArgumentException("API test clients only support HTTP(S) Sonarr roots.", nameof(rootUrl));
+            }
+
+            if (!rootUrl.IsLoopback)
+            {
+                throw new ArgumentException("API test clients must target a loopback Sonarr instance.", nameof(rootUrl));
+            }
         }
 
         private static string NormalizeVersion(string version)
