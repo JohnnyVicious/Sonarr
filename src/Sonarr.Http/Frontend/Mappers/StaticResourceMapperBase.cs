@@ -29,28 +29,21 @@ namespace Sonarr.Http.Frontend.Mappers
         }
 
         protected abstract string FolderPath { get; }
-        protected abstract string MapPath(string resourcePath);
+        protected abstract string MapPath(string resourceUrl);
 
-        public abstract bool CanHandle(string resourcePath);
+        public abstract bool CanHandle(string resourceUrl);
 
-        public string Map(string resourcePath)
+        public string Map(string resourceUrl)
         {
-            if (resourcePath == null)
-            {
-                return null;
-            }
+            var filePath = Path.GetFullPath(MapPath(resourceUrl));
+            var parentPath = Path.GetFullPath(FolderPath) + Path.DirectorySeparatorChar;
 
-            return GetMappedPathInsideFolder(MapPath(resourcePath));
+            return filePath.StartsWith(parentPath) ? filePath : null;
         }
 
-        public Task<IActionResult> GetResponse(HttpContext context, string resourcePath)
+        public Task<IActionResult> GetResponse(HttpContext context, string resourceUrl)
         {
-            if (resourcePath == null)
-            {
-                return Task.FromResult<IActionResult>(null);
-            }
-
-            var filePath = Map(resourcePath);
+            var filePath = Map(resourceUrl);
 
             if (filePath == null)
             {
@@ -78,72 +71,6 @@ namespace Sonarr.Http.Frontend.Mappers
         protected virtual Stream GetContentStream(HttpContext context, string filePath)
         {
             return File.OpenRead(filePath);
-        }
-
-        protected bool IsPathInsideFolder(string filePath)
-        {
-            if (filePath == null)
-            {
-                return false;
-            }
-
-            return GetMappedPathInsideFolder(filePath) != null;
-        }
-
-        private string GetMappedPathInsideFolder(string filePath)
-        {
-            if (filePath == null)
-            {
-                return null;
-            }
-
-            if (string.IsNullOrWhiteSpace(filePath))
-            {
-                return null;
-            }
-
-            var folderPath = FolderPath;
-            if (string.IsNullOrWhiteSpace(folderPath))
-            {
-                return null;
-            }
-
-            try
-            {
-                var fullFilePath = Path.GetFullPath(filePath);
-                var fullFolderPath = EnsureTrailingDirectorySeparator(Path.GetFullPath(folderPath));
-
-                return fullFilePath.StartsWith(fullFolderPath, _caseSensitive) ? fullFilePath : null;
-            }
-            catch (Exception ex) when (IsPathResolutionException(ex))
-            {
-                return null;
-            }
-        }
-
-        private static bool IsPathResolutionException(Exception ex)
-        {
-            return ex is ArgumentException ||
-                   ex is ArgumentNullException ||
-                   ex is NotSupportedException ||
-                   ex is PathTooLongException ||
-                   ex is IOException ||
-                   ex is UnauthorizedAccessException;
-        }
-
-        private static string EnsureTrailingDirectorySeparator(string path)
-        {
-            if (path == null)
-            {
-                throw new ArgumentNullException(nameof(path));
-            }
-
-            if (path.EndsWith(Path.DirectorySeparatorChar) || path.EndsWith(Path.AltDirectorySeparatorChar))
-            {
-                return path;
-            }
-
-            return path + Path.DirectorySeparatorChar;
         }
     }
 }
