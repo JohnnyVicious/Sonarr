@@ -214,26 +214,17 @@ namespace NzbDrone.Integration.Test.ApiTests
 
         private void DeleteRootFolderIfPresent(int id)
         {
-            if (_test.RootFolders.All().Any(rootFolder => rootFolder.Id == id))
-            {
-                _test.RootFolders.Delete(id);
-            }
+            _test.RootFolders.DeleteIfPresent(id);
         }
 
         private void DeleteTagIfPresent(int id)
         {
-            if (_test.Tags.All().Any(tag => tag.Id == id))
-            {
-                _test.Tags.Delete(id);
-            }
+            _test.Tags.DeleteIfPresent(id);
         }
 
         private void DeleteSeriesIfPresent(int id)
         {
-            if (_test.Series.All().Any(series => series.Id == id))
-            {
-                _test.Series.Delete(id);
-            }
+            _test.Series.DeleteIfPresent(id);
         }
 
         private void DeleteSeriesWithTvdbIfPresent(int tvdbId)
@@ -248,10 +239,7 @@ namespace NzbDrone.Integration.Test.ApiTests
 
         private void DeleteDownloadClientIfPresent(int id)
         {
-            if (_test.DownloadClients.All().Any(client => client.Id == id))
-            {
-                _test.DownloadClients.Delete(id);
-            }
+            _test.DownloadClients.DeleteIfPresent(id);
         }
 
         private void RefreshMonitoredDownloads()

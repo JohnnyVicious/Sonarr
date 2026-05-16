@@ -68,7 +68,7 @@ namespace NzbDrone.Integration.Test.Client
             return Json.Deserialize<T>(content);
         }
 
-        private static void AssertDisableCache(IRestResponse response)
+        protected static void AssertDisableCache(IRestResponse response)
         {
             // cache control header gets reordered on net core
             var headers = response.Headers;
@@ -149,6 +149,31 @@ namespace NzbDrone.Integration.Test.Client
         {
             var request = BuildRequest(id.ToString());
             Delete(request);
+        }
+
+        public void DeleteIfPresent(int id)
+        {
+            var request = BuildRequest(id.ToString());
+            request.Method = Method.DELETE;
+
+            _logger.Info("{0}: {1}", request.Method, _restClient.BuildUri(request));
+
+            var response = _restClient.Execute(request);
+            _logger.Info("Response: {0}", response.Content);
+
+            if (response.ErrorException != null)
+            {
+                throw response.ErrorException;
+            }
+
+            if (response.StatusCode == HttpStatusCode.NotFound)
+            {
+                return;
+            }
+
+            AssertDisableCache(response);
+            response.ErrorMessage.Should().BeNullOrWhiteSpace();
+            response.StatusCode.Should().Be(HttpStatusCode.OK, response.Content ?? string.Empty);
         }
 
         public object InvalidGet(int id, HttpStatusCode statusCode = HttpStatusCode.NotFound)
