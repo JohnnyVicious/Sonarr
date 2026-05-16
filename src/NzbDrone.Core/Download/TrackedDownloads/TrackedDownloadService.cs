@@ -30,7 +30,6 @@ namespace NzbDrone.Core.Download.TrackedDownloads
                                           IHandle<EpisodeInfoRefreshedEvent>,
                                           IHandle<SeriesEditedEvent>,
                                           IHandle<SeriesAddedEvent>,
-                                          IHandle<SeriesEditedEvent>,
                                           IHandle<SeriesBulkEditedEvent>,
                                           IHandle<SeriesDeletedEvent>
     {
@@ -334,17 +333,6 @@ namespace NzbDrone.Core.Download.TrackedDownloads
             {
                 _eventAggregator.PublishEvent(new TrackedDownloadRefreshedEvent(GetTrackedDownloads()));
             }
-        }
-
-        public void Handle(SeriesEditedEvent message)
-        {
-            var cachedItems = _cache.Values
-                .Where(t =>
-                    t.RemoteEpisode?.Series != null &&
-                    (t.RemoteEpisode.Series.Id == message.Series?.Id || t.RemoteEpisode.Series.TvdbId == message.Series?.TvdbId))
-                .ToList();
-
-            RefreshCachedItems(cachedItems);
         }
 
         public void Handle(SeriesAddedEvent message)
