@@ -27,5 +27,15 @@ namespace NzbDrone.Integration.Test.ApiTests
             episodeFile.Id.Should().NotBe(0);
             qualityProfile.Id.Should().NotBe(0);
         }
+
+        [Test]
+        public void should_return_existing_series_without_recreating()
+        {
+            var series = TestData.Series();
+            var existing = TestData.Series();
+
+            existing.Id.Should().Be(series.Id);
+            Series.All().Where(candidate => candidate.TvdbId == series.TvdbId).Should().ContainSingle();
+        }
     }
 }

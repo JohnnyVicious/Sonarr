@@ -74,13 +74,15 @@ namespace NzbDrone.Integration.Test.ApiTests
 
         public SeriesResource Series(int tvdbId = 266189, string title = "The Blacklist", bool monitored = true, params TagResource[] tags)
         {
-            DeleteSeriesWithTvdbIfPresent(tvdbId);
+            var tagIds = tags.Select(tag => tag.Id).ToHashSet();
+            var existing = _test.Series.All().FirstOrDefault(series => series.TvdbId == tvdbId);
+            if (existing != null)
+            {
+                return EnsureSeriesState(existing, tvdbId, title, monitored, tagIds);
+            }
 
             var series = _test.Series.Lookup("tvdb:" + tvdbId).First();
-            if (!series.Title.Equals(title, StringComparison.OrdinalIgnoreCase))
-            {
-                throw new InvalidOperationException($"Expected TVDB {tvdbId} to resolve to {title}, got {series.Title}.");
-            }
+            ValidateSeriesTitle(series, tvdbId, title);
 
             var rootFolder = _test.SeriesRootFolder;
 
@@ -88,7 +90,7 @@ namespace NzbDrone.Integration.Test.ApiTests
             series.Path = Path.Combine(rootFolder, series.Title);
             series.Monitored = monitored;
             series.Seasons.ForEach(season => season.Monitored = monitored);
-            series.Tags = tags.Select(tag => tag.Id).ToHashSet();
+            series.Tags = tagIds;
             series.AddOptions = new AddSeriesOptions();
 
             Directory.CreateDirectory(series.Path);
@@ -241,13 +243,46 @@ namespace NzbDrone.Integration.Test.ApiTests
             _test.Series.DeleteIfPresent(id);
         }
 
-        private void DeleteSeriesWithTvdbIfPresent(int tvdbId)
+        private SeriesResource EnsureSeriesState(SeriesResource series, int tvdbId, string title, bool monitored, HashSet<int> tagIds)
         {
-            var existing = _test.Series.All().FirstOrDefault(series => series.TvdbId == tvdbId);
+            ValidateSeriesTitle(series, tvdbId, title);
 
-            if (existing != null)
+            var changed = false;
+            if (series.Monitored != monitored)
             {
-                _test.Series.Delete(existing.Id);
+                series.Monitored = monitored;
+                changed = true;
+            }
+
+            series.Seasons.ForEach(season =>
+            {
+                if (season.Monitored != monitored)
+                {
+                    season.Monitored = monitored;
+                    changed = true;
+                }
+            });
+
+            if (series.Tags == null || !series.Tags.SetEquals(tagIds))
+            {
+                series.Tags = tagIds;
+                changed = true;
+            }
+
+            if (changed)
+            {
+                series = _test.Series.Put(series);
+                _test.Commands.WaitAll();
+            }
+
+            return series;
+        }
+
+        private static void ValidateSeriesTitle(SeriesResource series, int tvdbId, string title)
+        {
+            if (!series.Title.Equals(title, StringComparison.OrdinalIgnoreCase))
+            {
+                throw new InvalidOperationException($"Expected TVDB {tvdbId} to resolve to {title}, got {series.Title}.");
             }
         }
 
