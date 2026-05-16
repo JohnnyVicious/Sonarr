@@ -35,7 +35,7 @@ namespace Sonarr.Api.V5.Settings
 
             try
             {
-                SslCertificateLoader.LoadCertificateContext(resource.SslCertPath, resource.SslKeyPath, resource.SslCertPassword);
+                SslCertificateLoader.ValidateCertificate(resource.SslCertPath, resource.SslKeyPath, resource.SslCertPassword);
 
                 return true;
             }
