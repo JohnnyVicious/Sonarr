@@ -1,0 +1,2450 @@
+{
+  "description": "Classification of checked-in Sonarr v3/v5 OpenAPI operations for the API inventory gate. Update intentionally when API routes change.",
+  "allowedClassifications": [
+    "v5-primary",
+    "v5-only",
+    "v3-compat",
+    "v3-only",
+    "destructive-smoke-only",
+    "external-provider-mocked",
+    "manual/excluded-with-rationale"
+  ],
+  "operations": [
+    {
+      "version": "v3",
+      "method": "GET",
+      "path": "/api/v3/autotagging",
+      "classification": "v3-compat"
+    },
+    {
+      "version": "v3",
+      "method": "POST",
+      "path": "/api/v3/autotagging",
+      "classification": "v3-compat"
+    },
+    {
+      "version": "v3",
+      "method": "DELETE",
+      "path": "/api/v3/autotagging/{id}",
+      "classification": "v3-compat"
+    },
+    {
+      "version": "v3",
+      "method": "GET",
+      "path": "/api/v3/autotagging/{id}",
+      "classification": "v3-compat"
+    },
+    {
+      "version": "v3",
+      "method": "PUT",
+      "path": "/api/v3/autotagging/{id}",
+      "classification": "v3-compat"
+    },
+    {
+      "version": "v3",
+      "method": "GET",
+      "path": "/api/v3/autotagging/schema",
+      "classification": "v3-compat"
+    },
+    {
+      "version": "v3",
+      "method": "GET",
+      "path": "/api/v3/blocklist",
+      "classification": "v3-compat"
+    },
+    {
+      "version": "v3",
+      "method": "DELETE",
+      "path": "/api/v3/blocklist/{id}",
+      "classification": "v3-compat"
+    },
+    {
+      "version": "v3",
+      "method": "DELETE",
+      "path": "/api/v3/blocklist/bulk",
+      "classification": "v3-compat"
+    },
+    {
+      "version": "v3",
+      "method": "GET",
+      "path": "/api/v3/calendar",
+      "classification": "v3-compat"
+    },
+    {
+      "version": "v3",
+      "method": "GET",
+      "path": "/api/v3/calendar/{id}",
+      "classification": "v3-compat"
+    },
+    {
+      "version": "v3",
+      "method": "GET",
+      "path": "/api/v3/command",
+      "classification": "v3-compat"
+    },
+    {
+      "version": "v3",
+      "method": "POST",
+      "path": "/api/v3/command",
+      "classification": "v3-compat"
+    },
+    {
+      "version": "v3",
+      "method": "DELETE",
+      "path": "/api/v3/command/{id}",
+      "classification": "v3-compat"
+    },
+    {
+      "version": "v3",
+      "method": "GET",
+      "path": "/api/v3/command/{id}",
+      "classification": "v3-compat"
+    },
+    {
+      "version": "v3",
+      "method": "GET",
+      "path": "/api/v3/config/downloadclient",
+      "classification": "v3-only"
+    },
+    {
+      "version": "v3",
+      "method": "GET",
+      "path": "/api/v3/config/downloadclient/{id}",
+      "classification": "v3-only"
+    },
+    {
+      "version": "v3",
+      "method": "PUT",
+      "path": "/api/v3/config/downloadclient/{id}",
+      "classification": "v3-only"
+    },
+    {
+      "version": "v3",
+      "method": "GET",
+      "path": "/api/v3/config/host",
+      "classification": "v3-only"
+    },
+    {
+      "version": "v3",
+      "method": "GET",
+      "path": "/api/v3/config/host/{id}",
+      "classification": "v3-only"
+    },
+    {
+      "version": "v3",
+      "method": "PUT",
+      "path": "/api/v3/config/host/{id}",
+      "classification": "v3-only"
+    },
+    {
+      "version": "v3",
+      "method": "GET",
+      "path": "/api/v3/config/importlist",
+      "classification": "v3-only"
+    },
+    {
+      "version": "v3",
+      "method": "GET",
+      "path": "/api/v3/config/importlist/{id}",
+      "classification": "v3-only"
+    },
+    {
+      "version": "v3",
+      "method": "PUT",
+      "path": "/api/v3/config/importlist/{id}",
+      "classification": "v3-only"
+    },
+    {
+      "version": "v3",
+      "method": "GET",
+      "path": "/api/v3/config/indexer",
+      "classification": "v3-only"
+    },
+    {
+      "version": "v3",
+      "method": "GET",
+      "path": "/api/v3/config/indexer/{id}",
+      "classification": "v3-only"
+    },
+    {
+      "version": "v3",
+      "method": "PUT",
+      "path": "/api/v3/config/indexer/{id}",
+      "classification": "v3-only"
+    },
+    {
+      "version": "v3",
+      "method": "GET",
+      "path": "/api/v3/config/mediamanagement",
+      "classification": "v3-only"
+    },
+    {
+      "version": "v3",
+      "method": "GET",
+      "path": "/api/v3/config/mediamanagement/{id}",
+      "classification": "v3-only"
+    },
+    {
+      "version": "v3",
+      "method": "PUT",
+      "path": "/api/v3/config/mediamanagement/{id}",
+      "classification": "v3-only"
+    },
+    {
+      "version": "v3",
+      "method": "GET",
+      "path": "/api/v3/config/naming",
+      "classification": "v3-only"
+    },
+    {
+      "version": "v3",
+      "method": "GET",
+      "path": "/api/v3/config/naming/{id}",
+      "classification": "v3-only"
+    },
+    {
+      "version": "v3",
+      "method": "PUT",
+      "path": "/api/v3/config/naming/{id}",
+      "classification": "v3-only"
+    },
+    {
+      "version": "v3",
+      "method": "GET",
+      "path": "/api/v3/config/naming/examples",
+      "classification": "v3-only"
+    },
+    {
+      "version": "v3",
+      "method": "GET",
+      "path": "/api/v3/config/ui",
+      "classification": "v3-only"
+    },
+    {
+      "version": "v3",
+      "method": "GET",
+      "path": "/api/v3/config/ui/{id}",
+      "classification": "v3-only"
+    },
+    {
+      "version": "v3",
+      "method": "PUT",
+      "path": "/api/v3/config/ui/{id}",
+      "classification": "v3-only"
+    },
+    {
+      "version": "v3",
+      "method": "GET",
+      "path": "/api/v3/customfilter",
+      "classification": "v3-compat"
+    },
+    {
+      "version": "v3",
+      "method": "POST",
+      "path": "/api/v3/customfilter",
+      "classification": "v3-compat"
+    },
+    {
+      "version": "v3",
+      "method": "DELETE",
+      "path": "/api/v3/customfilter/{id}",
+      "classification": "v3-compat"
+    },
+    {
+      "version": "v3",
+      "method": "GET",
+      "path": "/api/v3/customfilter/{id}",
+      "classification": "v3-compat"
+    },
+    {
+      "version": "v3",
+      "method": "PUT",
+      "path": "/api/v3/customfilter/{id}",
+      "classification": "v3-compat"
+    },
+    {
+      "version": "v3",
+      "method": "GET",
+      "path": "/api/v3/customformat",
+      "classification": "v3-only"
+    },
+    {
+      "version": "v3",
+      "method": "POST",
+      "path": "/api/v3/customformat",
+      "classification": "v3-only"
+    },
+    {
+      "version": "v3",
+      "method": "DELETE",
+      "path": "/api/v3/customformat/{id}",
+      "classification": "v3-only"
+    },
+    {
+      "version": "v3",
+      "method": "GET",
+      "path": "/api/v3/customformat/{id}",
+      "classification": "v3-only"
+    },
+    {
+      "version": "v3",
+      "method": "PUT",
+      "path": "/api/v3/customformat/{id}",
+      "classification": "v3-only"
+    },
+    {
+      "version": "v3",
+      "method": "DELETE",
+      "path": "/api/v3/customformat/bulk",
+      "classification": "v3-only"
+    },
+    {
+      "version": "v3",
+      "method": "PUT",
+      "path": "/api/v3/customformat/bulk",
+      "classification": "v3-only"
+    },
+    {
+      "version": "v3",
+      "method": "GET",
+      "path": "/api/v3/customformat/schema",
+      "classification": "v3-only"
+    },
+    {
+      "version": "v3",
+      "method": "GET",
+      "path": "/api/v3/delayprofile",
+      "classification": "v3-only"
+    },
+    {
+      "version": "v3",
+      "method": "POST",
+      "path": "/api/v3/delayprofile",
+      "classification": "v3-only"
+    },
+    {
+      "version": "v3",
+      "method": "DELETE",
+      "path": "/api/v3/delayprofile/{id}",
+      "classification": "v3-only"
+    },
+    {
+      "version": "v3",
+      "method": "GET",
+      "path": "/api/v3/delayprofile/{id}",
+      "classification": "v3-only"
+    },
+    {
+      "version": "v3",
+      "method": "PUT",
+      "path": "/api/v3/delayprofile/{id}",
+      "classification": "v3-only"
+    },
+    {
+      "version": "v3",
+      "method": "PUT",
+      "path": "/api/v3/delayprofile/reorder/{id}",
+      "classification": "v3-only"
+    },
+    {
+      "version": "v3",
+      "method": "GET",
+      "path": "/api/v3/diskspace",
+      "classification": "v3-compat"
+    },
+    {
+      "version": "v3",
+      "method": "GET",
+      "path": "/api/v3/downloadclient",
+      "classification": "v3-only"
+    },
+    {
+      "version": "v3",
+      "method": "POST",
+      "path": "/api/v3/downloadclient",
+      "classification": "v3-only"
+    },
+    {
+      "version": "v3",
+      "method": "DELETE",
+      "path": "/api/v3/downloadclient/{id}",
+      "classification": "v3-only"
+    },
+    {
+      "version": "v3",
+      "method": "GET",
+      "path": "/api/v3/downloadclient/{id}",
+      "classification": "v3-only"
+    },
+    {
+      "version": "v3",
+      "method": "PUT",
+      "path": "/api/v3/downloadclient/{id}",
+      "classification": "v3-only"
+    },
+    {
+      "version": "v3",
+      "method": "POST",
+      "path": "/api/v3/downloadclient/action/{name}",
+      "classification": "external-provider-mocked"
+    },
+    {
+      "version": "v3",
+      "method": "DELETE",
+      "path": "/api/v3/downloadclient/bulk",
+      "classification": "v3-only"
+    },
+    {
+      "version": "v3",
+      "method": "PUT",
+      "path": "/api/v3/downloadclient/bulk",
+      "classification": "v3-only"
+    },
+    {
+      "version": "v3",
+      "method": "GET",
+      "path": "/api/v3/downloadclient/schema",
+      "classification": "v3-only"
+    },
+    {
+      "version": "v3",
+      "method": "POST",
+      "path": "/api/v3/downloadclient/test",
+      "classification": "external-provider-mocked"
+    },
+    {
+      "version": "v3",
+      "method": "POST",
+      "path": "/api/v3/downloadclient/testall",
+      "classification": "external-provider-mocked"
+    },
+    {
+      "version": "v3",
+      "method": "GET",
+      "path": "/api/v3/episode",
+      "classification": "v3-compat"
+    },
+    {
+      "version": "v3",
+      "method": "GET",
+      "path": "/api/v3/episode/{id}",
+      "classification": "v3-compat"
+    },
+    {
+      "version": "v3",
+      "method": "PUT",
+      "path": "/api/v3/episode/{id}",
+      "classification": "v3-compat"
+    },
+    {
+      "version": "v3",
+      "method": "PUT",
+      "path": "/api/v3/episode/monitor",
+      "classification": "v3-compat"
+    },
+    {
+      "version": "v3",
+      "method": "GET",
+      "path": "/api/v3/episodefile",
+      "classification": "v3-compat"
+    },
+    {
+      "version": "v3",
+      "method": "DELETE",
+      "path": "/api/v3/episodefile/{id}",
+      "classification": "v3-compat"
+    },
+    {
+      "version": "v3",
+      "method": "GET",
+      "path": "/api/v3/episodefile/{id}",
+      "classification": "v3-compat"
+    },
+    {
+      "version": "v3",
+      "method": "PUT",
+      "path": "/api/v3/episodefile/{id}",
+      "classification": "v3-compat"
+    },
+    {
+      "version": "v3",
+      "method": "DELETE",
+      "path": "/api/v3/episodefile/bulk",
+      "classification": "v3-compat"
+    },
+    {
+      "version": "v3",
+      "method": "PUT",
+      "path": "/api/v3/episodefile/bulk",
+      "classification": "v3-compat"
+    },
+    {
+      "version": "v3",
+      "method": "PUT",
+      "path": "/api/v3/episodefile/editor",
+      "classification": "v3-only"
+    },
+    {
+      "version": "v3",
+      "method": "GET",
+      "path": "/api/v3/filesystem",
+      "classification": "v3-compat"
+    },
+    {
+      "version": "v3",
+      "method": "GET",
+      "path": "/api/v3/filesystem/mediafiles",
+      "classification": "v3-compat"
+    },
+    {
+      "version": "v3",
+      "method": "GET",
+      "path": "/api/v3/filesystem/type",
+      "classification": "v3-compat"
+    },
+    {
+      "version": "v3",
+      "method": "GET",
+      "path": "/api/v3/health",
+      "classification": "v3-compat"
+    },
+    {
+      "version": "v3",
+      "method": "GET",
+      "path": "/api/v3/history",
+      "classification": "v3-compat"
+    },
+    {
+      "version": "v3",
+      "method": "POST",
+      "path": "/api/v3/history/failed/{id}",
+      "classification": "v3-compat"
+    },
+    {
+      "version": "v3",
+      "method": "GET",
+      "path": "/api/v3/history/series",
+      "classification": "v3-compat"
+    },
+    {
+      "version": "v3",
+      "method": "GET",
+      "path": "/api/v3/history/since",
+      "classification": "v3-compat"
+    },
+    {
+      "version": "v3",
+      "method": "GET",
+      "path": "/api/v3/importlist",
+      "classification": "v3-only"
+    },
+    {
+      "version": "v3",
+      "method": "POST",
+      "path": "/api/v3/importlist",
+      "classification": "v3-only"
+    },
+    {
+      "version": "v3",
+      "method": "DELETE",
+      "path": "/api/v3/importlist/{id}",
+      "classification": "v3-only"
+    },
+    {
+      "version": "v3",
+      "method": "GET",
+      "path": "/api/v3/importlist/{id}",
+      "classification": "v3-only"
+    },
+    {
+      "version": "v3",
+      "method": "PUT",
+      "path": "/api/v3/importlist/{id}",
+      "classification": "v3-only"
+    },
+    {
+      "version": "v3",
+      "method": "POST",
+      "path": "/api/v3/importlist/action/{name}",
+      "classification": "external-provider-mocked"
+    },
+    {
+      "version": "v3",
+      "method": "DELETE",
+      "path": "/api/v3/importlist/bulk",
+      "classification": "v3-only"
+    },
+    {
+      "version": "v3",
+      "method": "PUT",
+      "path": "/api/v3/importlist/bulk",
+      "classification": "v3-only"
+    },
+    {
+      "version": "v3",
+      "method": "GET",
+      "path": "/api/v3/importlist/schema",
+      "classification": "v3-only"
+    },
+    {
+      "version": "v3",
+      "method": "POST",
+      "path": "/api/v3/importlist/test",
+      "classification": "external-provider-mocked"
+    },
+    {
+      "version": "v3",
+      "method": "POST",
+      "path": "/api/v3/importlist/testall",
+      "classification": "external-provider-mocked"
+    },
+    {
+      "version": "v3",
+      "method": "GET",
+      "path": "/api/v3/importlistexclusion",
+      "classification": "v3-compat"
+    },
+    {
+      "version": "v3",
+      "method": "POST",
+      "path": "/api/v3/importlistexclusion",
+      "classification": "v3-compat"
+    },
+    {
+      "version": "v3",
+      "method": "DELETE",
+      "path": "/api/v3/importlistexclusion/{id}",
+      "classification": "v3-compat"
+    },
+    {
+      "version": "v3",
+      "method": "GET",
+      "path": "/api/v3/importlistexclusion/{id}",
+      "classification": "v3-compat"
+    },
+    {
+      "version": "v3",
+      "method": "PUT",
+      "path": "/api/v3/importlistexclusion/{id}",
+      "classification": "v3-compat"
+    },
+    {
+      "version": "v3",
+      "method": "DELETE",
+      "path": "/api/v3/importlistexclusion/bulk",
+      "classification": "v3-compat"
+    },
+    {
+      "version": "v3",
+      "method": "GET",
+      "path": "/api/v3/importlistexclusion/paged",
+      "classification": "v3-only"
+    },
+    {
+      "version": "v3",
+      "method": "GET",
+      "path": "/api/v3/indexer",
+      "classification": "v3-compat"
+    },
+    {
+      "version": "v3",
+      "method": "POST",
+      "path": "/api/v3/indexer",
+      "classification": "v3-compat"
+    },
+    {
+      "version": "v3",
+      "method": "DELETE",
+      "path": "/api/v3/indexer/{id}",
+      "classification": "v3-compat"
+    },
+    {
+      "version": "v3",
+      "method": "GET",
+      "path": "/api/v3/indexer/{id}",
+      "classification": "v3-compat"
+    },
+    {
+      "version": "v3",
+      "method": "PUT",
+      "path": "/api/v3/indexer/{id}",
+      "classification": "v3-compat"
+    },
+    {
+      "version": "v3",
+      "method": "POST",
+      "path": "/api/v3/indexer/action/{name}",
+      "classification": "external-provider-mocked"
+    },
+    {
+      "version": "v3",
+      "method": "DELETE",
+      "path": "/api/v3/indexer/bulk",
+      "classification": "v3-compat"
+    },
+    {
+      "version": "v3",
+      "method": "PUT",
+      "path": "/api/v3/indexer/bulk",
+      "classification": "v3-compat"
+    },
+    {
+      "version": "v3",
+      "method": "GET",
+      "path": "/api/v3/indexer/schema",
+      "classification": "v3-compat"
+    },
+    {
+      "version": "v3",
+      "method": "POST",
+      "path": "/api/v3/indexer/test",
+      "classification": "external-provider-mocked"
+    },
+    {
+      "version": "v3",
+      "method": "POST",
+      "path": "/api/v3/indexer/testall",
+      "classification": "external-provider-mocked"
+    },
+    {
+      "version": "v3",
+      "method": "GET",
+      "path": "/api/v3/indexerflag",
+      "classification": "v3-compat"
+    },
+    {
+      "version": "v3",
+      "method": "GET",
+      "path": "/api/v3/language",
+      "classification": "v3-compat"
+    },
+    {
+      "version": "v3",
+      "method": "GET",
+      "path": "/api/v3/language/{id}",
+      "classification": "v3-compat"
+    },
+    {
+      "version": "v3",
+      "method": "GET",
+      "path": "/api/v3/languageprofile",
+      "classification": "v3-only"
+    },
+    {
+      "version": "v3",
+      "method": "POST",
+      "path": "/api/v3/languageprofile",
+      "classification": "v3-only"
+    },
+    {
+      "version": "v3",
+      "method": "DELETE",
+      "path": "/api/v3/languageprofile/{id}",
+      "classification": "v3-only"
+    },
+    {
+      "version": "v3",
+      "method": "GET",
+      "path": "/api/v3/languageprofile/{id}",
+      "classification": "v3-only"
+    },
+    {
+      "version": "v3",
+      "method": "PUT",
+      "path": "/api/v3/languageprofile/{id}",
+      "classification": "v3-only"
+    },
+    {
+      "version": "v3",
+      "method": "GET",
+      "path": "/api/v3/languageprofile/schema",
+      "classification": "v3-only"
+    },
+    {
+      "version": "v3",
+      "method": "GET",
+      "path": "/api/v3/localization",
+      "classification": "v3-compat"
+    },
+    {
+      "version": "v3",
+      "method": "GET",
+      "path": "/api/v3/localization/{id}",
+      "classification": "v3-compat"
+    },
+    {
+      "version": "v3",
+      "method": "GET",
+      "path": "/api/v3/localization/language",
+      "classification": "v3-compat"
+    },
+    {
+      "version": "v3",
+      "method": "GET",
+      "path": "/api/v3/log",
+      "classification": "v3-compat"
+    },
+    {
+      "version": "v3",
+      "method": "GET",
+      "path": "/api/v3/log/file",
+      "classification": "v3-compat"
+    },
+    {
+      "version": "v3",
+      "method": "GET",
+      "path": "/api/v3/log/file/{filename}",
+      "classification": "v3-compat"
+    },
+    {
+      "version": "v3",
+      "method": "GET",
+      "path": "/api/v3/log/file/update",
+      "classification": "v3-compat"
+    },
+    {
+      "version": "v3",
+      "method": "GET",
+      "path": "/api/v3/log/file/update/{filename}",
+      "classification": "v3-compat"
+    },
+    {
+      "version": "v3",
+      "method": "GET",
+      "path": "/api/v3/manualimport",
+      "classification": "v3-compat"
+    },
+    {
+      "version": "v3",
+      "method": "POST",
+      "path": "/api/v3/manualimport",
+      "classification": "v3-compat"
+    },
+    {
+      "version": "v3",
+      "method": "GET",
+      "path": "/api/v3/mediacover/{seriesId}/{filename}",
+      "classification": "v3-only"
+    },
+    {
+      "version": "v3",
+      "method": "GET",
+      "path": "/api/v3/metadata",
+      "classification": "v3-compat"
+    },
+    {
+      "version": "v3",
+      "method": "POST",
+      "path": "/api/v3/metadata",
+      "classification": "v3-compat"
+    },
+    {
+      "version": "v3",
+      "method": "DELETE",
+      "path": "/api/v3/metadata/{id}",
+      "classification": "v3-compat"
+    },
+    {
+      "version": "v3",
+      "method": "GET",
+      "path": "/api/v3/metadata/{id}",
+      "classification": "v3-compat"
+    },
+    {
+      "version": "v3",
+      "method": "PUT",
+      "path": "/api/v3/metadata/{id}",
+      "classification": "v3-compat"
+    },
+    {
+      "version": "v3",
+      "method": "POST",
+      "path": "/api/v3/metadata/action/{name}",
+      "classification": "external-provider-mocked"
+    },
+    {
+      "version": "v3",
+      "method": "GET",
+      "path": "/api/v3/metadata/schema",
+      "classification": "v3-compat"
+    },
+    {
+      "version": "v3",
+      "method": "POST",
+      "path": "/api/v3/metadata/test",
+      "classification": "external-provider-mocked"
+    },
+    {
+      "version": "v3",
+      "method": "POST",
+      "path": "/api/v3/metadata/testall",
+      "classification": "external-provider-mocked"
+    },
+    {
+      "version": "v3",
+      "method": "GET",
+      "path": "/api/v3/notification",
+      "classification": "v3-only"
+    },
+    {
+      "version": "v3",
+      "method": "POST",
+      "path": "/api/v3/notification",
+      "classification": "v3-only"
+    },
+    {
+      "version": "v3",
+      "method": "DELETE",
+      "path": "/api/v3/notification/{id}",
+      "classification": "v3-only"
+    },
+    {
+      "version": "v3",
+      "method": "GET",
+      "path": "/api/v3/notification/{id}",
+      "classification": "v3-only"
+    },
+    {
+      "version": "v3",
+      "method": "PUT",
+      "path": "/api/v3/notification/{id}",
+      "classification": "v3-only"
+    },
+    {
+      "version": "v3",
+      "method": "POST",
+      "path": "/api/v3/notification/action/{name}",
+      "classification": "external-provider-mocked"
+    },
+    {
+      "version": "v3",
+      "method": "GET",
+      "path": "/api/v3/notification/schema",
+      "classification": "v3-only"
+    },
+    {
+      "version": "v3",
+      "method": "POST",
+      "path": "/api/v3/notification/test",
+      "classification": "external-provider-mocked"
+    },
+    {
+      "version": "v3",
+      "method": "POST",
+      "path": "/api/v3/notification/testall",
+      "classification": "external-provider-mocked"
+    },
+    {
+      "version": "v3",
+      "method": "GET",
+      "path": "/api/v3/parse",
+      "classification": "v3-compat"
+    },
+    {
+      "version": "v3",
+      "method": "GET",
+      "path": "/api/v3/qualitydefinition",
+      "classification": "v3-compat"
+    },
+    {
+      "version": "v3",
+      "method": "GET",
+      "path": "/api/v3/qualitydefinition/{id}",
+      "classification": "v3-compat"
+    },
+    {
+      "version": "v3",
+      "method": "PUT",
+      "path": "/api/v3/qualitydefinition/{id}",
+      "classification": "v3-compat"
+    },
+    {
+      "version": "v3",
+      "method": "GET",
+      "path": "/api/v3/qualitydefinition/limits",
+      "classification": "v3-only"
+    },
+    {
+      "version": "v3",
+      "method": "PUT",
+      "path": "/api/v3/qualitydefinition/update",
+      "classification": "v3-only"
+    },
+    {
+      "version": "v3",
+      "method": "GET",
+      "path": "/api/v3/qualityprofile",
+      "classification": "v3-compat"
+    },
+    {
+      "version": "v3",
+      "method": "POST",
+      "path": "/api/v3/qualityprofile",
+      "classification": "v3-compat"
+    },
+    {
+      "version": "v3",
+      "method": "DELETE",
+      "path": "/api/v3/qualityprofile/{id}",
+      "classification": "v3-compat"
+    },
+    {
+      "version": "v3",
+      "method": "GET",
+      "path": "/api/v3/qualityprofile/{id}",
+      "classification": "v3-compat"
+    },
+    {
+      "version": "v3",
+      "method": "PUT",
+      "path": "/api/v3/qualityprofile/{id}",
+      "classification": "v3-compat"
+    },
+    {
+      "version": "v3",
+      "method": "GET",
+      "path": "/api/v3/qualityprofile/schema",
+      "classification": "v3-compat"
+    },
+    {
+      "version": "v3",
+      "method": "GET",
+      "path": "/api/v3/queue",
+      "classification": "v3-compat"
+    },
+    {
+      "version": "v3",
+      "method": "DELETE",
+      "path": "/api/v3/queue/{id}",
+      "classification": "v3-compat"
+    },
+    {
+      "version": "v3",
+      "method": "DELETE",
+      "path": "/api/v3/queue/bulk",
+      "classification": "v3-compat"
+    },
+    {
+      "version": "v3",
+      "method": "GET",
+      "path": "/api/v3/queue/details",
+      "classification": "v3-compat"
+    },
+    {
+      "version": "v3",
+      "method": "POST",
+      "path": "/api/v3/queue/grab/{id}",
+      "classification": "v3-compat"
+    },
+    {
+      "version": "v3",
+      "method": "POST",
+      "path": "/api/v3/queue/grab/bulk",
+      "classification": "v3-compat"
+    },
+    {
+      "version": "v3",
+      "method": "GET",
+      "path": "/api/v3/queue/status",
+      "classification": "v3-compat"
+    },
+    {
+      "version": "v3",
+      "method": "GET",
+      "path": "/api/v3/release",
+      "classification": "v3-compat"
+    },
+    {
+      "version": "v3",
+      "method": "POST",
+      "path": "/api/v3/release",
+      "classification": "v3-compat"
+    },
+    {
+      "version": "v3",
+      "method": "POST",
+      "path": "/api/v3/release/push",
+      "classification": "v3-compat"
+    },
+    {
+      "version": "v3",
+      "method": "GET",
+      "path": "/api/v3/releaseprofile",
+      "classification": "v3-compat"
+    },
+    {
+      "version": "v3",
+      "method": "POST",
+      "path": "/api/v3/releaseprofile",
+      "classification": "v3-compat"
+    },
+    {
+      "version": "v3",
+      "method": "DELETE",
+      "path": "/api/v3/releaseprofile/{id}",
+      "classification": "v3-compat"
+    },
+    {
+      "version": "v3",
+      "method": "GET",
+      "path": "/api/v3/releaseprofile/{id}",
+      "classification": "v3-compat"
+    },
+    {
+      "version": "v3",
+      "method": "PUT",
+      "path": "/api/v3/releaseprofile/{id}",
+      "classification": "v3-compat"
+    },
+    {
+      "version": "v3",
+      "method": "GET",
+      "path": "/api/v3/remotepathmapping",
+      "classification": "v3-compat"
+    },
+    {
+      "version": "v3",
+      "method": "POST",
+      "path": "/api/v3/remotepathmapping",
+      "classification": "v3-compat"
+    },
+    {
+      "version": "v3",
+      "method": "DELETE",
+      "path": "/api/v3/remotepathmapping/{id}",
+      "classification": "v3-compat"
+    },
+    {
+      "version": "v3",
+      "method": "GET",
+      "path": "/api/v3/remotepathmapping/{id}",
+      "classification": "v3-compat"
+    },
+    {
+      "version": "v3",
+      "method": "PUT",
+      "path": "/api/v3/remotepathmapping/{id}",
+      "classification": "v3-compat"
+    },
+    {
+      "version": "v3",
+      "method": "GET",
+      "path": "/api/v3/rename",
+      "classification": "v3-compat"
+    },
+    {
+      "version": "v3",
+      "method": "GET",
+      "path": "/api/v3/rootfolder",
+      "classification": "v3-compat"
+    },
+    {
+      "version": "v3",
+      "method": "POST",
+      "path": "/api/v3/rootfolder",
+      "classification": "v3-compat"
+    },
+    {
+      "version": "v3",
+      "method": "DELETE",
+      "path": "/api/v3/rootfolder/{id}",
+      "classification": "v3-compat"
+    },
+    {
+      "version": "v3",
+      "method": "GET",
+      "path": "/api/v3/rootfolder/{id}",
+      "classification": "v3-compat"
+    },
+    {
+      "version": "v3",
+      "method": "POST",
+      "path": "/api/v3/seasonpass",
+      "classification": "v3-compat"
+    },
+    {
+      "version": "v3",
+      "method": "GET",
+      "path": "/api/v3/series",
+      "classification": "v3-compat"
+    },
+    {
+      "version": "v3",
+      "method": "POST",
+      "path": "/api/v3/series",
+      "classification": "v3-compat"
+    },
+    {
+      "version": "v3",
+      "method": "DELETE",
+      "path": "/api/v3/series/{id}",
+      "classification": "v3-compat"
+    },
+    {
+      "version": "v3",
+      "method": "GET",
+      "path": "/api/v3/series/{id}",
+      "classification": "v3-compat"
+    },
+    {
+      "version": "v3",
+      "method": "PUT",
+      "path": "/api/v3/series/{id}",
+      "classification": "v3-compat"
+    },
+    {
+      "version": "v3",
+      "method": "GET",
+      "path": "/api/v3/series/{id}/folder",
+      "classification": "v3-compat"
+    },
+    {
+      "version": "v3",
+      "method": "DELETE",
+      "path": "/api/v3/series/editor",
+      "classification": "v3-compat"
+    },
+    {
+      "version": "v3",
+      "method": "PUT",
+      "path": "/api/v3/series/editor",
+      "classification": "v3-compat"
+    },
+    {
+      "version": "v3",
+      "method": "POST",
+      "path": "/api/v3/series/import",
+      "classification": "v3-compat"
+    },
+    {
+      "version": "v3",
+      "method": "GET",
+      "path": "/api/v3/series/lookup",
+      "classification": "v3-compat"
+    },
+    {
+      "version": "v3",
+      "method": "GET",
+      "path": "/api/v3/system/backup",
+      "classification": "v3-compat"
+    },
+    {
+      "version": "v3",
+      "method": "DELETE",
+      "path": "/api/v3/system/backup/{id}",
+      "classification": "v3-compat"
+    },
+    {
+      "version": "v3",
+      "method": "POST",
+      "path": "/api/v3/system/backup/restore/{id}",
+      "classification": "destructive-smoke-only"
+    },
+    {
+      "version": "v3",
+      "method": "POST",
+      "path": "/api/v3/system/backup/restore/upload",
+      "classification": "destructive-smoke-only"
+    },
+    {
+      "version": "v3",
+      "method": "POST",
+      "path": "/api/v3/system/restart",
+      "classification": "destructive-smoke-only"
+    },
+    {
+      "version": "v3",
+      "method": "GET",
+      "path": "/api/v3/system/routes",
+      "classification": "v3-compat"
+    },
+    {
+      "version": "v3",
+      "method": "GET",
+      "path": "/api/v3/system/routes/duplicate",
+      "classification": "v3-compat"
+    },
+    {
+      "version": "v3",
+      "method": "POST",
+      "path": "/api/v3/system/shutdown",
+      "classification": "destructive-smoke-only"
+    },
+    {
+      "version": "v3",
+      "method": "GET",
+      "path": "/api/v3/system/status",
+      "classification": "v3-compat"
+    },
+    {
+      "version": "v3",
+      "method": "GET",
+      "path": "/api/v3/system/task",
+      "classification": "v3-compat"
+    },
+    {
+      "version": "v3",
+      "method": "GET",
+      "path": "/api/v3/system/task/{id}",
+      "classification": "v3-compat"
+    },
+    {
+      "version": "v3",
+      "method": "GET",
+      "path": "/api/v3/tag",
+      "classification": "v3-compat"
+    },
+    {
+      "version": "v3",
+      "method": "POST",
+      "path": "/api/v3/tag",
+      "classification": "v3-compat"
+    },
+    {
+      "version": "v3",
+      "method": "DELETE",
+      "path": "/api/v3/tag/{id}",
+      "classification": "v3-compat"
+    },
+    {
+      "version": "v3",
+      "method": "GET",
+      "path": "/api/v3/tag/{id}",
+      "classification": "v3-compat"
+    },
+    {
+      "version": "v3",
+      "method": "PUT",
+      "path": "/api/v3/tag/{id}",
+      "classification": "v3-compat"
+    },
+    {
+      "version": "v3",
+      "method": "GET",
+      "path": "/api/v3/tag/detail",
+      "classification": "v3-compat"
+    },
+    {
+      "version": "v3",
+      "method": "GET",
+      "path": "/api/v3/tag/detail/{id}",
+      "classification": "v3-compat"
+    },
+    {
+      "version": "v3",
+      "method": "GET",
+      "path": "/api/v3/update",
+      "classification": "v3-compat"
+    },
+    {
+      "version": "v3",
+      "method": "GET",
+      "path": "/api/v3/wanted/cutoff",
+      "classification": "v3-compat"
+    },
+    {
+      "version": "v3",
+      "method": "GET",
+      "path": "/api/v3/wanted/cutoff/{id}",
+      "classification": "v3-compat"
+    },
+    {
+      "version": "v3",
+      "method": "GET",
+      "path": "/api/v3/wanted/missing",
+      "classification": "v3-compat"
+    },
+    {
+      "version": "v3",
+      "method": "GET",
+      "path": "/api/v3/wanted/missing/{id}",
+      "classification": "v3-compat"
+    },
+    {
+      "version": "v5",
+      "method": "GET",
+      "path": "/api/v5/autotagging",
+      "classification": "v5-primary"
+    },
+    {
+      "version": "v5",
+      "method": "POST",
+      "path": "/api/v5/autotagging",
+      "classification": "v5-primary"
+    },
+    {
+      "version": "v5",
+      "method": "DELETE",
+      "path": "/api/v5/autotagging/{id}",
+      "classification": "v5-primary"
+    },
+    {
+      "version": "v5",
+      "method": "GET",
+      "path": "/api/v5/autotagging/{id}",
+      "classification": "v5-primary"
+    },
+    {
+      "version": "v5",
+      "method": "PUT",
+      "path": "/api/v5/autotagging/{id}",
+      "classification": "v5-primary"
+    },
+    {
+      "version": "v5",
+      "method": "GET",
+      "path": "/api/v5/autotagging/schema",
+      "classification": "v5-primary"
+    },
+    {
+      "version": "v5",
+      "method": "GET",
+      "path": "/api/v5/blocklist",
+      "classification": "v5-primary"
+    },
+    {
+      "version": "v5",
+      "method": "DELETE",
+      "path": "/api/v5/blocklist/{id}",
+      "classification": "v5-primary"
+    },
+    {
+      "version": "v5",
+      "method": "DELETE",
+      "path": "/api/v5/blocklist/bulk",
+      "classification": "v5-primary"
+    },
+    {
+      "version": "v5",
+      "method": "GET",
+      "path": "/api/v5/calendar",
+      "classification": "v5-primary"
+    },
+    {
+      "version": "v5",
+      "method": "GET",
+      "path": "/api/v5/calendar/{id}",
+      "classification": "v5-primary"
+    },
+    {
+      "version": "v5",
+      "method": "GET",
+      "path": "/api/v5/command",
+      "classification": "v5-primary"
+    },
+    {
+      "version": "v5",
+      "method": "POST",
+      "path": "/api/v5/command",
+      "classification": "v5-primary"
+    },
+    {
+      "version": "v5",
+      "method": "DELETE",
+      "path": "/api/v5/command/{id}",
+      "classification": "v5-primary"
+    },
+    {
+      "version": "v5",
+      "method": "GET",
+      "path": "/api/v5/command/{id}",
+      "classification": "v5-primary"
+    },
+    {
+      "version": "v5",
+      "method": "GET",
+      "path": "/api/v5/connection",
+      "classification": "v5-only"
+    },
+    {
+      "version": "v5",
+      "method": "POST",
+      "path": "/api/v5/connection",
+      "classification": "v5-only"
+    },
+    {
+      "version": "v5",
+      "method": "DELETE",
+      "path": "/api/v5/connection/{id}",
+      "classification": "v5-only"
+    },
+    {
+      "version": "v5",
+      "method": "GET",
+      "path": "/api/v5/connection/{id}",
+      "classification": "v5-only"
+    },
+    {
+      "version": "v5",
+      "method": "PUT",
+      "path": "/api/v5/connection/{id}",
+      "classification": "v5-only"
+    },
+    {
+      "version": "v5",
+      "method": "POST",
+      "path": "/api/v5/connection/action/{name}",
+      "classification": "external-provider-mocked"
+    },
+    {
+      "version": "v5",
+      "method": "GET",
+      "path": "/api/v5/connection/schema",
+      "classification": "v5-only"
+    },
+    {
+      "version": "v5",
+      "method": "POST",
+      "path": "/api/v5/connection/test",
+      "classification": "external-provider-mocked"
+    },
+    {
+      "version": "v5",
+      "method": "POST",
+      "path": "/api/v5/connection/testall",
+      "classification": "external-provider-mocked"
+    },
+    {
+      "version": "v5",
+      "method": "GET",
+      "path": "/api/v5/customfilter",
+      "classification": "v5-primary"
+    },
+    {
+      "version": "v5",
+      "method": "POST",
+      "path": "/api/v5/customfilter",
+      "classification": "v5-primary"
+    },
+    {
+      "version": "v5",
+      "method": "DELETE",
+      "path": "/api/v5/customfilter/{id}",
+      "classification": "v5-primary"
+    },
+    {
+      "version": "v5",
+      "method": "GET",
+      "path": "/api/v5/customfilter/{id}",
+      "classification": "v5-primary"
+    },
+    {
+      "version": "v5",
+      "method": "PUT",
+      "path": "/api/v5/customfilter/{id}",
+      "classification": "v5-primary"
+    },
+    {
+      "version": "v5",
+      "method": "GET",
+      "path": "/api/v5/diskspace",
+      "classification": "v5-primary"
+    },
+    {
+      "version": "v5",
+      "method": "GET",
+      "path": "/api/v5/episode",
+      "classification": "v5-primary"
+    },
+    {
+      "version": "v5",
+      "method": "GET",
+      "path": "/api/v5/episode/{id}",
+      "classification": "v5-primary"
+    },
+    {
+      "version": "v5",
+      "method": "PUT",
+      "path": "/api/v5/episode/{id}",
+      "classification": "v5-primary"
+    },
+    {
+      "version": "v5",
+      "method": "PUT",
+      "path": "/api/v5/episode/monitor",
+      "classification": "v5-primary"
+    },
+    {
+      "version": "v5",
+      "method": "GET",
+      "path": "/api/v5/episodefile",
+      "classification": "v5-primary"
+    },
+    {
+      "version": "v5",
+      "method": "DELETE",
+      "path": "/api/v5/episodefile/{id}",
+      "classification": "v5-primary"
+    },
+    {
+      "version": "v5",
+      "method": "GET",
+      "path": "/api/v5/episodefile/{id}",
+      "classification": "v5-primary"
+    },
+    {
+      "version": "v5",
+      "method": "PUT",
+      "path": "/api/v5/episodefile/{id}",
+      "classification": "v5-primary"
+    },
+    {
+      "version": "v5",
+      "method": "DELETE",
+      "path": "/api/v5/episodefile/bulk",
+      "classification": "v5-primary"
+    },
+    {
+      "version": "v5",
+      "method": "PUT",
+      "path": "/api/v5/episodefile/bulk",
+      "classification": "v5-primary"
+    },
+    {
+      "version": "v5",
+      "method": "GET",
+      "path": "/api/v5/filesystem",
+      "classification": "v5-primary"
+    },
+    {
+      "version": "v5",
+      "method": "GET",
+      "path": "/api/v5/filesystem/mediafiles",
+      "classification": "v5-primary"
+    },
+    {
+      "version": "v5",
+      "method": "GET",
+      "path": "/api/v5/filesystem/type",
+      "classification": "v5-primary"
+    },
+    {
+      "version": "v5",
+      "method": "GET",
+      "path": "/api/v5/health",
+      "classification": "v5-primary"
+    },
+    {
+      "version": "v5",
+      "method": "GET",
+      "path": "/api/v5/history",
+      "classification": "v5-primary"
+    },
+    {
+      "version": "v5",
+      "method": "GET",
+      "path": "/api/v5/history/episode",
+      "classification": "v5-only"
+    },
+    {
+      "version": "v5",
+      "method": "POST",
+      "path": "/api/v5/history/failed/{id}",
+      "classification": "v5-primary"
+    },
+    {
+      "version": "v5",
+      "method": "GET",
+      "path": "/api/v5/history/season",
+      "classification": "v5-only"
+    },
+    {
+      "version": "v5",
+      "method": "GET",
+      "path": "/api/v5/history/series",
+      "classification": "v5-primary"
+    },
+    {
+      "version": "v5",
+      "method": "GET",
+      "path": "/api/v5/history/since",
+      "classification": "v5-primary"
+    },
+    {
+      "version": "v5",
+      "method": "GET",
+      "path": "/api/v5/importlistexclusion",
+      "classification": "v5-primary"
+    },
+    {
+      "version": "v5",
+      "method": "POST",
+      "path": "/api/v5/importlistexclusion",
+      "classification": "v5-primary"
+    },
+    {
+      "version": "v5",
+      "method": "DELETE",
+      "path": "/api/v5/importlistexclusion/{id}",
+      "classification": "v5-primary"
+    },
+    {
+      "version": "v5",
+      "method": "GET",
+      "path": "/api/v5/importlistexclusion/{id}",
+      "classification": "v5-primary"
+    },
+    {
+      "version": "v5",
+      "method": "PUT",
+      "path": "/api/v5/importlistexclusion/{id}",
+      "classification": "v5-primary"
+    },
+    {
+      "version": "v5",
+      "method": "DELETE",
+      "path": "/api/v5/importlistexclusion/bulk",
+      "classification": "v5-primary"
+    },
+    {
+      "version": "v5",
+      "method": "GET",
+      "path": "/api/v5/indexer",
+      "classification": "v5-primary"
+    },
+    {
+      "version": "v5",
+      "method": "POST",
+      "path": "/api/v5/indexer",
+      "classification": "v5-primary"
+    },
+    {
+      "version": "v5",
+      "method": "DELETE",
+      "path": "/api/v5/indexer/{id}",
+      "classification": "v5-primary"
+    },
+    {
+      "version": "v5",
+      "method": "GET",
+      "path": "/api/v5/indexer/{id}",
+      "classification": "v5-primary"
+    },
+    {
+      "version": "v5",
+      "method": "PUT",
+      "path": "/api/v5/indexer/{id}",
+      "classification": "v5-primary"
+    },
+    {
+      "version": "v5",
+      "method": "POST",
+      "path": "/api/v5/indexer/action/{name}",
+      "classification": "external-provider-mocked"
+    },
+    {
+      "version": "v5",
+      "method": "DELETE",
+      "path": "/api/v5/indexer/bulk",
+      "classification": "v5-primary"
+    },
+    {
+      "version": "v5",
+      "method": "PUT",
+      "path": "/api/v5/indexer/bulk",
+      "classification": "v5-primary"
+    },
+    {
+      "version": "v5",
+      "method": "GET",
+      "path": "/api/v5/indexer/schema",
+      "classification": "v5-primary"
+    },
+    {
+      "version": "v5",
+      "method": "POST",
+      "path": "/api/v5/indexer/test",
+      "classification": "external-provider-mocked"
+    },
+    {
+      "version": "v5",
+      "method": "POST",
+      "path": "/api/v5/indexer/testall",
+      "classification": "external-provider-mocked"
+    },
+    {
+      "version": "v5",
+      "method": "GET",
+      "path": "/api/v5/indexerflag",
+      "classification": "v5-primary"
+    },
+    {
+      "version": "v5",
+      "method": "GET",
+      "path": "/api/v5/language",
+      "classification": "v5-primary"
+    },
+    {
+      "version": "v5",
+      "method": "GET",
+      "path": "/api/v5/language/{id}",
+      "classification": "v5-primary"
+    },
+    {
+      "version": "v5",
+      "method": "GET",
+      "path": "/api/v5/localization",
+      "classification": "v5-primary"
+    },
+    {
+      "version": "v5",
+      "method": "GET",
+      "path": "/api/v5/localization/{id}",
+      "classification": "v5-primary"
+    },
+    {
+      "version": "v5",
+      "method": "GET",
+      "path": "/api/v5/localization/language",
+      "classification": "v5-primary"
+    },
+    {
+      "version": "v5",
+      "method": "GET",
+      "path": "/api/v5/log",
+      "classification": "v5-primary"
+    },
+    {
+      "version": "v5",
+      "method": "GET",
+      "path": "/api/v5/log/file",
+      "classification": "v5-primary"
+    },
+    {
+      "version": "v5",
+      "method": "GET",
+      "path": "/api/v5/log/file/{filename}",
+      "classification": "v5-primary"
+    },
+    {
+      "version": "v5",
+      "method": "GET",
+      "path": "/api/v5/log/file/update",
+      "classification": "v5-primary"
+    },
+    {
+      "version": "v5",
+      "method": "GET",
+      "path": "/api/v5/log/file/update/{filename}",
+      "classification": "v5-primary"
+    },
+    {
+      "version": "v5",
+      "method": "GET",
+      "path": "/api/v5/manualimport",
+      "classification": "v5-primary"
+    },
+    {
+      "version": "v5",
+      "method": "POST",
+      "path": "/api/v5/manualimport",
+      "classification": "v5-primary"
+    },
+    {
+      "version": "v5",
+      "method": "GET",
+      "path": "/api/v5/metadata",
+      "classification": "v5-primary"
+    },
+    {
+      "version": "v5",
+      "method": "POST",
+      "path": "/api/v5/metadata",
+      "classification": "v5-primary"
+    },
+    {
+      "version": "v5",
+      "method": "DELETE",
+      "path": "/api/v5/metadata/{id}",
+      "classification": "v5-primary"
+    },
+    {
+      "version": "v5",
+      "method": "GET",
+      "path": "/api/v5/metadata/{id}",
+      "classification": "v5-primary"
+    },
+    {
+      "version": "v5",
+      "method": "PUT",
+      "path": "/api/v5/metadata/{id}",
+      "classification": "v5-primary"
+    },
+    {
+      "version": "v5",
+      "method": "POST",
+      "path": "/api/v5/metadata/action/{name}",
+      "classification": "external-provider-mocked"
+    },
+    {
+      "version": "v5",
+      "method": "GET",
+      "path": "/api/v5/metadata/schema",
+      "classification": "v5-primary"
+    },
+    {
+      "version": "v5",
+      "method": "POST",
+      "path": "/api/v5/metadata/test",
+      "classification": "external-provider-mocked"
+    },
+    {
+      "version": "v5",
+      "method": "POST",
+      "path": "/api/v5/metadata/testall",
+      "classification": "external-provider-mocked"
+    },
+    {
+      "version": "v5",
+      "method": "GET",
+      "path": "/api/v5/parse",
+      "classification": "v5-primary"
+    },
+    {
+      "version": "v5",
+      "method": "GET",
+      "path": "/api/v5/qualitydefinition",
+      "classification": "v5-primary"
+    },
+    {
+      "version": "v5",
+      "method": "PUT",
+      "path": "/api/v5/qualitydefinition",
+      "classification": "v5-only"
+    },
+    {
+      "version": "v5",
+      "method": "GET",
+      "path": "/api/v5/qualitydefinition/{id}",
+      "classification": "v5-primary"
+    },
+    {
+      "version": "v5",
+      "method": "PUT",
+      "path": "/api/v5/qualitydefinition/{id}",
+      "classification": "v5-primary"
+    },
+    {
+      "version": "v5",
+      "method": "GET",
+      "path": "/api/v5/qualityprofile",
+      "classification": "v5-primary"
+    },
+    {
+      "version": "v5",
+      "method": "POST",
+      "path": "/api/v5/qualityprofile",
+      "classification": "v5-primary"
+    },
+    {
+      "version": "v5",
+      "method": "DELETE",
+      "path": "/api/v5/qualityprofile/{id}",
+      "classification": "v5-primary"
+    },
+    {
+      "version": "v5",
+      "method": "GET",
+      "path": "/api/v5/qualityprofile/{id}",
+      "classification": "v5-primary"
+    },
+    {
+      "version": "v5",
+      "method": "PUT",
+      "path": "/api/v5/qualityprofile/{id}",
+      "classification": "v5-primary"
+    },
+    {
+      "version": "v5",
+      "method": "GET",
+      "path": "/api/v5/qualityprofile/schema",
+      "classification": "v5-primary"
+    },
+    {
+      "version": "v5",
+      "method": "GET",
+      "path": "/api/v5/queue",
+      "classification": "v5-primary"
+    },
+    {
+      "version": "v5",
+      "method": "DELETE",
+      "path": "/api/v5/queue/{id}",
+      "classification": "v5-primary"
+    },
+    {
+      "version": "v5",
+      "method": "DELETE",
+      "path": "/api/v5/queue/bulk",
+      "classification": "v5-primary"
+    },
+    {
+      "version": "v5",
+      "method": "GET",
+      "path": "/api/v5/queue/details",
+      "classification": "v5-primary"
+    },
+    {
+      "version": "v5",
+      "method": "POST",
+      "path": "/api/v5/queue/grab/{id}",
+      "classification": "v5-primary"
+    },
+    {
+      "version": "v5",
+      "method": "POST",
+      "path": "/api/v5/queue/grab/bulk",
+      "classification": "v5-primary"
+    },
+    {
+      "version": "v5",
+      "method": "GET",
+      "path": "/api/v5/queue/status",
+      "classification": "v5-primary"
+    },
+    {
+      "version": "v5",
+      "method": "GET",
+      "path": "/api/v5/release",
+      "classification": "v5-primary"
+    },
+    {
+      "version": "v5",
+      "method": "POST",
+      "path": "/api/v5/release",
+      "classification": "v5-primary"
+    },
+    {
+      "version": "v5",
+      "method": "POST",
+      "path": "/api/v5/release/push",
+      "classification": "v5-primary"
+    },
+    {
+      "version": "v5",
+      "method": "GET",
+      "path": "/api/v5/release/push/{id}",
+      "classification": "v5-only"
+    },
+    {
+      "version": "v5",
+      "method": "GET",
+      "path": "/api/v5/releaseprofile",
+      "classification": "v5-primary"
+    },
+    {
+      "version": "v5",
+      "method": "POST",
+      "path": "/api/v5/releaseprofile",
+      "classification": "v5-primary"
+    },
+    {
+      "version": "v5",
+      "method": "DELETE",
+      "path": "/api/v5/releaseprofile/{id}",
+      "classification": "v5-primary"
+    },
+    {
+      "version": "v5",
+      "method": "GET",
+      "path": "/api/v5/releaseprofile/{id}",
+      "classification": "v5-primary"
+    },
+    {
+      "version": "v5",
+      "method": "PUT",
+      "path": "/api/v5/releaseprofile/{id}",
+      "classification": "v5-primary"
+    },
+    {
+      "version": "v5",
+      "method": "GET",
+      "path": "/api/v5/remotepathmapping",
+      "classification": "v5-primary"
+    },
+    {
+      "version": "v5",
+      "method": "POST",
+      "path": "/api/v5/remotepathmapping",
+      "classification": "v5-primary"
+    },
+    {
+      "version": "v5",
+      "method": "DELETE",
+      "path": "/api/v5/remotepathmapping/{id}",
+      "classification": "v5-primary"
+    },
+    {
+      "version": "v5",
+      "method": "GET",
+      "path": "/api/v5/remotepathmapping/{id}",
+      "classification": "v5-primary"
+    },
+    {
+      "version": "v5",
+      "method": "PUT",
+      "path": "/api/v5/remotepathmapping/{id}",
+      "classification": "v5-primary"
+    },
+    {
+      "version": "v5",
+      "method": "GET",
+      "path": "/api/v5/rename",
+      "classification": "v5-primary"
+    },
+    {
+      "version": "v5",
+      "method": "GET",
+      "path": "/api/v5/rename/bulk",
+      "classification": "v5-only"
+    },
+    {
+      "version": "v5",
+      "method": "GET",
+      "path": "/api/v5/rootfolder",
+      "classification": "v5-primary"
+    },
+    {
+      "version": "v5",
+      "method": "POST",
+      "path": "/api/v5/rootfolder",
+      "classification": "v5-primary"
+    },
+    {
+      "version": "v5",
+      "method": "DELETE",
+      "path": "/api/v5/rootfolder/{id}",
+      "classification": "v5-primary"
+    },
+    {
+      "version": "v5",
+      "method": "GET",
+      "path": "/api/v5/rootfolder/{id}",
+      "classification": "v5-primary"
+    },
+    {
+      "version": "v5",
+      "method": "POST",
+      "path": "/api/v5/seasonpass",
+      "classification": "v5-primary"
+    },
+    {
+      "version": "v5",
+      "method": "GET",
+      "path": "/api/v5/series",
+      "classification": "v5-primary"
+    },
+    {
+      "version": "v5",
+      "method": "POST",
+      "path": "/api/v5/series",
+      "classification": "v5-primary"
+    },
+    {
+      "version": "v5",
+      "method": "DELETE",
+      "path": "/api/v5/series/{id}",
+      "classification": "v5-primary"
+    },
+    {
+      "version": "v5",
+      "method": "GET",
+      "path": "/api/v5/series/{id}",
+      "classification": "v5-primary"
+    },
+    {
+      "version": "v5",
+      "method": "PUT",
+      "path": "/api/v5/series/{id}",
+      "classification": "v5-primary"
+    },
+    {
+      "version": "v5",
+      "method": "GET",
+      "path": "/api/v5/series/{id}/folder",
+      "classification": "v5-primary"
+    },
+    {
+      "version": "v5",
+      "method": "PUT",
+      "path": "/api/v5/series/{id}/season",
+      "classification": "v5-only"
+    },
+    {
+      "version": "v5",
+      "method": "DELETE",
+      "path": "/api/v5/series/editor",
+      "classification": "v5-primary"
+    },
+    {
+      "version": "v5",
+      "method": "PUT",
+      "path": "/api/v5/series/editor",
+      "classification": "v5-primary"
+    },
+    {
+      "version": "v5",
+      "method": "POST",
+      "path": "/api/v5/series/import",
+      "classification": "v5-primary"
+    },
+    {
+      "version": "v5",
+      "method": "GET",
+      "path": "/api/v5/series/lookup",
+      "classification": "v5-primary"
+    },
+    {
+      "version": "v5",
+      "method": "GET",
+      "path": "/api/v5/settings/general",
+      "classification": "v5-only"
+    },
+    {
+      "version": "v5",
+      "method": "GET",
+      "path": "/api/v5/settings/general/{id}",
+      "classification": "v5-only"
+    },
+    {
+      "version": "v5",
+      "method": "PUT",
+      "path": "/api/v5/settings/general/{id}",
+      "classification": "v5-only"
+    },
+    {
+      "version": "v5",
+      "method": "GET",
+      "path": "/api/v5/settings/indexer",
+      "classification": "v5-only"
+    },
+    {
+      "version": "v5",
+      "method": "GET",
+      "path": "/api/v5/settings/indexer/{id}",
+      "classification": "v5-only"
+    },
+    {
+      "version": "v5",
+      "method": "PUT",
+      "path": "/api/v5/settings/indexer/{id}",
+      "classification": "v5-only"
+    },
+    {
+      "version": "v5",
+      "method": "GET",
+      "path": "/api/v5/settings/mediamanagement",
+      "classification": "v5-only"
+    },
+    {
+      "version": "v5",
+      "method": "GET",
+      "path": "/api/v5/settings/mediamanagement/{id}",
+      "classification": "v5-only"
+    },
+    {
+      "version": "v5",
+      "method": "PUT",
+      "path": "/api/v5/settings/mediamanagement/{id}",
+      "classification": "v5-only"
+    },
+    {
+      "version": "v5",
+      "method": "GET",
+      "path": "/api/v5/settings/naming",
+      "classification": "v5-only"
+    },
+    {
+      "version": "v5",
+      "method": "GET",
+      "path": "/api/v5/settings/naming/{id}",
+      "classification": "v5-only"
+    },
+    {
+      "version": "v5",
+      "method": "PUT",
+      "path": "/api/v5/settings/naming/{id}",
+      "classification": "v5-only"
+    },
+    {
+      "version": "v5",
+      "method": "GET",
+      "path": "/api/v5/settings/naming/examples",
+      "classification": "v5-only"
+    },
+    {
+      "version": "v5",
+      "method": "GET",
+      "path": "/api/v5/settings/ui",
+      "classification": "v5-only"
+    },
+    {
+      "version": "v5",
+      "method": "GET",
+      "path": "/api/v5/settings/ui/{id}",
+      "classification": "v5-only"
+    },
+    {
+      "version": "v5",
+      "method": "PUT",
+      "path": "/api/v5/settings/ui/{id}",
+      "classification": "v5-only"
+    },
+    {
+      "version": "v5",
+      "method": "GET",
+      "path": "/api/v5/settings/update",
+      "classification": "v5-only"
+    },
+    {
+      "version": "v5",
+      "method": "GET",
+      "path": "/api/v5/settings/update/{id}",
+      "classification": "v5-only"
+    },
+    {
+      "version": "v5",
+      "method": "PUT",
+      "path": "/api/v5/settings/update/{id}",
+      "classification": "v5-only"
+    },
+    {
+      "version": "v5",
+      "method": "GET",
+      "path": "/api/v5/system/backup",
+      "classification": "v5-primary"
+    },
+    {
+      "version": "v5",
+      "method": "DELETE",
+      "path": "/api/v5/system/backup/{id}",
+      "classification": "v5-primary"
+    },
+    {
+      "version": "v5",
+      "method": "POST",
+      "path": "/api/v5/system/backup/restore/{id}",
+      "classification": "destructive-smoke-only"
+    },
+    {
+      "version": "v5",
+      "method": "POST",
+      "path": "/api/v5/system/backup/restore/upload",
+      "classification": "destructive-smoke-only"
+    },
+    {
+      "version": "v5",
+      "method": "POST",
+      "path": "/api/v5/system/restart",
+      "classification": "destructive-smoke-only"
+    },
+    {
+      "version": "v5",
+      "method": "GET",
+      "path": "/api/v5/system/routes",
+      "classification": "v5-primary"
+    },
+    {
+      "version": "v5",
+      "method": "GET",
+      "path": "/api/v5/system/routes/duplicate",
+      "classification": "v5-primary"
+    },
+    {
+      "version": "v5",
+      "method": "POST",
+      "path": "/api/v5/system/shutdown",
+      "classification": "destructive-smoke-only"
+    },
+    {
+      "version": "v5",
+      "method": "GET",
+      "path": "/api/v5/system/status",
+      "classification": "v5-primary"
+    },
+    {
+      "version": "v5",
+      "method": "GET",
+      "path": "/api/v5/system/task",
+      "classification": "v5-primary"
+    },
+    {
+      "version": "v5",
+      "method": "GET",
+      "path": "/api/v5/system/task/{id}",
+      "classification": "v5-primary"
+    },
+    {
+      "version": "v5",
+      "method": "GET",
+      "path": "/api/v5/tag",
+      "classification": "v5-primary"
+    },
+    {
+      "version": "v5",
+      "method": "POST",
+      "path": "/api/v5/tag",
+      "classification": "v5-primary"
+    },
+    {
+      "version": "v5",
+      "method": "DELETE",
+      "path": "/api/v5/tag/{id}",
+      "classification": "v5-primary"
+    },
+    {
+      "version": "v5",
+      "method": "GET",
+      "path": "/api/v5/tag/{id}",
+      "classification": "v5-primary"
+    },
+    {
+      "version": "v5",
+      "method": "PUT",
+      "path": "/api/v5/tag/{id}",
+      "classification": "v5-primary"
+    },
+    {
+      "version": "v5",
+      "method": "GET",
+      "path": "/api/v5/tag/detail",
+      "classification": "v5-primary"
+    },
+    {
+      "version": "v5",
+      "method": "GET",
+      "path": "/api/v5/tag/detail/{id}",
+      "classification": "v5-primary"
+    },
+    {
+      "version": "v5",
+      "method": "GET",
+      "path": "/api/v5/update",
+      "classification": "v5-primary"
+    },
+    {
+      "version": "v5",
+      "method": "GET",
+      "path": "/api/v5/wanted/cutoff",
+      "classification": "v5-primary"
+    },
+    {
+      "version": "v5",
+      "method": "GET",
+      "path": "/api/v5/wanted/cutoff/{id}",
+      "classification": "v5-primary"
+    },
+    {
+      "version": "v5",
+      "method": "GET",
+      "path": "/api/v5/wanted/missing",
+      "classification": "v5-primary"
+    },
+    {
+      "version": "v5",
+      "method": "GET",
+      "path": "/api/v5/wanted/missing/{id}",
+      "classification": "v5-primary"
+    }
+  ]
+}

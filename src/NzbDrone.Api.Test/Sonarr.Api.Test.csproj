@@ -14,4 +14,9 @@
     <ProjectReference Include="..\Sonarr.Api.V5\Sonarr.Api.V5.csproj" />
     <ProjectReference Include="..\Sonarr.Http\Sonarr.Http.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="..\Sonarr.Api.V3\openapi.json" Link="ApiInventory\openapi.v3.json" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\Sonarr.Api.V5\openapi.json" Link="ApiInventory\openapi.v5.json" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="ApiInventory\api-operation-classification.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
 </Project>
