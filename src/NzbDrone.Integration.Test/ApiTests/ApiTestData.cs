@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Threading;
 using NzbDrone.Core.Messaging.Commands;
 using NzbDrone.Core.Qualities;
 using NzbDrone.Core.Tv;
@@ -259,19 +258,22 @@ namespace NzbDrone.Integration.Test.ApiTests
         {
             var command = _test.Commands.Post(new SimpleCommandResource { Name = "RefreshMonitoredDownloads" });
 
-            for (var i = 0; i < 30; i++)
+            IntegrationTestBase.WaitForCompletion(() =>
             {
                 var updatedCommand = _test.Commands.Get(command.Id);
 
-                if (updatedCommand.Status == CommandStatus.Completed)
+                if (updatedCommand.Status is CommandStatus.Failed or CommandStatus.Aborted or CommandStatus.Cancelled or CommandStatus.Orphaned)
                 {
-                    return;
+                    throw new InvalidOperationException($"RefreshMonitoredDownloads finished with {updatedCommand.Status}.");
                 }
 
-                Thread.Sleep(1000);
-            }
+                if (updatedCommand.Status == CommandStatus.Completed)
+                {
+                    return true;
+                }
 
-            throw new InvalidOperationException("RefreshMonitoredDownloads did not complete within the test-data timeout.");
+                return false;
+            }, 30000, 1000);
         }
 
         private void Track(Action cleanup)
@@ -305,9 +307,7 @@ namespace NzbDrone.Integration.Test.ApiTests
                 .ToLowerInvariant()
                 .Select(character => char.IsLetterOrDigit(character) ? character : '-')
                 .ToArray();
-            var slug = new string(chars)
-                .Split('-', StringSplitOptions.RemoveEmptyEntries)
-                .Aggregate(string.Empty, (current, part) => current.Length == 0 ? part : current + "-" + part);
+            var slug = string.Join("-", new string(chars).Split('-', StringSplitOptions.RemoveEmptyEntries));
 
             if (slug.Length > maxLength)
             {
