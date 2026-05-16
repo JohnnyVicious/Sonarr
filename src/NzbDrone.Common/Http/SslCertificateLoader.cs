@@ -18,6 +18,25 @@ namespace NzbDrone.Common.Http
     {
         public static SslStreamCertificateContext LoadCertificateContext(string certPath, string keyPath, string certPassword)
         {
+            var (leafCert, certificateCollection) = LoadCertificates(certPath, keyPath, certPassword);
+
+            return SslStreamCertificateContext.Create(leafCert, certificateCollection, offline: true);
+        }
+
+        public static void ValidateCertificate(string certPath, string keyPath, string certPassword)
+        {
+            var (leafCert, certificateCollection) = LoadCertificates(certPath, keyPath, certPassword);
+
+            foreach (var cert in certificateCollection)
+            {
+                cert.Dispose();
+            }
+
+            leafCert.Dispose();
+        }
+
+        private static (X509Certificate2 LeafCert, X509Certificate2Collection Collection) LoadCertificates(string certPath, string keyPath, string certPassword)
+        {
             X509Certificate2Collection certificateCollection;
             X509Certificate2 leafCert;
 
@@ -34,6 +53,7 @@ namespace NzbDrone.Common.Http
                 if (duplicate != null)
                 {
                     certificateCollection.Remove(duplicate);
+                    duplicate.Dispose();
                 }
 
                 certificateCollection.Insert(0, leafCert);
@@ -54,7 +74,7 @@ namespace NzbDrone.Common.Http
                     $"The SSL certificate file {certPath} does not contain a certificate with an associated private key");
             }
 
-            return SslStreamCertificateContext.Create(leafCert, certificateCollection, offline: true);
+            return (leafCert, certificateCollection);
         }
     }
 }
