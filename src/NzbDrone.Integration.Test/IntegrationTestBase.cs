@@ -36,6 +36,8 @@ namespace NzbDrone.Integration.Test
     public abstract class IntegrationTestBase
     {
         protected RestClient RestClient { get; private set; }
+        protected VersionedApiClient ApiV3 { get; private set; }
+        protected VersionedApiClient ApiV5 { get; private set; }
 
         public ClientBase<BlocklistResource> Blocklist;
         public CommandClient Commands;
@@ -99,9 +101,9 @@ namespace NzbDrone.Integration.Test
 
         protected virtual void InitRestClients()
         {
-            RestClient = new RestClient(RootUrl + "api/v3/");
-            RestClient.AddDefaultHeader("Authentication", ApiKey);
-            RestClient.AddDefaultHeader("X-Api-Key", ApiKey);
+            ApiV3 = new VersionedApiClient(RootUrl, "v3", ApiKey);
+            ApiV5 = new VersionedApiClient(RootUrl, "v5", ApiKey);
+            RestClient = ApiV3.AuthenticatedRestClient;
 
             Blocklist = new ClientBase<BlocklistResource>(RestClient, ApiKey);
             Commands = new CommandClient(RestClient, ApiKey);
