@@ -64,6 +64,8 @@ namespace NzbDrone.Integration.Test.Client
             apiV5.OpenApi.ApiPath("system/status").Should().Be("/api/v5/system/status");
             apiV5.OpenApi.ApiPath("/system/status").Should().Be("/api/v5/system/status");
             apiV5.OpenApi.ApiPath("/api/v5/system/status").Should().Be("/api/v5/system/status");
+            apiV5.OpenApi.ApiPath("feed/calendar/sonarr.ics").Should().Be("/feed/v5/calendar/sonarr.ics");
+            apiV5.OpenApi.ApiPath("/feed/v5/calendar/sonarr.ics").Should().Be("/feed/v5/calendar/sonarr.ics");
         }
 
         [Test]

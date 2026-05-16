@@ -72,9 +72,14 @@ namespace NzbDrone.Integration.Test.Client
             var normalizedResource = resource.TrimStart('/');
 
             if (normalizedResource.StartsWith("api/", StringComparison.Ordinal) ||
-                normalizedResource.StartsWith("feed/", StringComparison.Ordinal))
+                normalizedResource.StartsWith($"feed/{Version}/", StringComparison.Ordinal))
             {
                 return $"/{normalizedResource}";
+            }
+
+            if (normalizedResource.StartsWith("feed/", StringComparison.Ordinal))
+            {
+                return $"/feed/{Version}/{normalizedResource["feed/".Length..]}";
             }
 
             return $"/api/{Version}/{normalizedResource}";
