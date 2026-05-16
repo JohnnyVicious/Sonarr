@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -10,6 +11,7 @@ using NzbDrone.Integration.Test.Client;
 using RestSharp;
 using Sonarr.Api.V5;
 using Sonarr.Api.V5.SeasonPass;
+using JsonArray = System.Text.Json.Nodes.JsonArray;
 using V5SeasonResource = Sonarr.Api.V5.Series.SeasonResource;
 using V5SeriesEditorResource = Sonarr.Api.V5.Series.SeriesEditorResource;
 using V5SeriesResource = Sonarr.Api.V5.Series.SeriesResource;
@@ -40,6 +42,17 @@ namespace NzbDrone.Integration.Test.ApiTests
         public void should_reject_unauthenticated_v5_series_requests()
         {
             ApiV5.Get("series", HttpStatusCode.Unauthorized, authenticated: false);
+            ApiV5.Get("series/1", HttpStatusCode.Unauthorized, authenticated: false);
+            ApiV5.Get("series/1/folder", HttpStatusCode.Unauthorized, authenticated: false);
+            ApiV5.Get("series/lookup", HttpStatusCode.Unauthorized, authenticated: false);
+            ApiV5.Post("series", new V5SeriesResource(), HttpStatusCode.Unauthorized, authenticated: false);
+            ApiV5.Put("series/1", new V5SeriesResource { Id = 1 }, HttpStatusCode.Unauthorized, authenticated: false);
+            ApiV5.Delete("series/1", HttpStatusCode.Unauthorized, authenticated: false);
+            ApiV5.Put("series/1/season", new V5SeasonResource { SeasonNumber = 1 }, HttpStatusCode.Unauthorized, authenticated: false);
+            ApiV5.Put("series/editor", new V5SeriesEditorResource(), HttpStatusCode.Unauthorized, authenticated: false);
+            DeleteSeriesEditor(new V5SeriesEditorResource(), HttpStatusCode.Unauthorized, authenticated: false);
+            ApiV5.Post("series/import", new List<V5SeriesResource>(), HttpStatusCode.Unauthorized, authenticated: false);
+            ApiV5.Post("seasonpass", new SeasonPassResource(), HttpStatusCode.Unauthorized, authenticated: false);
         }
 
         [Test]
@@ -50,17 +63,21 @@ namespace NzbDrone.Integration.Test.ApiTests
             var missingProfile = NewSeriesPayload(266189);
             missingProfile.QualityProfileId = 0;
 
-            ApiV5.Post("series", missingProfile, HttpStatusCode.BadRequest)
-                .ShouldHaveValidationErrors();
+            ShouldHaveValidationErrorFor(
+                ApiV5.Post("series", missingProfile, HttpStatusCode.BadRequest),
+                "qualityProfileId");
 
             var missingPath = NewSeriesPayload(266189);
             missingPath.Path = null;
             missingPath.RootFolderPath = null;
 
-            ApiV5.Post("series", missingPath, HttpStatusCode.BadRequest)
-                .ShouldHaveValidationErrors();
+            ShouldHaveValidationErrorFor(
+                ApiV5.Post("series", missingPath, HttpStatusCode.BadRequest),
+                "path");
 
             ApiV5.Get("series/1000000", HttpStatusCode.NotFound);
+            ApiV5.Get("series/1000000/folder", HttpStatusCode.NotFound);
+            ApiV5.Put("series/1000000/season", new V5SeasonResource { SeasonNumber = 1 }, HttpStatusCode.NotFound);
         }
 
         [Test]
@@ -134,6 +151,9 @@ namespace NzbDrone.Integration.Test.ApiTests
                 var payload = NewSeriesPayload(79349);
                 var imported = PostSeriesImport(new List<V5SeriesResource> { payload }).Single();
 
+                Commands.WaitAll();
+                WaitForCompletion(() => Episodes.GetEpisodesInSeries(imported.Id).Count > 0);
+
                 imported.Id.Should().NotBe(0);
                 imported.TvdbId.Should().Be(79349);
                 GetSeries(imported.Id).TvdbId.Should().Be(79349);
@@ -170,7 +190,11 @@ namespace NzbDrone.Integration.Test.ApiTests
                 edited.Should().OnlyContain(series => series.Monitored == false);
                 edited.Should().OnlyContain(series => series.Tags!.SetEquals(new[] { tag.Id }));
 
-                var refreshed = GetSeries(blacklist.Id);
+                var persisted = new List<V5SeriesResource> { GetSeries(blacklist.Id), GetSeries(archer.Id) };
+                persisted.Should().OnlyContain(series => series.Monitored == false);
+                persisted.Should().OnlyContain(series => series.Tags!.SetEquals(new[] { tag.Id }));
+
+                var refreshed = persisted.Single(series => series.Id == blacklist.Id);
                 var season = refreshed.Seasons.First(s => s.SeasonNumber > 0);
                 season.Monitored = false;
 
@@ -287,20 +311,7 @@ namespace NzbDrone.Integration.Test.ApiTests
 
         private void DeleteSeries(int id)
         {
-            ApiV5.Delete($"series/{id}", HttpStatusCode.NoContent);
-        }
-
-        private void DeleteSeriesIfPresent(int id)
-        {
-            if (id == 0)
-            {
-                return;
-            }
-
-            if (ListSeries().Any(series => series.Id == id))
-            {
-                DeleteSeries(id);
-            }
+            ApiV5.Delete($"series/{id}?deleteFiles=true", HttpStatusCode.NoContent);
         }
 
         private void DeleteSeriesWithTvdbIfPresent(int tvdbId)
@@ -314,12 +325,12 @@ namespace NzbDrone.Integration.Test.ApiTests
             }
         }
 
-        private void DeleteSeriesEditor(V5SeriesEditorResource resource)
+        private void DeleteSeriesEditor(V5SeriesEditorResource resource, HttpStatusCode statusCode = HttpStatusCode.NoContent, bool authenticated = true)
         {
             var request = ApiV5.BuildRequest("series/editor", Method.DELETE);
             request.AddJsonBody(resource);
 
-            ApiV5.Execute(request, HttpStatusCode.NoContent);
+            ApiV5.Execute(request, statusCode, authenticated);
         }
 
         private static T Read<T>(IRestResponse response)
@@ -328,6 +339,18 @@ namespace NzbDrone.Integration.Test.ApiTests
             response.ShouldHaveJsonContent();
 
             return Json.Deserialize<T>(response.Content);
+        }
+
+        private static JsonArray ShouldHaveValidationErrorFor(IRestResponse response, string propertyName)
+        {
+            var errors = response.ShouldHaveValidationErrors();
+            var propertyNames = errors
+                .Select(error => error?["propertyName"]?.GetValue<string>())
+                .Where(name => name != null);
+
+            propertyNames.Should().Contain(name => string.Equals(name, propertyName, StringComparison.OrdinalIgnoreCase));
+
+            return errors;
         }
     }
 }
