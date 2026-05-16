@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
@@ -183,7 +184,7 @@ namespace NzbDrone.Integration.Test
 
             if (cleanupFailure != null)
             {
-                throw cleanupFailure;
+                ExceptionDispatchInfo.Capture(cleanupFailure).Throw();
             }
         }
 

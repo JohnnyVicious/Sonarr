@@ -40,7 +40,7 @@ namespace NzbDrone.Integration.Test.ApiTests
 
         public RootFolderResource RootFolder(string name = null)
         {
-            var path = _test.GetTempDirectory("RootFolders", name ?? NextName("root"));
+            var path = _test.GetTempDirectory("RootFolders", name == null ? NextName("root") : SafePathSegment(name, nameof(name)));
             var rootFolder = _test.RootFolders.Post(new RootFolderResource { Path = path });
 
             Track(() => DeleteRootFolderIfPresent(rootFolder.Id));
@@ -152,7 +152,7 @@ namespace NzbDrone.Integration.Test.ApiTests
                 throw new InvalidOperationException("UsenetBlackhole schema did not produce a watchFolder path.");
             }
 
-            File.WriteAllText(Path.Combine(watchFolder, fileName), "Test Download");
+            File.WriteAllText(Path.Combine(watchFolder, SafePathSegment(fileName, nameof(fileName))), "Test Download");
             RefreshMonitoredDownloads();
 
             IntegrationTestBase.WaitForCompletion(() => QueuePage(includeUnknownSeriesItems: true).TotalRecords > 0, 30000, 1000);
@@ -279,6 +279,20 @@ namespace NzbDrone.Integration.Test.ApiTests
         private void Track(Action cleanup)
         {
             _cleanup.Add(cleanup);
+        }
+
+        internal static string SafePathSegment(string value, string parameterName)
+        {
+            if (string.IsNullOrWhiteSpace(value) ||
+                Path.IsPathRooted(value) ||
+                value.Contains('/') ||
+                value.Contains('\\') ||
+                value.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0)
+            {
+                throw new ArgumentException("API test data paths must be single relative path segments.", parameterName);
+            }
+
+            return value;
         }
     }
 

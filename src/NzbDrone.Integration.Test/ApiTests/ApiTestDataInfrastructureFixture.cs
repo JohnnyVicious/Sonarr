@@ -1,3 +1,4 @@
+using System;
 using FluentAssertions;
 using NUnit.Framework;
 
@@ -21,6 +22,19 @@ namespace NzbDrone.Integration.Test.ApiTests
             var names = new ApiTestDataNames("!!!");
 
             names.Next("@@@").Should().Be("api-data-data-01");
+        }
+
+        [Test]
+        public void should_reject_unsafe_path_segments()
+        {
+            ApiTestData.SafePathSegment("Series.Title.S01E01.mkv", "fileName")
+                .Should().Be("Series.Title.S01E01.mkv");
+
+            var rooted = () => ApiTestData.SafePathSegment("/tmp/escape", "fileName");
+            var nested = () => ApiTestData.SafePathSegment("nested/path", "fileName");
+
+            rooted.Should().Throw<ArgumentException>();
+            nested.Should().Throw<ArgumentException>();
         }
     }
 }
