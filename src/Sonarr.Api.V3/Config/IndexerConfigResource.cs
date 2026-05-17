@@ -10,7 +10,7 @@ namespace Sonarr.Api.V3.Config
         public int Retention { get; set; }
         public int MaximumSize { get; set; }
         public int RssSyncInterval { get; set; }
-        public AnimeSeasonSearchFallback AnimeSeasonSearchFallback { get; set; }
+        public AnimeSeasonSearchFallback? AnimeSeasonSearchFallback { get; set; }
     }
 
     public static class IndexerConfigResourceMapper

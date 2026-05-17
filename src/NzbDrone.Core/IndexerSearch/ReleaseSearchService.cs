@@ -417,55 +417,83 @@ namespace NzbDrone.Core.IndexerSearch
                 .Select(epList => epList.First())
                 .ToList();
 
+            // Track per-season approved results so the fallback decision is
+            // scoped to each scene season, not global across all of them.
+            var seasonsWithApprovedResults = new HashSet<int>();
+
             foreach (var season in seasonsToSearch)
             {
                 searchSpec.SeasonNumber = season.SeasonNumber;
 
                 var decisions = await Dispatch(indexer => indexer.Fetch(searchSpec), searchSpec);
                 downloadDecisions.AddRange(decisions);
-            }
 
-            // Only skip per-episode fallback if we got approved season results.
-            // Indexers like AB return all results for a title regardless of season
-            // params, so raw result count alone is not reliable.
-            // For interactive search, always run per-episode so the user can see
-            // and pick individual releases regardless of whether a pack was found.
-            if (!interactiveSearch && downloadDecisions.Any(d => d.Approved))
-            {
-                _logger.Debug("Season search returned approved results for {0}, skipping per-episode search for {1} episodes", series.Title, episodesToSearch.Count);
-            }
-            else
-            {
-                var fallbackSetting = _configService.AnimeSeasonSearchFallback;
-                var allEpisodesAired = episodesToSearch.All(e => e.AirDateUtc.HasValue && e.AirDateUtc.Value.Before(DateTime.UtcNow));
-
-                var shouldFallback = interactiveSearch || (fallbackSetting switch
+                if (decisions.Any(d => d.Approved))
                 {
-                    AnimeSeasonSearchFallback.Never => false,
-                    AnimeSeasonSearchFallback.Always => true,
-                    AnimeSeasonSearchFallback.FullSeasonAired => allEpisodesAired,
-                    AnimeSeasonSearchFallback.FullSeasonNotAired => !allEpisodesAired,
-                    _ => !allEpisodesAired
-                });
+                    seasonsWithApprovedResults.Add(season.SeasonNumber);
+                }
+            }
+
+            // Compute aired state from the UNFILTERED episode list so the
+            // FullSeasonAired/FullSeasonNotAired modes work correctly.
+            // episodesToSearch is already filtered to aired-only, so checking
+            // it would always return true.
+            var allEpisodesAired = episodes.Any() &&
+                                   episodes.All(e => e.AirDateUtc.HasValue && e.AirDateUtc.Value.Before(DateTime.UtcNow));
+
+            var fallbackSetting = _configService.AnimeSeasonSearchFallback;
+
+            // Determine per-episode fallback per scene season, not globally.
+            var episodesNeedingFallback = new List<Episode>();
+
+            foreach (var seasonGroup in GetSceneSeasonMappings(series, episodesToSearch).GroupBy(ep => ep.SeasonNumber))
+            {
+                if (!interactiveSearch && seasonsWithApprovedResults.Contains(seasonGroup.Key))
+                {
+                    _logger.Debug("Season search returned approved results for {0} scene season {1}, skipping per-episode fallback",
+                        series.Title,
+                        seasonGroup.Key);
+                    continue;
+                }
+
+                var shouldFallback = interactiveSearch || ShouldFallbackToPerEpisode(fallbackSetting, allEpisodesAired);
 
                 if (shouldFallback)
                 {
-                    _logger.Debug("No approved season results for {0}, falling back to per-episode search for {1} episodes (fallback: {2}, allAired: {3})",
-                        series.Title, episodesToSearch.Count, fallbackSetting, allEpisodesAired);
+                    var seasonEpisodes = episodesToSearch
+                        .Where(ep => seasonGroup.Any(sg => sg.Episodes.Any(sge => sge.Id == ep.Id)))
+                        .ToList();
 
-                    foreach (var episode in episodesToSearch)
-                    {
-                        downloadDecisions.AddRange(await SearchAnime(series, episode, monitoredOnly, userInvokedSearch, interactiveSearch, true));
-                    }
+                    episodesNeedingFallback.AddRange(seasonEpisodes);
                 }
                 else
                 {
-                    _logger.Debug("No approved season results for {0}, per-episode fallback skipped (fallback: {1}, allAired: {2})",
-                        series.Title, fallbackSetting, allEpisodesAired);
+                    _logger.Debug("Per-episode fallback skipped for {0} scene season {1} (fallback: {2}, allAired: {3})",
+                        series.Title,
+                        seasonGroup.Key,
+                        fallbackSetting,
+                        allEpisodesAired);
                 }
             }
 
+            foreach (var episode in episodesNeedingFallback.Distinct())
+            {
+                downloadDecisions.AddRange(await SearchAnime(series, episode, monitoredOnly, userInvokedSearch, interactiveSearch, true));
+            }
+
             return DeDupeDecisions(downloadDecisions);
+        }
+
+        private static bool ShouldFallbackToPerEpisode(AnimeSeasonSearchFallback fallbackSetting, bool allEpisodesAired)
+        {
+            return fallbackSetting switch
+            {
+                AnimeSeasonSearchFallback.Never => false,
+                AnimeSeasonSearchFallback.Always => true,
+                AnimeSeasonSearchFallback.FullSeasonAired => allEpisodesAired,
+                AnimeSeasonSearchFallback.FullSeasonNotAired => !allEpisodesAired,
+                _ => true
+            };
         }
 
         private async Task<List<DownloadDecision>> SearchDailySeason(Series series, List<Episode> episodes, bool monitoredOnly, bool userInvokedSearch, bool interactiveSearch)
