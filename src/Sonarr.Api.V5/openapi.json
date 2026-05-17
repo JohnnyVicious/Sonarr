@@ -6509,6 +6509,15 @@
         },
         "additionalProperties": false
       },
+      "AnimeSeasonSearchFallback": {
+        "enum": [
+          "never",
+          "always",
+          "fullSeasonAired",
+          "fullSeasonNotAired"
+        ],
+        "type": "string"
+      },
       "ApplyTags": {
         "enum": [
           "add",
@@ -8448,6 +8457,9 @@
           "rssSyncInterval": {
             "type": "integer",
             "format": "int32"
+          },
+          "animeSeasonSearchFallback": {
+            "$ref": "#/components/schemas/AnimeSeasonSearchFallback"
           }
         },
         "additionalProperties": false

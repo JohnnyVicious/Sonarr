@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using NLog;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Common.Instrumentation.Extensions;
+using NzbDrone.Core.Configuration;
 using NzbDrone.Core.DataAugmentation.Scene;
 using NzbDrone.Core.DecisionEngine;
 using NzbDrone.Core.Exceptions;
@@ -32,6 +33,7 @@ namespace NzbDrone.Core.IndexerSearch
         private readonly ISeriesService _seriesService;
         private readonly IEpisodeService _episodeService;
         private readonly IMakeDownloadDecision _makeDownloadDecision;
+        private readonly IConfigService _configService;
         private readonly Logger _logger;
 
         public ReleaseSearchService(IIndexerFactory indexerFactory,
@@ -39,6 +41,7 @@ namespace NzbDrone.Core.IndexerSearch
                                 ISeriesService seriesService,
                                 IEpisodeService episodeService,
                                 IMakeDownloadDecision makeDownloadDecision,
+                                IConfigService configService,
                                 Logger logger)
         {
             _indexerFactory = indexerFactory;
@@ -46,6 +49,7 @@ namespace NzbDrone.Core.IndexerSearch
             _seriesService = seriesService;
             _episodeService = episodeService;
             _makeDownloadDecision = makeDownloadDecision;
+            _configService = configService;
             _logger = logger;
         }
 
@@ -399,8 +403,6 @@ namespace NzbDrone.Core.IndexerSearch
         {
             var downloadDecisions = new List<DownloadDecision>();
 
-            var searchSpec = Get<AnimeSeasonSearchCriteria>(series, episodes, monitoredOnly, userInvokedSearch, interactiveSearch);
-
             // Episode needs to be monitored if it's not an interactive search
             // and Ensure episode has an airdate and has already aired
             var episodesToSearch = episodes
@@ -408,25 +410,113 @@ namespace NzbDrone.Core.IndexerSearch
                 .Where(ep => ep.AirDateUtc.HasValue && ep.AirDateUtc.Value.Before(DateTime.UtcNow))
                 .ToList();
 
-            var seasonsToSearch = GetSceneSeasonMappings(series, episodesToSearch)
-                .GroupBy(ep => ep.SeasonNumber)
-                .Select(epList => epList.First())
+            var sceneSeasonMappings = GetSceneSeasonMappings(series, episodesToSearch)
+                .GroupBy(mapping => mapping.SeasonNumber)
                 .ToList();
 
-            foreach (var season in seasonsToSearch)
+            // Compute aired state from the UNFILTERED episode list so the
+            // FullSeasonAired/FullSeasonNotAired modes work correctly.
+            // episodesToSearch is already filtered to aired-only, so checking
+            // it would always return true.
+            var allEpisodesAired = episodes.Any() &&
+                                   episodes.All(e => e.AirDateUtc.HasValue && e.AirDateUtc.Value.Before(DateTime.UtcNow));
+
+            var fallbackSetting = _configService.AnimeSeasonSearchFallback;
+
+            // Determine per-episode fallback per scene season, not globally.
+            var episodesNeedingFallback = new List<Episode>();
+
+            foreach (var seasonGroup in sceneSeasonMappings)
             {
-                searchSpec.SeasonNumber = season.SeasonNumber;
+                var seasonEpisodes = seasonGroup
+                    .SelectMany(mapping => mapping.Episodes)
+                    .Distinct()
+                    .ToList();
+
+                var searchSpec = Get<AnimeSeasonSearchCriteria>(
+                    series,
+                    seasonGroup.First(),
+                    monitoredOnly,
+                    userInvokedSearch,
+                    interactiveSearch);
+                searchSpec.SeasonNumber = seasonGroup.Key;
 
                 var decisions = await Dispatch(indexer => indexer.Fetch(searchSpec), searchSpec);
                 downloadDecisions.AddRange(decisions);
+
+                if (!interactiveSearch && ApprovedDecisionsCoverEpisodes(decisions, seasonEpisodes))
+                {
+                    _logger.Debug("Season search returned approved results covering {0} scene season {1}, skipping per-episode fallback",
+                        series.Title,
+                        seasonGroup.Key);
+                    continue;
+                }
+
+                var shouldFallback = interactiveSearch || ShouldFallbackToPerEpisode(fallbackSetting, allEpisodesAired);
+
+                if (shouldFallback)
+                {
+                    episodesNeedingFallback.AddRange(seasonEpisodes);
+                }
+                else
+                {
+                    _logger.Debug("Per-episode fallback skipped for {0} scene season {1} (fallback: {2}, allAired: {3})",
+                        series.Title,
+                        seasonGroup.Key,
+                        fallbackSetting,
+                        allEpisodesAired);
+                }
             }
 
-            foreach (var episode in episodesToSearch)
+            foreach (var episode in episodesNeedingFallback.Distinct())
             {
-                downloadDecisions.AddRange(await SearchAnime(series, episode, monitoredOnly, userInvokedSearch, interactiveSearch, true));
+                downloadDecisions.AddRange(await SearchAnime(
+                    series,
+                    episode,
+                    monitoredOnly,
+                    userInvokedSearch,
+                    interactiveSearch,
+                    true));
             }
 
             return DeDupeDecisions(downloadDecisions);
+        }
+
+        private static bool ShouldFallbackToPerEpisode(AnimeSeasonSearchFallback fallbackSetting, bool allEpisodesAired)
+        {
+            return fallbackSetting switch
+            {
+                AnimeSeasonSearchFallback.Never => false,
+                AnimeSeasonSearchFallback.Always => true,
+                AnimeSeasonSearchFallback.FullSeasonAired => allEpisodesAired,
+                AnimeSeasonSearchFallback.FullSeasonNotAired => !allEpisodesAired,
+                _ => true
+            };
+        }
+
+        private static bool ApprovedDecisionsCoverEpisodes(List<DownloadDecision> decisions, List<Episode> episodes)
+        {
+            if (episodes.Count == 0)
+            {
+                return false;
+            }
+
+            var approvedEpisodes = decisions
+                .Where(decision => decision.Approved)
+                .SelectMany(decision => decision.RemoteEpisode?.Episodes ?? Enumerable.Empty<Episode>())
+                .ToList();
+
+            return episodes.All(episode => approvedEpisodes.Any(approvedEpisode => IsSameEpisode(approvedEpisode, episode)));
+        }
+
+        private static bool IsSameEpisode(Episode first, Episode second)
+        {
+            if (first.Id > 0 && second.Id > 0)
+            {
+                return first.Id == second.Id;
+            }
+
+            return ReferenceEquals(first, second);
         }
 
         private async Task<List<DownloadDecision>> SearchDailySeason(Series series, List<Episode> episodes, bool monitoredOnly, bool userInvokedSearch, bool interactiveSearch)

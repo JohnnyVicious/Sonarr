@@ -38,6 +38,7 @@ namespace Sonarr.Api.V3.Config
         {
             var dictionary = resource.GetType()
                 .GetProperties(BindingFlags.Instance | BindingFlags.Public)
+                .Where(prop => prop.GetValue(resource, null) != null)
                 .ToDictionary(prop => prop.Name, prop => prop.GetValue(resource, null));
 
             _configService.SaveConfigDictionary(dictionary);
