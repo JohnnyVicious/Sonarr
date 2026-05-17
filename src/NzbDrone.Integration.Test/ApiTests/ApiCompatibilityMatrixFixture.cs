@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Linq;
 using System.Net;
 using FluentAssertions;
@@ -67,7 +68,9 @@ namespace NzbDrone.Integration.Test.ApiTests
             var rootFolder = TestData.RootFolder();
             var tag = TestData.Tag();
             var series = TestData.Series(266189, "The Blacklist", true, tag);
-            var episode = TestData.Episodes(series).First(item => item.SeasonNumber > 0);
+            var episode = TestData.Episodes(series).First(item => item.SeasonNumber > 0 && item.AirDateUtc.HasValue);
+            var calendarStart = episode.AirDateUtc!.Value.AddDays(-1).ToString("s", CultureInfo.InvariantCulture) + "Z";
+            var calendarEnd = episode.AirDateUtc.Value.AddDays(1).ToString("s", CultureInfo.InvariantCulture) + "Z";
 
             var v3Status = ReadObject(ApiV3.Get("system/status"));
             var v5Status = ReadObject(ApiV5.Get("system/status"));
@@ -107,10 +110,10 @@ namespace NzbDrone.Integration.Test.ApiTests
             ReadObject(ApiV3.Get("queue/status"))["totalCount"].Should().NotBeNull();
             ReadObject(ApiV5.Get("queue/status"))["totalCount"].Should().NotBeNull();
 
-            var v3Calendar = ReadArray(ApiV3.Get("calendar?start=2015-10-01T00:00:00Z&end=2015-10-03T00:00:00Z"));
-            var v5Calendar = ReadArray(ApiV5.Get("calendar?start=2015-10-01T00:00:00Z&end=2015-10-03T00:00:00Z"));
-            FindByInt(v3Calendar, "seriesId", series.Id)["title"]!.GetValue<string>().Should().Be("The Troll Farmer");
-            FindByInt(v5Calendar, "seriesId", series.Id)["title"]!.GetValue<string>().Should().Be("The Troll Farmer");
+            var v3Calendar = ReadArray(ApiV3.Get($"calendar?start={calendarStart}&end={calendarEnd}"));
+            var v5Calendar = ReadArray(ApiV5.Get($"calendar?start={calendarStart}&end={calendarEnd}"));
+            FindByInt(v3Calendar, "seriesId", series.Id)["title"]!.GetValue<string>().Should().Be(episode.Title);
+            FindByInt(v5Calendar, "seriesId", series.Id)["title"]!.GetValue<string>().Should().Be(episode.Title);
 
             AssertCalendarFeed(ApiV3);
             AssertCalendarFeed(ApiV5);
@@ -148,6 +151,7 @@ namespace NzbDrone.Integration.Test.ApiTests
         {
             var feed = api.Get("feed/calendar/sonarr.ics?pastDays=0&futureDays=0");
 
+            feed.StatusCode.Should().Be(HttpStatusCode.OK);
             feed.ContentType.Should().StartWith("text/calendar");
             feed.Content.Should().Contain("VCALENDAR");
         }
