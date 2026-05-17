@@ -9,8 +9,6 @@ import CustomFormat from 'typings/CustomFormat';
 import CustomFormatSpecification from 'typings/CustomFormatSpecification';
 import DelayProfile from 'typings/DelayProfile';
 import DownloadClient from 'typings/DownloadClient';
-import ImportList from 'typings/ImportList';
-import ImportListOptionsSettings from 'typings/ImportListOptionsSettings';
 import DownloadClientOptions from 'typings/Settings/DownloadClientOptions';
 
 type Presets<T> = T & {
@@ -34,14 +32,6 @@ export interface DownloadClientOptionsAppState
   extends AppSectionItemState<DownloadClientOptions>,
     AppSectionSaveState {}
 
-export interface ImportListAppState
-  extends AppSectionState<ImportList>,
-    AppSectionDeleteState,
-    AppSectionSaveState,
-    AppSectionSchemaState<Presets<ImportList>> {
-  isTestingAll: boolean;
-}
-
 export interface CustomFormatAppState
   extends AppSectionState<CustomFormat>,
     AppSectionDeleteState,
@@ -53,18 +43,12 @@ export interface CustomFormatSpecificationAppState
     AppSectionSaveState,
     AppSectionSchemaState<Presets<CustomFormatSpecification>> {}
 
-export interface ImportListOptionsSettingsAppState
-  extends AppSectionItemState<ImportListOptionsSettings>,
-    AppSectionSaveState {}
-
 interface SettingsAppState {
   customFormats: CustomFormatAppState;
   customFormatSpecifications: CustomFormatSpecificationAppState;
   delayProfiles: DelayProfileAppState;
   downloadClients: DownloadClientAppState;
   downloadClientOptions: DownloadClientOptionsAppState;
-  importListOptions: ImportListOptionsSettingsAppState;
-  importLists: ImportListAppState;
 }
 
 export default SettingsAppState;

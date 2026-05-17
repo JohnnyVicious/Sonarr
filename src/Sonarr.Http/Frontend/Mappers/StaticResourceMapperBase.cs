@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
@@ -12,6 +13,9 @@ using NzbDrone.Common.EnvironmentInfo;
 
 namespace Sonarr.Http.Frontend.Mappers
 {
+    // S3994: "resourceUrl" parameters are URL path segments (e.g. /content/main.js),
+    // not full URIs. System.Uri would reject bare paths and add overhead with no benefit.
+    [SuppressMessage("SonarAnalyzer", "S3994", Justification = "Parameters are URL path segments, not full URIs")]
     public abstract class StaticResourceMapperBase : IMapHttpRequestsToDisk
     {
         private readonly IDiskProvider _diskProvider;
@@ -29,28 +33,18 @@ namespace Sonarr.Http.Frontend.Mappers
         }
 
         protected abstract string FolderPath { get; }
-        protected abstract string MapPath(string resourcePath);
+        protected abstract string MapPath(string resourceUrl);
 
-        public abstract bool CanHandle(string resourcePath);
+        public abstract bool CanHandle(string resourceUrl);
 
-        public string Map(string resourcePath)
+        public string Map(string resourceUrl)
         {
-            if (resourcePath == null)
-            {
-                return null;
-            }
-
-            return GetMappedPathInsideFolder(MapPath(resourcePath));
+            return GetMappedPathInsideFolder(MapPath(resourceUrl));
         }
 
-        public Task<IActionResult> GetResponse(HttpContext context, string resourcePath)
+        public Task<IActionResult> GetResponse(HttpContext context, string resourceUrl)
         {
-            if (resourcePath == null)
-            {
-                return Task.FromResult<IActionResult>(null);
-            }
-
-            var filePath = Map(resourcePath);
+            var filePath = Map(resourceUrl);
 
             if (filePath == null)
             {
@@ -82,21 +76,11 @@ namespace Sonarr.Http.Frontend.Mappers
 
         protected bool IsPathInsideFolder(string filePath)
         {
-            if (filePath == null)
-            {
-                return false;
-            }
-
             return GetMappedPathInsideFolder(filePath) != null;
         }
 
         private string GetMappedPathInsideFolder(string filePath)
         {
-            if (filePath == null)
-            {
-                return null;
-            }
-
             if (string.IsNullOrWhiteSpace(filePath))
             {
                 return null;
@@ -124,7 +108,6 @@ namespace Sonarr.Http.Frontend.Mappers
         private static bool IsPathResolutionException(Exception ex)
         {
             return ex is ArgumentException ||
-                   ex is ArgumentNullException ||
                    ex is NotSupportedException ||
                    ex is PathTooLongException ||
                    ex is IOException ||
@@ -133,11 +116,6 @@ namespace Sonarr.Http.Frontend.Mappers
 
         private static string EnsureTrailingDirectorySeparator(string path)
         {
-            if (path == null)
-            {
-                throw new ArgumentNullException(nameof(path));
-            }
-
             if (path.EndsWith(Path.DirectorySeparatorChar) || path.EndsWith(Path.AltDirectorySeparatorChar))
             {
                 return path;

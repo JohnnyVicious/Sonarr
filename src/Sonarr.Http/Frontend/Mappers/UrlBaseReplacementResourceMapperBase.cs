@@ -21,9 +21,7 @@ namespace Sonarr.Http.Frontend.Mappers
             _urlBase = configFileProvider.UrlBase;
         }
 
-        protected string FilePath;
-
-        protected override string FolderPath => Path.GetDirectoryName(FilePath);
+        protected abstract string FilePath { get; }
 
         protected override string MapPath(string resourceUrl)
         {
