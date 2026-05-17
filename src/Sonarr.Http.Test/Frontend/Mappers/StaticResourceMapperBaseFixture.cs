@@ -78,9 +78,9 @@ namespace Sonarr.Http.Test.Frontend.Mappers
 
             protected override string FolderPath => _folderPath;
 
-            protected override string MapPath(string _) => MapPathResult;
+            protected override string MapPath(string resourceUrl) => MapPathResult;
 
-            public override bool CanHandle(string _) => true;
+            public override bool CanHandle(string resourceUrl) => true;
         }
     }
 }

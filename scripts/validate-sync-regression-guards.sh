@@ -49,8 +49,8 @@ grep -qF '[SuppressMessage("SonarAnalyzer", "S3994"' src/Sonarr.Http/Frontend/Ma
 grep -qF "private sealed class TestMapper" src/Sonarr.Http.Test/Frontend/Mappers/StaticResourceMapperBaseFixture.cs ||
   fail "StaticResourceMapperBaseFixture test mock must remain sealed"
 
-grep -qF "protected override string MapPath(string _) => MapPathResult;" src/Sonarr.Http.Test/Frontend/Mappers/StaticResourceMapperBaseFixture.cs ||
-  fail "StaticResourceMapperBaseFixture MapPath test override must discard its unused parameter"
+grep -qF "protected override string MapPath(string resourceUrl) => MapPathResult;" src/Sonarr.Http.Test/Frontend/Mappers/StaticResourceMapperBaseFixture.cs ||
+  fail "StaticResourceMapperBaseFixture MapPath test override must keep a StyleCop-compliant parameter name"
 
-grep -qF "public override bool CanHandle(string _) => true;" src/Sonarr.Http.Test/Frontend/Mappers/StaticResourceMapperBaseFixture.cs ||
-  fail "StaticResourceMapperBaseFixture CanHandle test override must discard its unused parameter"
+grep -qF "public override bool CanHandle(string resourceUrl) => true;" src/Sonarr.Http.Test/Frontend/Mappers/StaticResourceMapperBaseFixture.cs ||
+  fail "StaticResourceMapperBaseFixture CanHandle test override must keep a StyleCop-compliant parameter name"
