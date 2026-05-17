@@ -1,0 +1,8 @@
+#!/usr/bin/with-contenv sh
+
+mkdir -p /config /run/sonarr-temp
+
+if [ -z "${LSIO_NON_ROOT_USER}" ]; then
+    lsiown abc:abc /config
+    lsiown abc:abc /run/sonarr-temp
+fi
