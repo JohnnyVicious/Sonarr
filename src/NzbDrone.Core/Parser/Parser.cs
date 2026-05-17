@@ -1042,9 +1042,10 @@ namespace NzbDrone.Core.Parser
                     }
                 }
 
+                var seasonCaptures = matchCollection[0].Groups["season"].Captures.Cast<Capture>().ToList();
                 var seasons = new List<int>();
 
-                foreach (Capture seasonCapture in matchCollection[0].Groups["season"].Captures)
+                foreach (var seasonCapture in seasonCaptures)
                 {
                     if (int.TryParse(seasonCapture.Value, out var parsedSeason))
                     {
@@ -1061,7 +1062,7 @@ namespace NzbDrone.Core.Parser
 
                     var distinctSeasons = seasons.Distinct().OrderBy(s => s).ToArray();
 
-                    if (distinctSeasons.Length == 2)
+                    if (distinctSeasons.Length == 2 && IsSeasonRange(matchCollection[0], seasonCaptures))
                     {
                         // Range format (e.g., S01-S09) where regex captures only endpoints, expand to full range
                         result.SeasonNumbers = Enumerable.Range(distinctSeasons[0], distinctSeasons[1] - distinctSeasons[0] + 1).ToArray();
@@ -1222,6 +1223,28 @@ namespace NzbDrone.Core.Parser
             }
 
             return true;
+        }
+
+        private static bool IsSeasonRange(Match match, List<Capture> seasonCaptures)
+        {
+            if (seasonCaptures.Count < 2)
+            {
+                return false;
+            }
+
+            if (match.Value.Contains("Complete Series", StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+
+            var first = seasonCaptures[0];
+            var second = seasonCaptures[1];
+            var separatorStart = first.Index + first.Length - match.Index;
+            var separatorLength = second.Index - first.Index - first.Length;
+
+            return separatorStart >= 0 &&
+                   separatorLength > 0 &&
+                   match.Value.Substring(separatorStart, separatorLength).Contains('-');
         }
 
         private static string GetSubGroup(MatchCollection matchCollection)

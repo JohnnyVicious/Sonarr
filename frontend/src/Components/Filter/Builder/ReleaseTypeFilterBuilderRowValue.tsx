@@ -29,6 +29,12 @@ const releaseTypeList = [
       return translate('SeasonPack');
     },
   },
+  {
+    id: 'multiSeasonPack',
+    get name() {
+      return translate('MultiSeason');
+    },
+  },
 ];
 
 type ReleaseTypeFilterBuilderRowValueProps<T> = Omit<

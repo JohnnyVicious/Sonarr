@@ -670,5 +670,58 @@ namespace NzbDrone.Core.Test.ParserTests.ParsingServiceTests
             Mocker.GetMock<IEpisodeService>()
                 .Verify(v => v.GetEpisodesBySeason(_series.Id, 7), Times.Once);
         }
+
+        [Test]
+        public void should_lookup_multi_season_by_scene_season_before_mapped_season_fallback()
+        {
+            const int tvdbSeasonNumber = 5;
+
+            GivenSceneNumberingSeries();
+            GivenMultiSeason(new[] { 1, 2 });
+
+            Mocker.GetMock<ISceneMappingService>()
+                .Setup(v => v.FindSceneMapping(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int>()))
+                .Returns<string, string, int>((s, r, sn) => new SceneMapping { SceneSeasonNumber = 1, SeasonNumber = tvdbSeasonNumber });
+
+            Mocker.GetMock<IEpisodeService>()
+                .Setup(s => s.GetEpisodesBySceneSeason(_series.Id, It.IsAny<int>()))
+                .Returns(_episodes);
+
+            Subject.GetEpisodes(_parsedEpisodeInfo, _series, true, null);
+
+            Mocker.GetMock<IEpisodeService>()
+                .Verify(v => v.GetEpisodesBySceneSeason(_series.Id, 1), Times.Once);
+
+            Mocker.GetMock<IEpisodeService>()
+                .Verify(v => v.GetEpisodesBySceneSeason(_series.Id, 2), Times.Once);
+
+            Mocker.GetMock<IEpisodeService>()
+                .Verify(v => v.GetEpisodesBySceneSeason(_series.Id, 5), Times.Never);
+
+            Mocker.GetMock<IEpisodeService>()
+                .Verify(v => v.GetEpisodesBySceneSeason(_series.Id, 6), Times.Never);
+
+            Mocker.GetMock<IEpisodeService>()
+                .Verify(v => v.GetEpisodesBySeason(It.IsAny<int>(), It.IsAny<int>()), Times.Never);
+        }
+
+        [Test]
+        public void should_dedupe_multi_season_episode_results()
+        {
+            var episode = Builder<Episode>.CreateNew()
+                .With(e => e.Id, 42)
+                .Build();
+
+            GivenMultiSeason(new[] { 1, 2 });
+
+            Mocker.GetMock<IEpisodeService>()
+                .Setup(s => s.GetEpisodesBySeason(_series.Id, It.IsAny<int>()))
+                .Returns(new List<Episode> { episode });
+
+            var result = Subject.GetEpisodes(_parsedEpisodeInfo, _series, false, null);
+
+            result.Should().ContainSingle()
+                .Which.Id.Should().Be(42);
+        }
     }
 }

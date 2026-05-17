@@ -106,8 +106,6 @@ namespace NzbDrone.Core.Test.ParserTests
         [TestCase("Series Title Season 01-07 BluRay 1080p x264 REPACK -SacReD", "Series Title", 1, 7)]
         [TestCase("Series Title Season 01 - Season 07 BluRay 1080p x264 REPACK -SacReD", "Series Title", 1, 7)]
         [TestCase("Series Title Complete Series S01 S04 (1080p BluRay x265 HEVC 10bit AAC 5.1 Vyndros)", "Series Title", 1, 4)]
-        [TestCase("Series Title S01 S04 (1080p BluRay x265 HEVC 10bit AAC 5.1 Vyndros)", "Series Title", 1, 4)]
-        [TestCase("Series Title S01 04 (1080p BluRay x265 HEVC 10bit AAC 5.1 Vyndros)", "Series Title", 1, 4)]
         public void should_parse_multi_season_release(string postTitle, string title, int firstSeason, int lastSeason)
         {
             var result = Parser.Parser.ParseTitle(postTitle);
@@ -119,6 +117,21 @@ namespace NzbDrone.Core.Test.ParserTests
             result.IsPartialSeason.Should().BeFalse();
             result.IsMultiSeason.Should().BeTrue();
             result.SeasonNumbers.Should().BeEquivalentTo(Enumerable.Range(firstSeason, lastSeason - firstSeason + 1));
+        }
+
+        [TestCase("Series Title S01 S04 (1080p BluRay x265 HEVC 10bit AAC 5.1 Vyndros)", "Series Title", 1, 4)]
+        [TestCase("Series Title S01 04 (1080p BluRay x265 HEVC 10bit AAC 5.1 Vyndros)", "Series Title", 1, 4)]
+        public void should_parse_discrete_multi_season_release(string postTitle, string title, int firstSeason, int secondSeason)
+        {
+            var result = Parser.Parser.ParseTitle(postTitle);
+            result.SeasonNumber.Should().Be(firstSeason);
+            result.SeriesTitle.Should().Be(title);
+            result.EpisodeNumbers.Should().BeEmpty();
+            result.AbsoluteEpisodeNumbers.Should().BeEmpty();
+            result.FullSeason.Should().BeTrue();
+            result.IsPartialSeason.Should().BeFalse();
+            result.IsMultiSeason.Should().BeTrue();
+            result.SeasonNumbers.Should().BeEquivalentTo(new[] { firstSeason, secondSeason });
         }
 
         [Test]
