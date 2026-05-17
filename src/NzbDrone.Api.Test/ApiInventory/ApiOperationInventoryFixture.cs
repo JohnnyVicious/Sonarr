@@ -28,7 +28,7 @@ public class ApiOperationInventoryFixture
         "trace"
     };
 
-    private static readonly Regex VersionedPathRegex = new("^/(?:api|feed)/(?<version>v[^/]*)(?:/|$)", RegexOptions.Compiled);
+    private static readonly Regex VersionedPathRegex = new("^/(?<root>api|feed)/(?<version>v[^/]*)(?<suffix>/|$)", RegexOptions.Compiled);
 
     [Test]
     public void openapi_specs_should_only_expose_known_api_versions()
@@ -114,6 +114,51 @@ public class ApiOperationInventoryFixture
         staleClassifications.Should().BeEmpty("removed OpenAPI operations should be removed from the classification file");
     }
 
+    [Test]
+    public void common_v3_v5_operations_should_have_explicit_compatibility_classifications()
+    {
+        var currentOperations = LoadCurrentApiOperations();
+        var classificationManifest = LoadClassificationManifest();
+        var classifiedByOperation = classificationManifest.Operations.ToDictionary(operation => operation.Operation);
+        var operationsByVersion = currentOperations
+            .GroupBy(operation => operation.Version)
+            .ToDictionary(
+                group => group.Key,
+                group => group.ToDictionary(operation => new NormalizedOperation(operation.Method, NormalizeVersionedPath(operation.Path))));
+
+        operationsByVersion.Keys.Should().Contain(KnownApiVersions, "the compatibility matrix requires both current API versions");
+
+        var commonOperations = operationsByVersion["v3"].Keys
+            .Intersect(operationsByVersion["v5"].Keys)
+            .OrderBy(operation => operation.ToString(), StringComparer.Ordinal)
+            .ToList();
+
+        commonOperations.Should().HaveCount(148, "the current shared v3/v5 OpenAPI surface should not drift silently");
+
+        var missingClassifications = commonOperations
+            .SelectMany(operation => KnownApiVersions.Select(version => operationsByVersion[version][operation]))
+            .Where(operation => !classifiedByOperation.ContainsKey(operation))
+            .Select(operation => operation.ToString())
+            .OrderBy(operation => operation, StringComparer.Ordinal)
+            .ToList();
+
+        missingClassifications.Should().BeEmpty("every shared operation needs a classification before it can be compatibility-gated");
+
+        var invalidCompatibilityPairs = commonOperations
+            .Select(operation => new
+            {
+                Operation = operation,
+                V3Classification = classifiedByOperation[operationsByVersion["v3"][operation]].Classification,
+                V5Classification = classifiedByOperation[operationsByVersion["v5"][operation]].Classification
+            })
+            .Where(pair => !IsAllowedCommonClassificationPair(pair.V3Classification, pair.V5Classification))
+            .Select(pair => $"{pair.Operation}: v3={pair.V3Classification}, v5={pair.V5Classification}")
+            .OrderBy(operation => operation, StringComparer.Ordinal)
+            .ToList();
+
+        invalidCompatibilityPairs.Should().BeEmpty("shared routes should either be v3 compatibility plus v5 primary, or carry the same explicit mock/destructive/exclusion classification");
+    }
+
     private static IEnumerable<int> GetControllerRouteVersions(Assembly assembly)
     {
         return assembly
@@ -167,6 +212,20 @@ public class ApiOperationInventoryFixture
         return new ClassificationManifest(allowedClassifications, classifiedOperations);
     }
 
+    private static bool IsAllowedCommonClassificationPair(string v3Classification, string v5Classification)
+    {
+        if (StringComparer.Ordinal.Equals(v3Classification, "v3-compat") &&
+            StringComparer.Ordinal.Equals(v5Classification, "v5-primary"))
+        {
+            return true;
+        }
+
+        return StringComparer.Ordinal.Equals(v3Classification, v5Classification) &&
+               (StringComparer.Ordinal.Equals(v3Classification, "destructive-smoke-only") ||
+                StringComparer.Ordinal.Equals(v3Classification, "external-provider-mocked") ||
+                StringComparer.Ordinal.Equals(v3Classification, "manual/excluded-with-rationale"));
+    }
+
     private static IEnumerable<OpenApiDocument> LoadOpenApiDocuments()
     {
         return Directory.EnumerateFiles(InventoryDirectory(), "openapi.*.json")
@@ -218,6 +277,14 @@ public class ApiOperationInventoryFixture
         return value;
     }
 
+    private static string NormalizeVersionedPath(string path)
+    {
+        return VersionedPathRegex.Replace(
+            path,
+            match => $"/{match.Groups["root"].Value}/{{version}}{match.Groups["suffix"].Value}",
+            1);
+    }
+
     private static string InventoryPath(string fileName)
     {
         return Path.Combine(InventoryDirectory(), fileName);
@@ -233,6 +300,14 @@ public class ApiOperationInventoryFixture
     private sealed record ClassificationManifest(HashSet<string> AllowedClassifications, List<ClassifiedOperation> Operations);
 
     private sealed record ClassifiedOperation(ApiOperation Operation, string Version, string Classification);
+
+    private sealed record NormalizedOperation(string Method, string Path)
+    {
+        public override string ToString()
+        {
+            return $"{Method} {Path}";
+        }
+    }
 
     private sealed record ApiOperation
     {
