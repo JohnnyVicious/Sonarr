@@ -670,5 +670,106 @@ namespace NzbDrone.Core.Test.IndexerSearchTests
             allCriteria.Last().As<SingleEpisodeSearchCriteria>().SeasonNumber.Should().Be(2);
             allCriteria.Last().As<SingleEpisodeSearchCriteria>().EpisodeNumber.Should().Be(3);
         }
+
+        private void WithApprovedSeasonDecisions()
+        {
+            Mocker.GetMock<IMakeDownloadDecision>()
+                .Setup(s => s.GetSearchDecision(It.IsAny<List<Parser.Model.ReleaseInfo>>(), It.IsAny<AnimeSeasonSearchCriteria>()))
+                .Returns(new List<DownloadDecision>
+                {
+                    new DownloadDecision(new Parser.Model.RemoteEpisode(), new DownloadDecision.Rejection[0])
+                });
+        }
+
+        private void WithUnairedEpisode(int seasonNumber, int episodeNumber, int? sceneSeasonNumber, int? sceneEpisodeNumber)
+        {
+            WithEpisode(seasonNumber, episodeNumber, sceneSeasonNumber, sceneEpisodeNumber, DateTime.UtcNow.AddDays(30).ToString("yyyy-MM-dd"));
+        }
+
+        [Test]
+        public async Task anime_season_search_allEpisodesAired_should_be_false_when_unaired_episodes_exist()
+        {
+            _xemSeries.SeriesType = SeriesTypes.Anime;
+
+            WithEpisode(1, 1, 1, 1);
+            WithUnairedEpisode(1, 2, 1, 2);
+
+            Mocker.GetMock<IConfigService>()
+                  .SetupGet(s => s.AnimeSeasonSearchFallback)
+                  .Returns(AnimeSeasonSearchFallback.FullSeasonNotAired);
+
+            var allCriteria = WatchForSearchCriteria();
+
+            await Subject.SeasonSearch(_xemSeries.Id, 1, false, true, false, false);
+
+            // FullSeasonNotAired + unaired episodes = should run per-episode fallback
+            allCriteria.OfType<AnimeEpisodeSearchCriteria>().Should().NotBeEmpty(
+                "per-episode fallback must run when FullSeasonNotAired and season has unaired episodes");
+        }
+
+        [Test]
+        public async Task anime_season_search_should_skip_fallback_only_for_scene_seasons_with_approved_results()
+        {
+            _xemSeries.SeriesType = SeriesTypes.Anime;
+
+            // Scene season 3 has episodes
+            WithEpisode(2, 1, 3, 11);
+            WithEpisode(2, 2, 3, 12);
+            // Scene season 4 has episodes
+            WithEpisode(2, 3, 4, 11);
+            WithEpisode(2, 4, 4, 12);
+
+            WithApprovedSeasonDecisions();
+
+            var allCriteria = WatchForSearchCriteria();
+
+            await Subject.SeasonSearch(_xemSeries.Id, 2, false, true, false, false);
+
+            // Both scene seasons get season search
+            allCriteria.OfType<AnimeSeasonSearchCriteria>().Should().HaveCountGreaterOrEqualTo(1);
+        }
+
+        [Test]
+        public async Task anime_season_search_should_not_fallback_when_setting_is_never()
+        {
+            _xemSeries.SeriesType = SeriesTypes.Anime;
+
+            WithEpisode(1, 1, 1, 1);
+            WithEpisode(1, 2, 1, 2);
+
+            Mocker.GetMock<IConfigService>()
+                  .SetupGet(s => s.AnimeSeasonSearchFallback)
+                  .Returns(AnimeSeasonSearchFallback.Never);
+
+            var allCriteria = WatchForSearchCriteria();
+
+            await Subject.SeasonSearch(_xemSeries.Id, 1, false, true, false, false);
+
+            allCriteria.OfType<AnimeSeasonSearchCriteria>().Should().NotBeEmpty("season search should run");
+            allCriteria.OfType<AnimeEpisodeSearchCriteria>().Should().BeEmpty(
+                "per-episode fallback must not run when setting is Never");
+        }
+
+        [Test]
+        public async Task anime_season_search_should_always_fallback_for_interactive_search()
+        {
+            _xemSeries.SeriesType = SeriesTypes.Anime;
+
+            WithEpisode(1, 1, 1, 1);
+            WithEpisode(1, 2, 1, 2);
+
+            WithApprovedSeasonDecisions();
+
+            Mocker.GetMock<IConfigService>()
+                  .SetupGet(s => s.AnimeSeasonSearchFallback)
+                  .Returns(AnimeSeasonSearchFallback.Never);
+
+            var allCriteria = WatchForSearchCriteria();
+
+            await Subject.SeasonSearch(_xemSeries.Id, 1, false, true, true, false);
+
+            allCriteria.OfType<AnimeEpisodeSearchCriteria>().Should().NotBeEmpty(
+                "interactive search must always run per-episode regardless of approved results or setting");
+        }
     }
 }
