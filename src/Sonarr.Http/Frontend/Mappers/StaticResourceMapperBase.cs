@@ -35,10 +35,7 @@ namespace Sonarr.Http.Frontend.Mappers
 
         public string Map(string resourceUrl)
         {
-            var filePath = Path.GetFullPath(MapPath(resourceUrl));
-            var parentPath = Path.GetFullPath(FolderPath) + Path.DirectorySeparatorChar;
-
-            return filePath.StartsWith(parentPath, _caseSensitive) ? filePath : null;
+            return GetMappedPathInsideFolder(MapPath(resourceUrl));
         }
 
         public Task<IActionResult> GetResponse(HttpContext context, string resourceUrl)
@@ -71,6 +68,56 @@ namespace Sonarr.Http.Frontend.Mappers
         protected virtual Stream GetContentStream(HttpContext context, string filePath)
         {
             return File.OpenRead(filePath);
+        }
+
+        protected bool IsPathInsideFolder(string filePath)
+        {
+            return GetMappedPathInsideFolder(filePath) != null;
+        }
+
+        private string GetMappedPathInsideFolder(string filePath)
+        {
+            if (string.IsNullOrWhiteSpace(filePath))
+            {
+                return null;
+            }
+
+            var folderPath = FolderPath;
+            if (string.IsNullOrWhiteSpace(folderPath))
+            {
+                return null;
+            }
+
+            try
+            {
+                var fullFilePath = Path.GetFullPath(filePath);
+                var fullFolderPath = EnsureTrailingDirectorySeparator(Path.GetFullPath(folderPath));
+
+                return fullFilePath.StartsWith(fullFolderPath, _caseSensitive) ? fullFilePath : null;
+            }
+            catch (Exception ex) when (IsPathResolutionException(ex))
+            {
+                return null;
+            }
+        }
+
+        private static bool IsPathResolutionException(Exception ex)
+        {
+            return ex is ArgumentException ||
+                   ex is NotSupportedException ||
+                   ex is PathTooLongException ||
+                   ex is IOException ||
+                   ex is UnauthorizedAccessException;
+        }
+
+        private static string EnsureTrailingDirectorySeparator(string path)
+        {
+            if (path.EndsWith(Path.DirectorySeparatorChar) || path.EndsWith(Path.AltDirectorySeparatorChar))
+            {
+                return path;
+            }
+
+            return path + Path.DirectorySeparatorChar;
         }
     }
 }
