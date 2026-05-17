@@ -78,9 +78,11 @@ namespace Sonarr.Http.Test.Frontend.Mappers
 
             protected override string FolderPath => _folderPath;
 
+#pragma warning disable S1172 // Parameters required by abstract/interface signature
             protected override string MapPath(string resourceUrl) => MapPathResult;
 
             public override bool CanHandle(string resourceUrl) => true;
+#pragma warning restore S1172
         }
     }
 }
