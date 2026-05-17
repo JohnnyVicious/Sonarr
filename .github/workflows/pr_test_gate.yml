@@ -48,6 +48,9 @@ jobs:
       - name: Check out
         uses: actions/checkout@v6
 
+      - name: Validate sync regression guards
+        run: bash scripts/validate-sync-regression-guards.sh
+
       - name: Build backend and package tests
         uses: ./.github/actions/build
         with:
