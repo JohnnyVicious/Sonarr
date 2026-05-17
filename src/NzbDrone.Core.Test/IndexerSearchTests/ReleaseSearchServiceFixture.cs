@@ -35,6 +35,10 @@ namespace NzbDrone.Core.Test.IndexerSearchTests
                   .Setup(s => s.AutomaticSearchEnabled(true))
                   .Returns(new List<IIndexer> { _mockIndexer.Object });
 
+            Mocker.GetMock<IIndexerFactory>()
+                  .Setup(s => s.InteractiveSearchEnabled())
+                  .Returns(new List<IIndexer> { _mockIndexer.Object });
+
             Mocker.GetMock<IMakeDownloadDecision>()
                 .Setup(s => s.GetSearchDecision(It.IsAny<List<Parser.Model.ReleaseInfo>>(), It.IsAny<SearchCriteriaBase>()))
                 .Returns(new List<DownloadDecision>());
@@ -67,11 +71,12 @@ namespace NzbDrone.Core.Test.IndexerSearchTests
                   .Returns(AnimeSeasonSearchFallback.Always);
         }
 
-        private void WithEpisode(int seasonNumber, int episodeNumber, int? sceneSeasonNumber, int? sceneEpisodeNumber, string airDate = null)
+        private Episode WithEpisode(int seasonNumber, int episodeNumber, int? sceneSeasonNumber, int? sceneEpisodeNumber, string airDate = null)
         {
             var episode = Builder<Episode>.CreateNew()
                 .With(v => v.SeriesId == _xemSeries.Id)
                 .With(v => v.Series == _xemSeries)
+                .With(v => v.Id, _xemEpisodes.Count + 1)
                 .With(v => v.SeasonNumber, seasonNumber)
                 .With(v => v.EpisodeNumber, episodeNumber)
                 .With(v => v.SceneSeasonNumber, sceneSeasonNumber)
@@ -82,6 +87,8 @@ namespace NzbDrone.Core.Test.IndexerSearchTests
                 .Build();
 
             _xemEpisodes.Add(episode);
+
+            return episode;
         }
 
         private void WithEpisodes()
@@ -671,13 +678,23 @@ namespace NzbDrone.Core.Test.IndexerSearchTests
             allCriteria.Last().As<SingleEpisodeSearchCriteria>().EpisodeNumber.Should().Be(3);
         }
 
-        private void WithApprovedSeasonDecisions()
+        private void WithApprovedSeasonDecision(int seasonNumber, params Episode[] episodes)
         {
             Mocker.GetMock<IMakeDownloadDecision>()
-                .Setup(s => s.GetSearchDecision(It.IsAny<List<Parser.Model.ReleaseInfo>>(), It.IsAny<AnimeSeasonSearchCriteria>()))
+                .Setup(s => s.GetSearchDecision(
+                    It.IsAny<List<Parser.Model.ReleaseInfo>>(),
+                    It.Is<AnimeSeasonSearchCriteria>(criteria => criteria.SeasonNumber == seasonNumber)))
                 .Returns(new List<DownloadDecision>
                 {
-                    new DownloadDecision(new Parser.Model.RemoteEpisode(), new DownloadDecision.Rejection[0])
+                    new DownloadDecision(new Parser.Model.RemoteEpisode
+                    {
+                        Release = new Parser.Model.ReleaseInfo
+                        {
+                            Guid = $"approved-season-{seasonNumber}-{string.Join("-", episodes.Select(episode => episode.Id))}",
+                            Title = $"Approved season {seasonNumber}"
+                        },
+                        Episodes = episodes.ToList()
+                    })
                 });
         }
 
@@ -713,20 +730,44 @@ namespace NzbDrone.Core.Test.IndexerSearchTests
             _xemSeries.SeriesType = SeriesTypes.Anime;
 
             // Scene season 3 has episodes
-            WithEpisode(2, 1, 3, 11);
-            WithEpisode(2, 2, 3, 12);
+            var sceneSeason3Episode1 = WithEpisode(2, 1, 3, 11);
+            var sceneSeason3Episode2 = WithEpisode(2, 2, 3, 12);
+
             // Scene season 4 has episodes
             WithEpisode(2, 3, 4, 11);
             WithEpisode(2, 4, 4, 12);
 
-            WithApprovedSeasonDecisions();
+            WithApprovedSeasonDecision(3, sceneSeason3Episode1, sceneSeason3Episode2);
 
             var allCriteria = WatchForSearchCriteria();
 
             await Subject.SeasonSearch(_xemSeries.Id, 2, false, true, false, false);
 
-            // Both scene seasons get season search
-            allCriteria.OfType<AnimeSeasonSearchCriteria>().Should().HaveCountGreaterOrEqualTo(1);
+            var episodeCriteria = allCriteria.OfType<AnimeEpisodeSearchCriteria>().ToList();
+
+            episodeCriteria.Should().HaveCount(2);
+            episodeCriteria.Should().OnlyContain(criteria => criteria.SeasonNumber == 4);
+            episodeCriteria.Select(criteria => criteria.EpisodeNumber).Should().BeEquivalentTo(new[] { 11, 12 });
+        }
+
+        [Test]
+        public async Task anime_season_search_should_fallback_when_approved_results_do_not_cover_all_scene_season_episodes()
+        {
+            _xemSeries.SeriesType = SeriesTypes.Anime;
+
+            var episode1 = WithEpisode(1, 1, 1, 1);
+            WithEpisode(1, 2, 1, 2);
+
+            WithApprovedSeasonDecision(1, episode1);
+
+            var allCriteria = WatchForSearchCriteria();
+
+            await Subject.SeasonSearch(_xemSeries.Id, 1, false, true, false, false);
+
+            var episodeCriteria = allCriteria.OfType<AnimeEpisodeSearchCriteria>().ToList();
+
+            episodeCriteria.Should().HaveCount(2);
+            episodeCriteria.Select(criteria => criteria.EpisodeNumber).Should().BeEquivalentTo(new[] { 1, 2 });
         }
 
         [Test]
@@ -755,10 +796,10 @@ namespace NzbDrone.Core.Test.IndexerSearchTests
         {
             _xemSeries.SeriesType = SeriesTypes.Anime;
 
-            WithEpisode(1, 1, 1, 1);
-            WithEpisode(1, 2, 1, 2);
+            var episode1 = WithEpisode(1, 1, 1, 1);
+            var episode2 = WithEpisode(1, 2, 1, 2);
 
-            WithApprovedSeasonDecisions();
+            WithApprovedSeasonDecision(1, episode1, episode2);
 
             Mocker.GetMock<IConfigService>()
                   .SetupGet(s => s.AnimeSeasonSearchFallback)
@@ -766,7 +807,7 @@ namespace NzbDrone.Core.Test.IndexerSearchTests
 
             var allCriteria = WatchForSearchCriteria();
 
-            await Subject.SeasonSearch(_xemSeries.Id, 1, false, true, true, false);
+            await Subject.SeasonSearch(_xemSeries.Id, 1, false, true, true, true);
 
             allCriteria.OfType<AnimeEpisodeSearchCriteria>().Should().NotBeEmpty(
                 "interactive search must always run per-episode regardless of approved results or setting");

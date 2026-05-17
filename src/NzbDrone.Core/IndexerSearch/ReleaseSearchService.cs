@@ -6,8 +6,8 @@ using System.Threading.Tasks;
 using NLog;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Common.Instrumentation.Extensions;
-using NzbDrone.Core.DataAugmentation.Scene;
 using NzbDrone.Core.Configuration;
+using NzbDrone.Core.DataAugmentation.Scene;
 using NzbDrone.Core.DecisionEngine;
 using NzbDrone.Core.Exceptions;
 using NzbDrone.Core.Indexers;
@@ -403,8 +403,6 @@ namespace NzbDrone.Core.IndexerSearch
         {
             var downloadDecisions = new List<DownloadDecision>();
 
-            var searchSpec = Get<AnimeSeasonSearchCriteria>(series, episodes, monitoredOnly, userInvokedSearch, interactiveSearch);
-
             // Episode needs to be monitored if it's not an interactive search
             // and Ensure episode has an airdate and has already aired
             var episodesToSearch = episodes
@@ -412,27 +410,9 @@ namespace NzbDrone.Core.IndexerSearch
                 .Where(ep => ep.AirDateUtc.HasValue && ep.AirDateUtc.Value.Before(DateTime.UtcNow))
                 .ToList();
 
-            var seasonsToSearch = GetSceneSeasonMappings(series, episodesToSearch)
-                .GroupBy(ep => ep.SeasonNumber)
-                .Select(epList => epList.First())
+            var sceneSeasonMappings = GetSceneSeasonMappings(series, episodesToSearch)
+                .GroupBy(mapping => mapping.SeasonNumber)
                 .ToList();
-
-            // Track per-season approved results so the fallback decision is
-            // scoped to each scene season, not global across all of them.
-            var seasonsWithApprovedResults = new HashSet<int>();
-
-            foreach (var season in seasonsToSearch)
-            {
-                searchSpec.SeasonNumber = season.SeasonNumber;
-
-                var decisions = await Dispatch(indexer => indexer.Fetch(searchSpec), searchSpec);
-                downloadDecisions.AddRange(decisions);
-
-                if (decisions.Any(d => d.Approved))
-                {
-                    seasonsWithApprovedResults.Add(season.SeasonNumber);
-                }
-            }
 
             // Compute aired state from the UNFILTERED episode list so the
             // FullSeasonAired/FullSeasonNotAired modes work correctly.
@@ -446,11 +426,27 @@ namespace NzbDrone.Core.IndexerSearch
             // Determine per-episode fallback per scene season, not globally.
             var episodesNeedingFallback = new List<Episode>();
 
-            foreach (var seasonGroup in GetSceneSeasonMappings(series, episodesToSearch).GroupBy(ep => ep.SeasonNumber))
+            foreach (var seasonGroup in sceneSeasonMappings)
             {
-                if (!interactiveSearch && seasonsWithApprovedResults.Contains(seasonGroup.Key))
+                var seasonEpisodes = seasonGroup
+                    .SelectMany(mapping => mapping.Episodes)
+                    .Distinct()
+                    .ToList();
+
+                var searchSpec = Get<AnimeSeasonSearchCriteria>(
+                    series,
+                    seasonGroup.First(),
+                    monitoredOnly,
+                    userInvokedSearch,
+                    interactiveSearch);
+                searchSpec.SeasonNumber = seasonGroup.Key;
+
+                var decisions = await Dispatch(indexer => indexer.Fetch(searchSpec), searchSpec);
+                downloadDecisions.AddRange(decisions);
+
+                if (!interactiveSearch && ApprovedDecisionsCoverEpisodes(decisions, seasonEpisodes))
                 {
-                    _logger.Debug("Season search returned approved results for {0} scene season {1}, skipping per-episode fallback",
+                    _logger.Debug("Season search returned approved results covering {0} scene season {1}, skipping per-episode fallback",
                         series.Title,
                         seasonGroup.Key);
                     continue;
@@ -460,10 +456,6 @@ namespace NzbDrone.Core.IndexerSearch
 
                 if (shouldFallback)
                 {
-                    var seasonEpisodes = episodesToSearch
-                        .Where(ep => seasonGroup.Any(sg => sg.Episodes.Any(sge => sge.Id == ep.Id)))
-                        .ToList();
-
                     episodesNeedingFallback.AddRange(seasonEpisodes);
                 }
                 else
@@ -478,7 +470,13 @@ namespace NzbDrone.Core.IndexerSearch
 
             foreach (var episode in episodesNeedingFallback.Distinct())
             {
-                downloadDecisions.AddRange(await SearchAnime(series, episode, monitoredOnly, userInvokedSearch, interactiveSearch, true));
+                downloadDecisions.AddRange(await SearchAnime(
+                    series,
+                    episode,
+                    monitoredOnly,
+                    userInvokedSearch,
+                    interactiveSearch,
+                    true));
             }
 
             return DeDupeDecisions(downloadDecisions);
@@ -494,6 +492,31 @@ namespace NzbDrone.Core.IndexerSearch
                 AnimeSeasonSearchFallback.FullSeasonNotAired => !allEpisodesAired,
                 _ => true
             };
+        }
+
+        private static bool ApprovedDecisionsCoverEpisodes(List<DownloadDecision> decisions, List<Episode> episodes)
+        {
+            if (episodes.Count == 0)
+            {
+                return false;
+            }
+
+            var approvedEpisodes = decisions
+                .Where(decision => decision.Approved)
+                .SelectMany(decision => decision.RemoteEpisode?.Episodes ?? Enumerable.Empty<Episode>())
+                .ToList();
+
+            return episodes.All(episode => approvedEpisodes.Any(approvedEpisode => IsSameEpisode(approvedEpisode, episode)));
+        }
+
+        private static bool IsSameEpisode(Episode first, Episode second)
+        {
+            if (first.Id > 0 && second.Id > 0)
+            {
+                return first.Id == second.Id;
+            }
+
+            return ReferenceEquals(first, second);
         }
 
         private async Task<List<DownloadDecision>> SearchDailySeason(Series series, List<Episode> episodes, bool monitoredOnly, bool userInvokedSearch, bool interactiveSearch)
