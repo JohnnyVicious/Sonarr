@@ -37,17 +37,29 @@ if [[ "$invalid_path_regex_fields" -ne 1 ]]; then
   fail "StaticResourceController must declare InvalidPathRegex exactly once; found $invalid_path_regex_fields"
 fi
 
-grep -qF '[SuppressMessage("SonarAnalyzer", "S3329"' src/NzbDrone.Core/Notifications/Pushover/PushoverProxy.cs ||
-  fail "Pushover S3329 suppression must use the SonarAnalyzer category"
+grep -qF '[SuppressMessage("Sonar", "S3329"' src/NzbDrone.Core/Notifications/Pushover/PushoverProxy.cs ||
+  fail "Pushover S3329 suppression must use the Sonar category"
 
-grep -qF '[SuppressMessage("SonarAnalyzer", "SCS0013"' src/NzbDrone.Core/Notifications/Pushover/PushoverProxy.cs ||
-  fail "Pushover SCS0013 suppression must use the SonarAnalyzer category"
+grep -qF '[SuppressMessage("Sonar", "SCS0013"' src/NzbDrone.Core/Notifications/Pushover/PushoverProxy.cs ||
+  fail "Pushover SCS0013 suppression must use the Sonar category"
+
+grep -qF "#pragma warning disable S3329" src/NzbDrone.Core/Notifications/Pushover/PushoverProxy.cs ||
+  fail "Pushover S3329 warning must be disabled around the vendor-mandated CBC implementation"
+
+grep -qF "#pragma warning restore S3329" src/NzbDrone.Core/Notifications/Pushover/PushoverProxy.cs ||
+  fail "Pushover S3329 warning must be restored after the vendor-mandated CBC implementation"
 
 grep -qF '[SuppressMessage("SonarAnalyzer", "S3994"' src/Sonarr.Http/Frontend/Mappers/StaticResourceMapperBase.cs ||
   fail "StaticResourceMapperBase S3994 suppression must use the SonarAnalyzer category"
 
 grep -qF "private sealed class TestMapper" src/Sonarr.Http.Test/Frontend/Mappers/StaticResourceMapperBaseFixture.cs ||
   fail "StaticResourceMapperBaseFixture test mock must remain sealed"
+
+grep -qF "#pragma warning disable S1172" src/Sonarr.Http.Test/Frontend/Mappers/StaticResourceMapperBaseFixture.cs ||
+  fail "StaticResourceMapperBaseFixture must suppress S1172 for signature-required parameters"
+
+grep -qF "#pragma warning restore S1172" src/Sonarr.Http.Test/Frontend/Mappers/StaticResourceMapperBaseFixture.cs ||
+  fail "StaticResourceMapperBaseFixture must restore S1172 after signature-required parameters"
 
 grep -qF "protected override string MapPath(string resourceUrl) => MapPathResult;" src/Sonarr.Http.Test/Frontend/Mappers/StaticResourceMapperBaseFixture.cs ||
   fail "StaticResourceMapperBaseFixture MapPath test override must keep a StyleCop-compliant parameter name"
