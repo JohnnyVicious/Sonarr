@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
@@ -12,6 +13,9 @@ using NzbDrone.Common.EnvironmentInfo;
 
 namespace Sonarr.Http.Frontend.Mappers
 {
+    // S3994: "resourceUrl" parameters are URL path segments (e.g. /content/main.js),
+    // not full URIs. System.Uri would reject bare paths and add overhead with no benefit.
+    [SuppressMessage("SonarAnalyzer", "S3994", Justification = "Parameters are URL path segments, not full URIs")]
     public abstract class StaticResourceMapperBase : IMapHttpRequestsToDisk
     {
         private readonly IDiskProvider _diskProvider;

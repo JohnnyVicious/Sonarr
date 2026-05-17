@@ -47,7 +47,7 @@ namespace Sonarr.Http.Test.Frontend.Mappers
             _subject.Map("/index.html").Should().BeNull();
         }
 
-        private class TestMapper : StaticResourceMapperBase
+        private sealed class TestMapper : StaticResourceMapperBase
         {
             private readonly string _folderPath;
 
@@ -61,9 +61,9 @@ namespace Sonarr.Http.Test.Frontend.Mappers
 
             protected override string FolderPath => _folderPath;
 
-            protected override string MapPath(string resourceUrl) => MapPathResult;
+            protected override string MapPath(string _) => MapPathResult;
 
-            public override bool CanHandle(string resourceUrl) => true;
+            public override bool CanHandle(string _) => true;
         }
     }
 }

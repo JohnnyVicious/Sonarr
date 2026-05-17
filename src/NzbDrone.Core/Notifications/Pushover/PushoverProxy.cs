@@ -109,8 +109,8 @@ namespace NzbDrone.Core.Notifications.Pushover
         // of GCM, is dictated by Pushover's spec — not a design choice. The
         // official Pushover iOS/Android apps only decrypt this exact format.
         // Pushover declined to change the spec when asked (support ticket i385).
-        [SuppressMessage("Security", "S3329", Justification = "Pushover E2EE spec mandates AES-CBC + HMAC-SHA256 with same key")]
-        [SuppressMessage("Security", "SCS0013", Justification = "Pushover E2EE spec mandates AES-CBC mode")]
+        [SuppressMessage("SonarAnalyzer", "S3329", Justification = "Pushover E2EE spec mandates AES-CBC + HMAC-SHA256 with same key")]
+        [SuppressMessage("SonarAnalyzer", "SCS0013", Justification = "Pushover E2EE spec mandates AES-CBC mode")]
         internal static string EncryptField(string plaintext, byte[] key)
         {
             var compressed = GzipCompress(Encoding.UTF8.GetBytes(plaintext ?? string.Empty));
