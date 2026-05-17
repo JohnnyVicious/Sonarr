@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.IO.Compression;
 using System.Security.Cryptography;
@@ -97,6 +98,19 @@ namespace NzbDrone.Core.Notifications.Pushover
             return null;
         }
 
+        // Pushover E2EE wire format (pushover.net/api#e2ee) mandates:
+        //   1. GZIP compress plaintext
+        //   2. Random 16-byte IV
+        //   3. AES-256-CBC (PKCS7) encrypt with the shared key
+        //   4. HMAC-SHA256 over (IV || ciphertext) using THE SAME key
+        //   5. Base64 encode (IV || ciphertext || HMAC)
+        //
+        // Using the same key for both encryption and MAC, and using CBC instead
+        // of GCM, is dictated by Pushover's spec — not a design choice. The
+        // official Pushover iOS/Android apps only decrypt this exact format.
+        // Pushover declined to change the spec when asked (support ticket i385).
+        [SuppressMessage("Security", "S3329", Justification = "Pushover E2EE spec mandates AES-CBC + HMAC-SHA256 with same key")]
+        [SuppressMessage("Security", "SCS0013", Justification = "Pushover E2EE spec mandates AES-CBC mode")]
         private static string EncryptField(string plaintext, byte[] key)
         {
             var compressed = GzipCompress(Encoding.UTF8.GetBytes(plaintext ?? string.Empty));
