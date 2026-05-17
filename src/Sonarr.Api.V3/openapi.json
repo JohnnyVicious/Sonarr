@@ -11455,7 +11455,8 @@
           "unknown",
           "singleEpisode",
           "multiEpisode",
-          "seasonPack"
+          "seasonPack",
+          "multiSeasonPack"
         ],
         "type": "string"
       },

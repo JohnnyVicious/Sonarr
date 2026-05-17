@@ -11,6 +11,8 @@ export default function getReleaseTypeName(
       return translate('MultiEpisode');
     case 'seasonPack':
       return translate('SeasonPack');
+    case 'multiSeasonPack':
+      return translate('MultiSeason');
     default:
       return translate('Unknown');
   }
