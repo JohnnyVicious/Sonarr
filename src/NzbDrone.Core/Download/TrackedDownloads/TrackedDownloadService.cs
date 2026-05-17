@@ -28,8 +28,8 @@ namespace NzbDrone.Core.Download.TrackedDownloads
 
     public class TrackedDownloadService : ITrackedDownloadService,
                                           IHandle<EpisodeInfoRefreshedEvent>,
-                                          IHandle<SeriesAddedEvent>,
                                           IHandle<SeriesEditedEvent>,
+                                          IHandle<SeriesAddedEvent>,
                                           IHandle<SeriesBulkEditedEvent>,
                                           IHandle<SeriesDeletedEvent>
     {
@@ -92,7 +92,7 @@ namespace NzbDrone.Core.Download.TrackedDownloads
         {
             var existingItem = Find(downloadItem.DownloadId);
 
-            if (existingItem != null && existingItem.State != TrackedDownloadState.Downloading)
+            if (existingItem != null && CanReuseTrackedDownload(existingItem, downloadItem))
             {
                 LogItemChange(existingItem, existingItem.DownloadItem, downloadItem);
 
@@ -224,6 +224,40 @@ namespace NzbDrone.Core.Download.TrackedDownloads
             }
         }
 
+        private static bool CanReuseTrackedDownload(TrackedDownload existingItem, DownloadClientItem downloadItem)
+        {
+            if (existingItem.State != TrackedDownloadState.Downloading)
+            {
+                return true;
+            }
+
+            return IsStableWaitingDownload(downloadItem) &&
+                   HasSameDownloadIdentity(existingItem.DownloadItem, downloadItem) &&
+                   HasHealthyWaitingCache(existingItem);
+        }
+
+        private static bool IsStableWaitingDownload(DownloadClientItem downloadItem)
+        {
+            return downloadItem.Status == DownloadItemStatus.Queued ||
+                   downloadItem.Status == DownloadItemStatus.Paused;
+        }
+
+        private static bool HasHealthyWaitingCache(TrackedDownload existingItem)
+        {
+            return existingItem.Status == TrackedDownloadStatus.Ok &&
+                   existingItem.RemoteEpisode?.Series != null &&
+                   existingItem.RemoteEpisode.Episodes?.Any() == true;
+        }
+
+        private static bool HasSameDownloadIdentity(DownloadClientItem existingItem, DownloadClientItem downloadItem)
+        {
+            return existingItem.DownloadId == downloadItem.DownloadId &&
+                   existingItem.Title == downloadItem.Title &&
+                   existingItem.Category == downloadItem.Category &&
+                   existingItem.TotalSize == downloadItem.TotalSize &&
+                   existingItem.DownloadClientInfo?.Id == downloadItem.DownloadClientInfo?.Id;
+        }
+
         private void LogItemChange(TrackedDownload trackedDownload, DownloadClientItem existingItem, DownloadClientItem downloadItem)
         {
             if (existingItem == null ||
@@ -249,6 +283,16 @@ namespace NzbDrone.Core.Download.TrackedDownloads
             trackedDownload.RemoteEpisode = parsedEpisodeInfo == null ? null : _parsingService.Map(parsedEpisodeInfo, 0, 0, null);
 
             _aggregationService.Augment(trackedDownload.RemoteEpisode);
+        }
+
+        private void RefreshCachedItems(List<TrackedDownload> cachedItems)
+        {
+            if (cachedItems.Any())
+            {
+                cachedItems.ForEach(UpdateCachedItem);
+
+                _eventAggregator.PublishEvent(new TrackedDownloadRefreshedEvent(GetTrackedDownloads()));
+            }
         }
 
         private static TrackedDownloadState GetStateFromHistory(DownloadHistoryEventType eventType)
@@ -299,12 +343,7 @@ namespace NzbDrone.Core.Download.TrackedDownloads
                     message.Series?.TvdbId == t.RemoteEpisode.Series.TvdbId)
                 .ToList();
 
-            if (cachedItems.Any())
-            {
-                cachedItems.ForEach(UpdateCachedItem);
-
-                _eventAggregator.PublishEvent(new TrackedDownloadRefreshedEvent(GetTrackedDownloads()));
-            }
+            RefreshCachedItems(cachedItems);
         }
 
         public void Handle(SeriesEditedEvent message)
@@ -347,12 +386,7 @@ namespace NzbDrone.Core.Download.TrackedDownloads
                     message.Series.Any(s => s.Id == t.RemoteEpisode.Series.Id || s.TvdbId == t.RemoteEpisode.Series.TvdbId))
                 .ToList();
 
-            if (cachedItems.Any())
-            {
-                cachedItems.ForEach(UpdateCachedItem);
-
-                _eventAggregator.PublishEvent(new TrackedDownloadRefreshedEvent(GetTrackedDownloads()));
-            }
+            RefreshCachedItems(cachedItems);
         }
     }
 }
