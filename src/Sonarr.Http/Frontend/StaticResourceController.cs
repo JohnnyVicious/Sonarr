@@ -15,11 +15,10 @@ namespace Sonarr.Http.Frontend
     [ApiController]
     public class StaticResourceController : Controller
     {
-        private static readonly Regex InvalidPathRegex = new Regex(@"(?:^|[\\/])\.\.(?:[\\/]|$)|%2f|%5c", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        private static readonly Regex InvalidPathRegex = new(@"([\/\\]|%2f|%5c)\.\.|\.\.([\/\\]|%2f|%5c)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
         private readonly IEnumerable<IMapHttpRequestsToDisk> _requestMappers;
         private readonly Logger _logger;
-        private static readonly Regex InvalidPathRegex = new(@"([\/\\]|%2f|%5c)\.\.|\.\.([\/\\]|%2f|%5c)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
         public StaticResourceController(IEnumerable<IMapHttpRequestsToDisk> requestMappers,
             Logger logger)
