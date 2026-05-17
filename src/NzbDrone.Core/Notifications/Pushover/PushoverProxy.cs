@@ -111,7 +111,7 @@ namespace NzbDrone.Core.Notifications.Pushover
         // Pushover declined to change the spec when asked (support ticket i385).
         [SuppressMessage("Security", "S3329", Justification = "Pushover E2EE spec mandates AES-CBC + HMAC-SHA256 with same key")]
         [SuppressMessage("Security", "SCS0013", Justification = "Pushover E2EE spec mandates AES-CBC mode")]
-        private static string EncryptField(string plaintext, byte[] key)
+        internal static string EncryptField(string plaintext, byte[] key)
         {
             var compressed = GzipCompress(Encoding.UTF8.GetBytes(plaintext ?? string.Empty));
 
