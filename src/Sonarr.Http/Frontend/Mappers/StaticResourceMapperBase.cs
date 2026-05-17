@@ -38,7 +38,7 @@ namespace Sonarr.Http.Frontend.Mappers
             var filePath = Path.GetFullPath(MapPath(resourceUrl));
             var parentPath = Path.GetFullPath(FolderPath) + Path.DirectorySeparatorChar;
 
-            return filePath.StartsWith(parentPath) ? filePath : null;
+            return filePath.StartsWith(parentPath, _caseSensitive) ? filePath : null;
         }
 
         public Task<IActionResult> GetResponse(HttpContext context, string resourceUrl)
