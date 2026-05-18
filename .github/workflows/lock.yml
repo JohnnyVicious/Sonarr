@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     if: github.repository == 'Sonarr/Sonarr'
     steps:
-      - uses: dessant/lock-threads@v5
+      - uses: dessant/lock-threads@v6
         with:
           github-token: ${{ github.token }}
           issue-inactive-days: '90'

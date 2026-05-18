@@ -37,7 +37,7 @@ jobs:
       full_sha: ${{ steps.vars.outputs.full_sha }}
     steps:
       - name: Check out
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           ref: ${{ github.event_name == 'workflow_dispatch' && (inputs.publish_ref || 'v5-custom') || github.sha }}
 
@@ -128,14 +128,14 @@ jobs:
           tar -zcf "_artifacts/$archiveName.tar.gz" -C "_artifacts/$RUNTIME/$FRAMEWORK" Sonarr
 
       - name: Upload tarball artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: sonarr-linux-musl-x64
           retention-days: 30
           path: _artifacts/*.tar.gz
 
       - name: Upload docker context
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: sonarr-docker-context
           retention-days: 1
@@ -155,28 +155,28 @@ jobs:
       packages: write
     steps:
       - name: Check out (for Dockerfile)
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           ref: ${{ needs.build.outputs.full_sha }}
 
       - name: Download build artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: sonarr-docker-context
           path: Sonarr/
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@v4
 
       - name: Login to GitHub Container Registry
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Login to Docker Hub
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         if: ${{ vars.DOCKERHUB_USERNAME != '' }}
         with:
           username: ${{ vars.DOCKERHUB_USERNAME }}
@@ -184,7 +184,7 @@ jobs:
 
       - name: Docker metadata
         id: meta
-        uses: docker/metadata-action@v5
+        uses: docker/metadata-action@v6
         with:
           images: |
             ghcr.io/${{ github.repository_owner }}/sonarr-xt
@@ -195,7 +195,7 @@ jobs:
             type=raw,value=latest,enable=${{ inputs.publish_image == true }}
 
       - name: Build and push
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: .
           push: true
@@ -214,7 +214,7 @@ jobs:
       contents: write
     steps:
       - name: Create version tag
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         with:
           script: |
             const tag = `v${{ needs.build.outputs.version }}`;
