@@ -1,0 +1,2 @@
+#!/usr/bin/with-contenv sh
+curl -sf http://localhost:8989/ping >/dev/null
